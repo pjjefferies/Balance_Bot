@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 """
 This is a simple API for reading data from a micro:bit.
 You will need the Bluetooth services on the micro:bit exposed.

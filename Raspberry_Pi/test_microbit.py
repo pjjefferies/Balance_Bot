@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 from bluezero import microbit
 ubit = microbit.Microbit(adapter_addr='B8:27:EB:2E:74:AE',
                          device_addr='C9:43:A5:4E:AC:98',
