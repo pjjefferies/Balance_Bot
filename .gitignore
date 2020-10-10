@@ -123,3 +123,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.CATProduct
+*.CATPart
+*.zip
+*.STEP
+Beaker.jpg
+LindseyStirling&JoshGroban-PureImagination-Beaker'sEyes.png
+*.CATDrawing
