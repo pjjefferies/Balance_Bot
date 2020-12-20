@@ -22,6 +22,8 @@ WHEEL_R_ENC = "GPIO21"    # Physical Pin 40 (2, 20)
 ARM_L_ENC = "GPIO20"      # Physical Pin 38 (2, 19)
 ARM_R_ENC = "GPIO16"      # Physical Pin 36 (2, 18)
 
+SENSOR_PIN = "GPIO12"     # Physical Pin 32 (2, 16)
+
 CONTROL_UPDATE_INTERVAL = 10  # milliseconds
 
 PARAMS_UPDATE_INTERVAL = 60  # seconds
