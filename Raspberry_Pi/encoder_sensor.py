@@ -168,3 +168,34 @@ class RotationEncoder:
         """
         self.position = 0
         self._position_history = [[time.time(), 0]]
+
+
+if __name__ == "__main__":
+    import csv
+    import balance_bot_config as bbc
+
+    ABS_SENSOR = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC,
+                                 history_len=3600)
+    UPDATE_TIME = 1  # Seconds
+    LOGFILE = 'sensor_log_' + str(int(time.time())) + '.csv'
+
+    try:
+        LASTTIME_CONTROL = 0
+        while True:
+            if ((time.time() - LASTTIME_CONTROL) >= UPDATE_TIME):
+                # exec every UPDATE_TIME seconds
+                lasttime_control = time.time()
+                POSITION = ABS_SENSOR.position
+                SPEED = ABS_SENSOR.speed(UPDATE_TIME)
+                ACCEL = ABS_SENSOR.accel(UPDATE_TIME)
+                JERK = ABS_SENSOR.jerk(UPDATE_TIME)
+
+                print(f'Pos.: {POSITION:.2f}, ' +
+                      'Spe.: {SPEED:.2f}, ' +
+                      'Acc.: {ACCEL:.2f}, ' +
+                      'Jrk.: {JERK: .2f}')
+    except KeyboardInterrupt:
+        with open(LOGFILE) as csvfile:
+            csv_writer = csv.writer(csvfile, )
+            for a_position in ABS_SENSOR._position_history:
+                csv_writer.writerow(a_position)
