@@ -171,13 +171,18 @@ class RotationEncoder:
 
 
 if __name__ == "__main__":
-    import csv
+    import logging
     import balance_bot_config as bbc
 
     ABS_SENSOR = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC,
                                  history_len=3600)
     UPDATE_TIME = 1  # Seconds
-    LOGFILE = 'sensor_log_' + str(int(time.time())) + '.csv'
+    LOGFILENAME = 'sensor_log_' + str(int(time.time())) + '.log'
+    LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
+    logger = logging.getLogger(__name__)
+    logger.basicConfig(filename=LOGFILENAME,
+                       level=logging.DEBUG,
+                       format=LOG_FORMAT)
 
     try:
         LASTTIME_CONTROL = 0
@@ -190,12 +195,10 @@ if __name__ == "__main__":
                 ACCEL = ABS_SENSOR.accel(UPDATE_TIME)
                 JERK = ABS_SENSOR.jerk(UPDATE_TIME)
 
-                print(f'Pos.: {POSITION:.2f}, ' +
-                      'Spe.: {SPEED:.2f}, ' +
-                      'Acc.: {ACCEL:.2f}, ' +
-                      'Jrk.: {JERK: .2f}')
+                logger.debug(f'Pos.: {POSITION:.2f}, ' +
+                             'Spe.: {SPEED:.2f}, ' +
+                             'Acc.: {ACCEL:.2f}, ' +
+                             'Jrk.: {JERK: .2f}')
     except KeyboardInterrupt:
-        with open(LOGFILE) as csvfile:
-            csv_writer = csv.writer(csvfile, )
-            for a_position in ABS_SENSOR._position_history:
-                csv_writer.writerow(a_position)
+        for a_position in ABS_SENSOR._position_history:
+            logger.info(a_position)
