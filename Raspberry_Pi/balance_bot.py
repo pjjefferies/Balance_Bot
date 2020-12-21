@@ -3,7 +3,7 @@
 Balance Bot Main Routine.
 
 Classes:
-    None
+    BalanceBot
 
 Misc variables:
     TBD
@@ -23,6 +23,13 @@ from encoder_sensor import RotationEncoder
 import balance_bot_config as bbc
 
 TIMER = lambda: time.time() * 1000
+
+# Initialize Logging
+LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
+logging.basicConfig(format=LOG_FORMAT,
+                    level=bbc.LOG_LEVEL,
+                    datefmt="%Y-%m-%dT%H:%M:%S")
+logger = logging.getLogger(__name__)
 
 
 class BalanceBot:
@@ -47,11 +54,6 @@ class BalanceBot:
         Returns:
             Result: True if successful, False if not
         """
-
-        # Initialize Logging
-        format = "%(asctime)s: %(message)s"
-        logging.basicConfig(format=format, level=logging.INFO,
-                            datefmt="%Y-%m-%d : %H:%M:%S")
 
         # Initialize i2C Connection to sensor- need check/try?
         i2c = busio.I2C(board.SCL, board.SCA)
