@@ -4,6 +4,9 @@ Balance Bot Configuration Data.
 
 """
 
+import logging
+
+
 WHEEL_L_FWD = "GPIO4"     # Physical Pin  7 (1, 4)
 WHEEL_L_RWD = "GPIO17"    # Physical Pin 11 (1, 6)
 
@@ -36,3 +39,5 @@ K_DERIVATIVE = 0      # Damping Adjustment. Should be negative
 
 MOTOR_MAX = 1
 MOTOR_MIN = -1
+
+LOG_LEVEL = logging.DEBUG
