@@ -10,8 +10,11 @@ Misc variables:
 """
 
 # import math
+import datetime as dt
 import time
+import re
 import json
+import pandas as pd
 import logging
 import board
 import busio
@@ -30,7 +33,6 @@ logger = logging.getLogger(__name__)
 i2c = busio.I2C(board.SCL, board.SCA)
 sensor = adafruit_bno055.BNO055_I2C(i2c)
 
-UPDATE_TIME = 1  # Seconds
 # Read Sensor Mode to verify connected
 sensor_mode = sensor.mode
 
@@ -67,30 +69,42 @@ sensor_calibration_values = {
 with open(bbc.CALIBRATION_FILE, 'w') as fp:
     json.dump(sensor_calibration_values, fp)
 
+update_time_measure = 1  # Seconds
+update_time_save = 30
+
+params_hist = pd.DataFrame()
 try:
-    accel_x, accel_y, accel_z = sensor.linear_acceleration
-except RuntimeError:
-    logger.ERROR('No Sensor Acceleration detected')
-    raise
+    lasttime_control_measure = 0
+    lasttime_control_save = 0
+    while True:
+        if ((time.time() - lasttime_control_measure) >= update_time_measure):
+            # exec every UPDATE_TIME seconds
+            lasttime_control_measure = time.time()
+            params = pd.Series(data=time.time(),
+                               index='time')
+            params.append(data=sensor.linear_acceleration,
+                          index=['x_accel', 'y_accel', 'z_accel'])
+            params.append(data=sensor.euler,
+                          index=['roll(x)', 'pitch(y)', 'yaw(z)'])
+            params.append(data=sensor.temperature,
+                          index='temperature')
+            params.append(data=sensor.magnetic,
+                          index=['mag_x, mag_y, mag_z'])
+            params.append(data=sensor.gyro,
+                          index=['gyro_x', 'gyro_y', 'gyro_z'])
+            params.append(data=sensor.gravity,
+                          index=['gravity_x', 'gravity_y', 'gravity_z'])
 
-    try:
-        LASTTIME_CONTROL = 0
-        while True:
-            if ((time.time() - LASTTIME_CONTROL) >= UPDATE_TIME):
-                # exec every UPDATE_TIME seconds
-                lasttime_control = time.time()
-                accel_x, accel_y, accel_z = sensor.linear_acceleration
-                roll, pitch, yaw = sensor.euler
-                temperature = sensor.temperature
-                magnetic = sensor.magnetic
-                gyro = sensor.gyro
-                gravity = sensor.gravity
+            logger.debug(str(params))
 
-                """
-                logger.debug(f'Pos.: {POSITION:.2f}, ' +
-                             'Spe.: {SPEED:.2f}, ' +
-                             'Acc.: {ACCEL:.2f}, ' +
-                             'Jrk.: {JERK: .2f}')
-                """
-    except KeyboardInterrupt:
-        pass
+            params_hist.append(params)
+
+        if ((time.time() - lasttime_control_save) >= update_time_save):
+            sensor_history_filename = (
+                'sensor_history - ' +
+                re.sub(':', '', str(dt.datetime.now())) +
+                '.json')
+            params_hist.to_json(path_or_buf=sensor_history_filename)
+
+except KeyboardInterrupt:
+    pass
