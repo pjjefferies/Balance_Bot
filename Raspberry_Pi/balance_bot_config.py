@@ -41,3 +41,5 @@ MOTOR_MAX = 1
 MOTOR_MIN = -1
 
 LOG_LEVEL = logging.DEBUG
+
+CALIBRATION_FILE = 'bno055_calibration_data.json'
