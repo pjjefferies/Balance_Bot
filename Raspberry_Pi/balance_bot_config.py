@@ -43,3 +43,4 @@ MOTOR_MIN = -1
 LOG_LEVEL = logging.DEBUG
 
 CALIBRATION_FILE = 'bno055_calibration_data.json'
+MOTOR_ENCODER_TEST_SEQUENCE = 'motor_encoder_test_sequence.csv'
