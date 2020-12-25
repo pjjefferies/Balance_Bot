@@ -41,6 +41,7 @@ class RotationEncoder:
                  sample_freq=200,  # per second
                  slots_per_rev=20,
                  history_len=60,  # seconds
+                 average_duration=1, # seconds
                  ):
         """
         Constructs all the necessary attributes for the Rotation_Encoder
@@ -60,6 +61,9 @@ class RotationEncoder:
         """
         self._sample_freq = sample_freq
         self._history_len = history_len
+        self.average_duration = average_duration
+        # time speed, accel and jerk are averaged over
+
         self._sensor = LineSensor(pin=signal_pin,
                                   pull_up=True,
                                   queue_len=5,
@@ -89,7 +93,8 @@ class RotationEncoder:
         self._position_history = (  # Truncate position history
             self._position_history[-self._sample_freq * self._history_len])
 
-    def speed(self, duration=1):
+    @property
+    def speed(self):
         """
         Getter for speed Encoder has observed, averaged by time over the
         duration specified.
@@ -103,7 +108,8 @@ class RotationEncoder:
         """
         end_time, end_position = self._position_history[-1]
         for pos_meas in range(len(self._position_history)-2, 0, -1):
-            if end_time - self._position_history[pos_meas][0] > duration:
+            if ((end_time - self._position_history[pos_meas][0]) >
+                    self.average_duration):
                 break
         actual_duration = (end_time -
                            self._position_history[pos_meas][0])
@@ -111,7 +117,8 @@ class RotationEncoder:
                          self._position_history[pos_meas][1])
         return dist_traveled / actual_duration
 
-    def accel(self, duration=1):
+    @property
+    def accel(self):
         """
         Getter for acceleration Encoder has observed, averaged by time over
         the duration specified.
@@ -125,7 +132,8 @@ class RotationEncoder:
         """
         end_time, end_position = self._position_history[-1]
         for pos_meas in range(len(self._position_history)-2, 0, -1):
-            if end_time - self._position_history[pos_meas][0] > duration:
+            if ((end_time - self._position_history[pos_meas][0]) >
+                    self.average_duration):
                 break
         actual_duration = (end_time -
                            self._position_history[pos_meas][0])
@@ -133,7 +141,8 @@ class RotationEncoder:
                          self._position_history[pos_meas][1])
         return 2 * dist_traveled / (actual_duration**2)
 
-    def jerk(self, duration=1):
+    @property
+    def jerk(self):
         """
         Getter for jerk Encoder has observed, averaged by time over
         the duration specified.
@@ -147,7 +156,8 @@ class RotationEncoder:
         """
         end_time, end_position = self._position_history[-1]
         for pos_meas in range(len(self._position_history)-2, 0, -1):
-            if end_time - self._position_history[pos_meas][0] > duration:
+            if ((end_time - self._position_history[pos_meas][0]) >
+                    self.average_duration):
                 break
         actual_duration = (end_time -
                            self._position_history[pos_meas][0])
@@ -191,9 +201,9 @@ if __name__ == "__main__":
                 # exec every UPDATE_TIME seconds
                 lasttime_control = time.time()
                 POSITION = ABS_SENSOR.position
-                SPEED = ABS_SENSOR.speed(UPDATE_TIME)
-                ACCEL = ABS_SENSOR.accel(UPDATE_TIME)
-                JERK = ABS_SENSOR.jerk(UPDATE_TIME)
+                SPEED = ABS_SENSOR.speed
+                ACCEL = ABS_SENSOR.accel
+                JERK = ABS_SENSOR.jerk
 
                 logger.debug(f'Pos.: {POSITION:.2f}, ' +
                              'Spe.: {SPEED:.2f}, ' +
