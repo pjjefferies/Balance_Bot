@@ -30,32 +30,35 @@ logging.basicConfig(format=LOG_FORMAT,
 logger = logging.getLogger(__name__)
 
 # Initialize i2C Connection to sensor- need check/try?
-i2c = busio.I2C(board.SCL, board.SCA)
+i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_bno055.BNO055_I2C(i2c)
 
 # Read Sensor Mode to verify connected
 sensor_mode = sensor.mode
 
 # Wait for, read and save calibration information
-while sensor.calibration_status()[1] != 0x03:  # Gyro
-    logger.INFO('Waiting for gyro calibration')
+while sensor.calibration_status[1] != 0x03:  # Gyro
+    logger.info('Waiting for gyro calibration')
     time.sleep(2)
-logger.INFO('Gyro calibrated')
+logger.info('Gyro calibrated')
 
-while sensor.calibration_status()[2] != 0x03:  # Accel
-    logger.INFO('Waiting for accel calibration')
+"""
+while sensor.calibration_status[2] != 0x03:  # Accel
+    logger.info('Waiting for accel calibration')
     time.sleep(2)
-logger.INFO('Accelerometer calibrated')
+logger.info('Accelerometer calibrated')
 
-while sensor.calibration_status()[2] != 0x03:  # Mag
-    logger.INFO('Waiting for magnetrometer calibration')
-    time.sleep(2)
-logger.INFO('Magnetrometer calibrated')
 
-while sensor.calibration_status()[0] != 0x03:  # System
-    logger.INFO('Waiting for system calibration')
+while sensor.calibration_status[2] != 0x03:  # Mag
+    logger.info('Waiting for magnetrometer calibration')
     time.sleep(2)
-logger.INFO('System calibrated')
+logger.info('Magnetrometer calibrated')
+
+while sensor.calibration_status[0] != 0x03:  # System
+    logger.info('Waiting for system calibration')
+    time.sleep(2)
+logger.info('System calibrated')
+"""
 
 # Read Calibration Data
 sensor_calibration_values = {
@@ -80,21 +83,24 @@ try:
         if ((time.time() - lasttime_control_measure) >= update_time_measure):
             # exec every UPDATE_TIME seconds
             lasttime_control_measure = time.time()
-            params = pd.Series(data=time.time(),
-                               index='time')
-            params.append(data=sensor.linear_acceleration,
-                          index=['x_accel', 'y_accel', 'z_accel'])
-            params.append(data=sensor.euler,
-                          index=['roll(x)', 'pitch(y)', 'yaw(z)'])
-            params.append(data=sensor.temperature,
-                          index='temperature')
-            params.append(data=sensor.magnetic,
-                          index=['mag_x, mag_y, mag_z'])
-            params.append(data=sensor.gyro,
-                          index=['gyro_x', 'gyro_y', 'gyro_z'])
-            params.append(data=sensor.gravity,
-                          index=['gravity_x', 'gravity_y', 'gravity_z'])
+            params = pd.Series(dtype='float64')
+            print('params1:', params)
+            params = params.append(pd.Series(data=sensor.linear_acceleration,
+                                             index=['x_accel', 'y_accel', 'z_accel']))
+            print('params2:', params)
+            params = params.append(pd.Series(data=sensor.euler,
+                                             index=['roll(x)', 'pitch(y)', 'yaw(z)']))
+            params = params.append(pd.Series(data=sensor.temperature,
+                                             index=['temperature']))
+            params = params.append(pd.Series(data=sensor.magnetic,
+                                             index=['mag_x', 'mag_y', 'mag_z']))
+            params = params.append(pd.Series(data=sensor.gyro,
+                                             index=['gyro_x', 'gyro_y', 'gyro_z']))
+            params = params.append(pd.Series(data=sensor.gravity,
+                                             index=['gravity_x', 'gravity_y', 'gravity_z']))
 
+            params = params.rename(str(dt.datetime.now()))
+            print('\n\nparams3:', params)
             logger.debug(str(params))
 
             params_hist.append(params)
