@@ -14,7 +14,7 @@ def bd_drive():
     or 0, 0 if it's not pressed.
     """
     if bd.is_pressed:
-        x, y = bd.position.x, bd.position.y
+        x, y = -bd.position.x, -bd.position.y
         return y, x
     else:
         return 0, 0
