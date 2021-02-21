@@ -48,7 +48,7 @@ class Simple_Robot():
         while time.time() - start_time < duration:
             if (time.time()*1000 - lasttime) >= interval:
                 lasttime = time.time() * 1000
-                direction = self.bd_ctl()  # [x, y] eached scaled [-1, 1]
+                direction = self.bd_ctl()  # [y, x] eached scaled [-1, 1]
                 print(f'Direction: {direction[0]}, {direction[1]}')
                 if direction == [0, 0]:
                     self._motor_wheel_left.value = 0
@@ -56,14 +56,16 @@ class Simple_Robot():
                 else:
                     fwd_vel = direction[0]
                     right_turn = direction[1]
-                    self._motor_wheel_left.value = fwd_vel + right_turn
-                    self._motor_wheel_right.value = fwd_vel - right_turn
+                    if abs(right_turn) < 0.2:
+                        right_turn = 0
+                    self._motor_wheel_left.value = max(min(fwd_vel + right_turn, 1), -1) 
+                    self._motor_wheel_right.value = max(min(fwd_vel - right_turn, 1 ), -1)
 
 
 if __name__ == "__main__":
 
-    ROBOT_RUN_DURATION = 60  # Seconds
-    CONTROL_STEPS = 500  # milliseconds
+    ROBOT_RUN_DURATION = 300  # Seconds
+    CONTROL_STEPS = 100  # milliseconds
 
     two_wheel_robot = Simple_Robot()
 
