@@ -28,8 +28,6 @@ FORWARD = True
 REARWARD = False
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 rh_wheel_motor = Motor(forward=bbc.WHEEL_R_FWD,
                        rearward=bbc.WHEEL_R_RWD,

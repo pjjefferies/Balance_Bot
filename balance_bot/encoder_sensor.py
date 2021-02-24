@@ -14,15 +14,13 @@ Misc variables:
 """
 
 import logging
-import pandas as pd
 from config import cfg
 
 import time
 from gpiozero import LineSensor
+from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 FORWARD = True
 REARWARD = False

@@ -25,8 +25,6 @@ import balance_bot_config as bbc
 
 # Initialize Logging
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 # Initialize i2C Connection to sensor- need check/try?
 i2c = busio.I2C(board.SCL, board.SDA)

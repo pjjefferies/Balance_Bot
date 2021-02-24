@@ -13,15 +13,13 @@ Misc variables:
 
 import math
 import logging
-import pandas as pd
 from config import cfg
 # import time
 # import busio
 import adafruit_bno055
+from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 
 class BB_BNO055Sensor:

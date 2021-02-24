@@ -1,15 +1,13 @@
 #! /usr/bin/python3
 
 import logging
-import pandas as pd
 from config import cfg
 
 from bluedot import BlueDot
 from time import sleep
+from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 bd = BlueDot()
 

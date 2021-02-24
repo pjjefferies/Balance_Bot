@@ -2,7 +2,6 @@
 
 import time
 import logging
-import pandas as pd
 from config import cfg
 from gpiozero import Motor
 # import bluedot_direction_control
@@ -10,8 +9,6 @@ from encoder_sensor import RotationEncoder
 import balance_bot_config as bbc
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 
 class Simple_Robot:

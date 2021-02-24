@@ -14,7 +14,6 @@ import time
 import yaml
 from box import Box
 import logging
-import pandas as pd
 from config import cfg
 from importlib import reload
 import threading
@@ -24,10 +23,9 @@ import board
 import busio
 from  bb_bno055_sensor import BB_BNO055Sensor
 from encoder_sensor import RotationEncoder
+from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
-logger.debug(f'Loading data from {cfg.path.data}')
-df = pd.read_csv(cfg.path.data)
 
 TIMER = lambda: time.time() * 1000  # Current time in ms
 ENCODERS = False  # Ready to use encoder yet?
