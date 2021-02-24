@@ -17,6 +17,7 @@ Misc variables:
 import time
 import csv
 import Pandas as pd
+from config import cfg
 # from gpiozero import LineSensor
 from gpiozero import Motor
 import encoder_sensor as es
@@ -26,12 +27,9 @@ import balance_bot_config as bbc
 FORWARD = True
 REARWARD = False
 
-LOGFILENAME = 'sensor__motor_test_log_' + str(int(time.time())) + '.log'
-LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
 logger = logging.getLogger(__name__)
-logger.basicConfig(filename=LOGFILENAME,
-                   level=logging.DEBUG,
-                   format=LOG_FORMAT)
+logger.debug(f'Loading data from {cfg.path.data}')
+df = pd.read_csv(cfg.path.data)
 
 rh_wheel_motor = Motor(forward=bbc.WHEEL_R_FWD,
                        rearward=bbc.WHEEL_R_RWD,

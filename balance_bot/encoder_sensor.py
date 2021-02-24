@@ -13,9 +13,16 @@ Misc variables:
     REARWARD = False, for use in setting self.direction
 """
 
+import logging
+import pandas as pd
+from config import cfg
 
 import time
 from gpiozero import LineSensor
+
+logger = logging.getLogger(__name__)
+logger.debug(f'Loading data from {cfg.path.data}')
+df = pd.read_csv(cfg.path.data)
 
 FORWARD = True
 REARWARD = False

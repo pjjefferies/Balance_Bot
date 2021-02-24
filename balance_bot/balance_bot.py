@@ -11,26 +11,29 @@ Misc variables:
 
 # import math
 import time
+import yaml
+from box import Box
 import logging
+import pandas as pd
+from config import cfg
 from importlib import reload
 import threading
 from gpiozero import Motor
 import bluedot_direction_control
 import board
 import busio
-import adafruit_bno055
+from  bb_bno055_sensor import BB_BNO055Sensor
 from encoder_sensor import RotationEncoder
-import balance_bot_config as bbc
 
-TIMER = lambda: time.time() * 1000
-
-# Initialize Logging
-LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
-logging.basicConfig(format=LOG_FORMAT,
-                    level=bbc.LOG_LEVEL,
-                    datefmt="%Y-%m-%dT%H:%M:%S")
 logger = logging.getLogger(__name__)
+logger.debug(f'Loading data from {cfg.path.data}')
+df = pd.read_csv(cfg.path.data)
 
+TIMER = lambda: time.time() * 1000  # Current time in ms
+ENCODERS = False  # Ready to use encoder yet?
+
+with open('config.balance_bot_config.yml', 'r') as ymlfile:
+    bb_cfg = Box(yaml.safe_load(ymlfile))
 
 class BalanceBot:
     """
@@ -57,12 +60,9 @@ class BalanceBot:
 
         # Initialize i2C Connection to sensor- need check/try?
         i2c = busio.I2C(board.SCL, board.SCA)
-        self._sensor = adafruit_bno055.BNO055_I2C(i2c)
-        try:
-            accel_x, accel_y, accel_z = (
-                self._sensor.linear_acceleration)
-        except RuntimeError:
-            return False
+        self._sensor = BB_BNO055Sensor(i2c)
+
+        self._sensor_cal()
 
         # Set-up Motor Control Pins
         self._motor_wheel_left = Motor(forward=bbc.WHEEL_L_FWD,
@@ -79,10 +79,11 @@ class BalanceBot:
                                       pwm=True)
 
         # Set-up Motor Encoders
-        self._enc_wheel_left = RotationEncoder(signal_pin=bbc.WHEEL_L_ENC)
-        self._enc_wheel_right = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC)
-        self._enc_arm_left = RotationEncoder(signal_pin=bbc.ARM_L_ENC)
-        self._enc_arm_right = RotationEncoder(signal_pin=bbc.ARM_R_ENC)
+        if ENCODERS:
+            self._enc_wheel_left = RotationEncoder(signal_pin=bbc.WHEEL_L_ENC)
+            self._enc_wheel_right = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC)
+            self._enc_arm_left = RotationEncoder(signal_pin=bbc.ARM_L_ENC)
+            self._enc_arm_right = RotationEncoder(signal_pin=bbc.ARM_R_ENC)
 
         # Get Initial Values for PID Filter Initialization
         self._roll_last, self._pitch_last, self._yaw_last = self._sensor.euler
@@ -170,3 +171,15 @@ class BalanceBot:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
                 lasttime_params_updated = time.time()
                 reload(bbc)
+
+
+if __name__ == '__main__':
+    # Initialize Logging
+    import logging.config
+    logging.basicConfig(format=bbc.LOG_FORMAT,
+                        level=bbc.LOG_LEVEL,
+                        datefmt="%Y-%m-%dT%H:%M:%S")
+logger = logging.getLogger(__name__)
+
+    logging.config.fileConfig(bbc.LOGGING_FILE)
+    main()

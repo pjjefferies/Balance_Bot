@@ -14,8 +14,9 @@ import datetime as dt
 import time
 import re
 import json
-import pandas as pd
 import logging
+import pandas as pd
+from config import cfg
 import board
 import busio
 import adafruit_bno055
@@ -23,11 +24,9 @@ import balance_bot_config as bbc
 
 
 # Initialize Logging
-LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
-logging.basicConfig(format=LOG_FORMAT,
-                    level=bbc.LOG_LEVEL,
-                    datefmt="%Y-%m-%dT%H:%M:%S")
 logger = logging.getLogger(__name__)
+logger.debug(f'Loading data from {cfg.path.data}')
+df = pd.read_csv(cfg.path.data)
 
 # Initialize i2C Connection to sensor- need check/try?
 i2c = busio.I2C(board.SCL, board.SDA)

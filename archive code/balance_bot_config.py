@@ -41,6 +41,7 @@ MOTOR_MAX = 1
 MOTOR_MIN = -1
 
 LOG_LEVEL = logging.DEBUG
-
+LOG_FORMAT = '%(asctime)s — %(name)s — %(levelname)s — %(message)s'
 CALIBRATION_FILE = 'bno055_calibration_data.json'
 MOTOR_ENCODER_TEST_SEQUENCE = 'motor_encoder_test_sequence.csv'
+LOGGING_FILE = 'bb_logfile.txt'
