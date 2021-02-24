@@ -1,5 +1,6 @@
 import os
 import logging.config
+from balance_bot.config import cfg
 
 os.makedirs(cfg.path.logs, exist_ok=True)
 

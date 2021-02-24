@@ -171,13 +171,5 @@ class BalanceBot:
                 reload(bbc)
 
 
-if __name__ == '__main__':
-    # Initialize Logging
-    import logging.config
-    logging.basicConfig(format=bbc.LOG_FORMAT,
-                        level=bbc.LOG_LEVEL,
-                        datefmt="%Y-%m-%dT%H:%M:%S")
-logger = logging.getLogger(__name__)
-
-    logging.config.fileConfig(bbc.LOGGING_FILE)
-    main()
+def main():
+    robot = BalanceBot()
