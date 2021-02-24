@@ -1,5 +1,6 @@
 import click
 import logging
+from config import cfg
 
 from balance_bot.balance_bot import main as balance_bot_main
 from balance_bot.simple_robot import main as simple_robot_main
@@ -8,6 +9,7 @@ from tests.function.py_motor_test import main as motor_test_main
 from tests.function.py_motor_test_auto import main as motor_test_auto_main
 from tests.function.sensor_test import main as sensor_test_main
 
+logger = logging.getLogger(__name__)
 
 tasks = {
     "balance_bot": balance_bot_main,
@@ -17,7 +19,6 @@ tasks = {
     "motor_test_auto": motor_test_auto,
     "sensor_test": sensor_test_main
 }
-logger = logging.getLogger(__name__)
 
 
 def main(task):

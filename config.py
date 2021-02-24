@@ -1,14 +1,19 @@
-import os
+#! /usr/bin/python3
+"""
+Balance Bot Package config.py module.
+
+Loads logging YMAL config file and configues logger for use thoughout
+application.
+"""
+
+import yaml
 import logging.config
-from balance_bot.config import cfg
 
-os.makedirs(cfg.path.logs, exist_ok=True)
+with open(r'config\bb_logging.yml', "r") as ymlfile:
+    log_config = yaml.safe_load(ymlfile)
 
-if os.path.exists(cfg.path.log_config):
-    with open(cfg.path.log_config, "r") as ymlfile:
-        log_config = yaml.safe_load(ymlfile)
+# Set up the logger configuration
+logging.config.dictConfig(log_config)
 
-    # Set up the logger configuration
-    logging.config.dictConfig(log_config)
-else:
-    raise FileNotFoundError(f"Log yaml configuration file not found in {cfg.path.log_config}")
+with open(r'balance_bot\config\balance_bot_config.yml') as ymlfile:
+    cfg = yaml.safe_load(ymlfile)

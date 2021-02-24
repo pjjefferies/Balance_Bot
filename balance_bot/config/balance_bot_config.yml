@@ -1,0 +1,54 @@
+# Balance Bot Configuration Data.
+
+base:
+    wheel:
+        motor:
+            left:
+                fwd: "GPIO4"    # Physical Pin  7 (1, 4)
+                rwd: "GPIO17"   # Physical Pin 11 (1, 6)
+                max_value: 1
+                min_value: -1
+            right:
+                fwd: "GPIO27"   # Physical Pin 13 (1, 7)
+                rwd: "GPIO22"   # Physical Pin 15 (1, 8)
+                max_value: 1
+                min_value: -1
+        encoder:
+            left: "GPIO26"      # Physical Pin 37 (1, 19)
+            right: "GPIO21"     # Physical Pin 40 (2, 20)
+
+    arm:
+        motor:
+            left:
+                lift: "GPIO5"   # Physical Pin 29 (1, 15)
+                drop: "GPIO6"   # Physical Pin 31 (1, 16)
+                max_value: 1
+                min_value: -1
+            right:
+                lift: "GPIO13"  # Physical Pin 33 (1, 17)
+                drop: "GPIO19"  # Physical Pin 35 (1, 18)
+                max_value: 1
+                min_value: -1
+        encoder:
+            left: "GPIO20"      # Physical Pin 38 (2, 19)
+            right: "GPIO16"     # Physical Pin 36 (2, 18)
+
+    # SENSOR_PIN = "GPIO12"     # Physical Pin 32 (2, 16)
+
+    interval:
+        control_update: 10  # milliseconds
+        params_update: 60  # seconds
+        max_time_step: 60  # seconds
+
+    pid_param:
+        k_proportional: 100  # Proportional Constant
+        k_integral: 2        # Helf catch-up
+        k_derivative: 0      # Damping Adjustment. Should be negative
+
+    path:
+        logs: 'logs'
+        log_config: 'bb_logging.yml'
+        calibration: 'config/bno055_calibration_data.json'
+
+dev:
+    motor_encoder_test_sequence: 'motor_encoder_test_sequence.csv'
