@@ -1,9 +1,9 @@
 #! /usr/bin/python3
 
 import logging
-from config import cfg
 from gpiozero import Motor
 from signal import pause
+from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
 

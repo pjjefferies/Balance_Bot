@@ -12,10 +12,8 @@ Misc variables:
 """
 
 import math
+import time
 import logging
-from config import cfg
-# import time
-# import busio
 import adafruit_bno055
 from balance_bot.config import cfg
 
@@ -47,34 +45,34 @@ class BB_BNO055Sensor:
 
     def _sensor_cal(self):
         # Wait for, read and save calibration information
-        while sensor.calibration_status[1] != 0x03:  # Gyro
+        while self._sensor.calibration_status[1] != 0x03:  # Gyro
             logger.info('Waiting for gyro calibration')
             time.sleep(2)
         logger.info('Gyro calibrated')
 
-        while sensor.calibration_status[2] != 0x03:  # Accel
+        while self._sensor.calibration_status[2] != 0x03:  # Accel
             logger.info('Waiting for accel calibration')
             time.sleep(2)
         logger.info('Accelerometer calibrated')
 
 
-        while sensor.calibration_status[2] != 0x03:  # Mag
+        while self._sensor.calibration_status[2] != 0x03:  # Mag
             logger.info('Waiting for magnetrometer calibration')
             time.sleep(2)
         logger.info('Magnetrometer calibrated')
 
-        while sensor.calibration_status[0] != 0x03:  # System
+        while self._sensor.calibration_status[0] != 0x03:  # System
             logger.info('Waiting for system calibration')
             time.sleep(2)
         logger.info('System calibrated')
 
         # Read Calibration Data
         sensor_calibration_values = {
-            "accel_offset": sensor.offsets_accelerometer,
-            "magnet_offset": sensor.offsets_magnetometer,
-            "gyro_offset": sensor.offsets_gyroscope,
-            "accel_radius": sensor.radius_accelerometer,
-            "magnet_radius": sensor.radius_magnetometer}
+            "accel_offset": self._sensor.offsets_accelerometer,
+            "magnet_offset": self._sensor.offsets_magnetometer,
+            "gyro_offset": self._sensor.offsets_gyroscope,
+            "accel_radius": self._sensor.radius_accelerometer,
+            "magnet_radius": self._sensor.radius_magnetometer}
 
         # Save Calibration Data
         with open(bbc.CALIBRATION_FILE, 'w') as fp:
@@ -176,5 +174,3 @@ class BB_BNO055Sensor:
             4-tuple quaternion
         """
         return self._sensor.quaternion  # ORDER NOT VERIFIED
-
-    def

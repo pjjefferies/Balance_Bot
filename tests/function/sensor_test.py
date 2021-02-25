@@ -9,19 +9,16 @@ Misc variables:
     TBD
 """
 
-# import math
 import datetime as dt
 import time
 import re
 import json
 import logging
 import pandas as pd
-from config import cfg
 import board
 import busio
 import adafruit_bno055
-import balance_bot_config as bbc
-
+from balance_bot.config import cfg
 
 # Initialize Logging
 logger = logging.getLogger(__name__)

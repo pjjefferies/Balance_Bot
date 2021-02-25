@@ -1,0 +1,9 @@
+From Balance_Bot (Project folder), start with:
+python -m balance_bot   (-m treats balance_bot as module and looks for...
+
+	__main__.py in balance_bot folder
+		imports main_cli from balance_bot.run.py and runs it
+			imports cfg from balance_bot\config.py
+                        cfg reads config\bb_logging.yml as cfg
+		balance_bot\run.py\main_cli:
+	uses click

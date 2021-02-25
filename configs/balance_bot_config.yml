@@ -1,6 +1,10 @@
 # Balance Bot Configuration Data.
 
 base:
+    path:
+        logs: 'logs'
+        log_config: 'configs\balance_bot_logging.yml'
+        calibration: 'configs\bno055_calibration_data.yml'
     wheel:
         motor:
             left:
@@ -35,20 +39,17 @@ base:
 
     # SENSOR_PIN = "GPIO12"     # Physical Pin 32 (2, 16)
 
-    interval:
+    duration:
         control_update: 10  # milliseconds
         params_update: 60  # seconds
         max_time_step: 60  # seconds
+        sensor_history: 600  # seconds
+        encoder_sensor_update: 1  # seconds
 
     pid_param:
         k_proportional: 100  # Proportional Constant
         k_integral: 2        # Helf catch-up
         k_derivative: 0      # Damping Adjustment. Should be negative
-
-    path:
-        logs: 'logs'
-        log_config: 'bb_logging.yml'
-        calibration: 'config/bno055_calibration_data.json'
 
 dev:
     motor_encoder_test_sequence: 'motor_encoder_test_sequence.csv'

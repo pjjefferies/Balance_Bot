@@ -1,10 +1,8 @@
 #! /usr/bin/python3
 
-import logging
-from config import cfg
-
-from bluedot import BlueDot
 from time import sleep
+import logging
+from bluedot import BlueDot
 from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
@@ -23,14 +21,3 @@ def bd_drive():
         return y, x
     else:
         return 0, 0
-
-
-if __name__ == '__main__':
-    prev_position = [101, 101]  # start with impossible position for comp.
-    
-    while True:
-        position = list(bd_drive())
-        if position != prev_position:
-            print(rf'x:{position[1]}, y:{position[0]}')
-        prev_position = position
-        sleep(0.2)

@@ -13,16 +13,13 @@ Misc variables:
     REARWARD = False, for use in setting self.direction
 """
 
-
 import time
 import csv
 import Pandas as pd
-from config import cfg
-# from gpiozero import LineSensor
 from gpiozero import Motor
 import encoder_sensor as es
 import logging
-import balance_bot_config as bbc
+from balance_bot.config import cfg
 
 FORWARD = True
 REARWARD = False

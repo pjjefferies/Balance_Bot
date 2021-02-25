@@ -5,8 +5,6 @@ import logging
 from config import cfg
 from gpiozero import Motor
 import bluedot_direction_control
-# from encoder_sensor import RotationEncoder
-import balance_bot_config as bbc
 from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
@@ -62,16 +60,8 @@ class Simple_Robot():
                     right_turn = direction[1]
                     if abs(right_turn) < 0.2:
                         right_turn = 0
-                    self._motor_wheel_left.value = max(min(fwd_vel + right_turn, 1), -1) 
+                    self._motor_wheel_left.value = max(min(fwd_vel + right_turn, 1), -1)
                     self._motor_wheel_right.value = max(min(fwd_vel - right_turn, 1 ), -1)
 
-
-if __name__ == "__main__":
-
-    ROBOT_RUN_DURATION = 300  # Seconds
-    CONTROL_STEPS = 100  # milliseconds
-
-    two_wheel_robot = Simple_Robot()
-
-    two_wheel_robot.drive_two_wheel_robot_by_bd(interval=CONTROL_STEPS,
-                                                duration=ROBOT_RUN_DURATION)
+def main():
+    robot = SimpleRobot()
