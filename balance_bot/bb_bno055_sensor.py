@@ -11,9 +11,12 @@ Misc variables:
     x
 """
 
+import os
 import math
 import time
 import logging
+import yaml
+from box import Box
 import adafruit_bno055
 from balance_bot.config import cfg
 
@@ -30,8 +33,12 @@ class BB_BNO055Sensor:
     Methods:
         X
     """
-    def __init__(self,
-                 i2c):
+    _calibration_items = ('accel_offset', 'magnet_offset', 'gyro_offset',
+                          'accel_radius', 'magnet_radius')
+
+    def __init__(self, *,
+                 i2c,
+                 verbose=False):
         """
 
         Args:
@@ -43,7 +50,38 @@ class BB_BNO055Sensor:
         """
         self._sensor = adafruit_bno055.BNO055_I2C(i2c)
 
-    def _sensor_cal(self):
+        if cfg.bno055_sensor.restore_calibration_available:
+            if os.path.exists(cfg.path.calibration):
+                try:
+                    with open(cfg.path.log_config, "r") as ymlfile:
+                        sensor_calibration_values = (
+                            Box(yaml.safe_load(ymlfile)))
+                    if not self._validate_calibration_data(
+                            sensor_calibration_values):
+                        raise ValueError('Missing configurations in ' +
+                                         'Senor Cal file')
+                    if input('Do you want to use saved ' +
+                             'configuration?').lower.beginswith('y'):
+                        self._restore_calibration(sensor_calibration_values)
+                        return
+                except (YAMLError, OSError, ValueError) as e:
+                    logger.info('Cannot use config file: ' + e)
+        else:
+            logger.info('Sensor calibration restoration not available')
+
+        self._calibrate_sensor(verbose=verbose)
+
+    def _calibrate_sensor(self, verbose=False):
+        """
+        Check for sensor calibraiton file and offer to use it, otherwise,
+        wait for sensor calibrations and notify of status regularly. If
+        calibrating, save calibration data.
+
+        Returns:
+            None.
+
+        """
+
         # Wait for, read and save calibration information
         while self._sensor.calibration_status[1] != 0x03:  # Gyro
             logger.info('Waiting for gyro calibration')
@@ -67,20 +105,35 @@ class BB_BNO055Sensor:
         logger.info('System calibrated')
 
         # Read Calibration Data
-        sensor_calibration_values = {
-            "accel_offset": self._sensor.offsets_accelerometer,
-            "magnet_offset": self._sensor.offsets_magnetometer,
-            "gyro_offset": self._sensor.offsets_gyroscope,
-            "accel_radius": self._sensor.radius_accelerometer,
-            "magnet_radius": self._sensor.radius_magnetometer}
+        sensor_calibration_data = {
+            'accel_offset': self._sensor.offsets_accelerometer,
+            'magnet_offset': self._sensor.offsets_magnetometer,
+            'gyro_offset': self._sensor.offsets_gyroscope,
+            'accel_radius': self._sensor.radius_accelerometer,
+            'magnet_radius': self._sensor.radius_magnetometer}
 
-        # Save Calibration Data
-        with open(bbc.CALIBRATION_FILE, 'w') as fp:
-            json.dump(sensor_calibration_values, fp)
+        self._save_calibration(sensor_calibration_data)
 
+    def _save_calibration(self, sensor_calibration_data):
+        """Saves calibration data from dictionary to yaml file in configs folder"""
+        if not self._validate_bno055_sensor_calibration_data(sensor_calibration_data):
+            logger.error('Could not save calibration data. Data invalid')
+            return
+        with open(cfg.path.calibration, 'w') as fp:
+            yaml.dump(sensor_calibration_data, stream=fp,
+                      default_flow_style=True, sort_keys=True)
+        logger.info('Calibration data saved')
 
+    def _restore_calibration(self):
+        """
+        Saves calibration data from dictionary to bno055 Sensor for use
+        When we figure-out how to do that
+        """
 
-
+    def _validate_calibration_data(self, sensor_calibration_data):
+        if not all(item in sensor_calibration_data for
+                           item in BB_BNO055Sensor._calibration_items):
+            return False
 
     @property
     def temperature(self, units="degrees celsius"):

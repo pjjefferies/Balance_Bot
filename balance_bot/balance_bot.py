@@ -12,7 +12,7 @@ Misc variables:
 # import math
 import time
 import yaml
-from box import Box  # use dicts using . notation
+from box import Box
 import logging
 from importlib import reload
 import threading
@@ -26,8 +26,11 @@ from balance_bot.config import cfg
 
 logger = logging.getLogger(__name__)
 
-TIMER = lambda: time.time() * 1000  # Current time in ms
-ENCODERS = False  # Ready to use encoder yet?
+TIMER = lambda: time.time() * 1000
+ENCODERS = False
+
+with open('balance_bot_config.yml', 'r') as ymlfile:
+    bb_cfg = Box(yaml.safe_load(ymlfile))
 
 class BalanceBot:
     """

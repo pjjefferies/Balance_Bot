@@ -39,6 +39,9 @@ base:
 
     # SENSOR_PIN = "GPIO12"     # Physical Pin 32 (2, 16)
 
+    bno055_sensor:
+        restore_calibration_available: False
+
     duration:
         control_update: 10  # milliseconds
         params_update: 60  # seconds
