@@ -126,5 +126,3 @@ class BNO055Sensor:
             4-tuple quaternion
         """
         return self._sensor.quaternion
-
-    def

@@ -2,10 +2,21 @@
 """
 Create representation of Adafruit 9-DOF Abs. Orientation IMU BNO055.
 
-X
+This is needed to rotate axes on BNO055 Chip to Robot Axes.
 
 Classes:
     BNO055Sensor
+
+Methods:
+	calibrate_sensor
+	temperature
+	accel
+	magnetic
+	gyro
+	euler_angles
+	gravity_dir
+	gravity_mag
+	quarternion
 
 Misc variables:
     x
@@ -69,9 +80,9 @@ class BB_BNO055Sensor:
         else:
             logger.info('Sensor calibration restoration not available')
 
-        self._calibrate_sensor(verbose=verbose)
+        self.calibrate_sensor(verbose=verbose)
 
-    def _calibrate_sensor(self, verbose=False):
+    def calibrate_sensor(self, verbose=False):
         """
         Check for sensor calibraiton file and offer to use it, otherwise,
         wait for sensor calibrations and notify of status regularly. If

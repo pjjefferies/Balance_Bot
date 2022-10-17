@@ -16,7 +16,7 @@ Misc variables:
 import time
 import logging
 from gpiozero import LineSensor
-from balance_bot.config import cfg
+from config import cfg
 
 logger = logging.getLogger(__name__)
 

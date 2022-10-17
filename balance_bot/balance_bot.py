@@ -171,4 +171,13 @@ class BalanceBot:
 
 
 def main():
-    robot = BalanceBot()
+	import os
+	if os.name == 'posix' and os.uname()[1] == 'raspberrypi':
+		# We're running on Raspberry Pi. OK to start robot.
+		logger.info('Starting Balance Bot Robt')
+	    robot = BalanceBot()
+	elif os.name == 'nt':
+		# Running on Windows, please drive through.
+		logger.warning('Balance Bot not designed to run on Windows at this time')
+	else:
+		logger.warning('Balance Bot - OS not identified. Please try on Raspberry Pi')

@@ -4,7 +4,7 @@ import time
 import logging
 from gpiozero import Motor
 from encoder_sensor import RotationEncoder
-from balance_bot.config import cfg
+from config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class Simple_Robot:
             print(f'Left: {x_move}, Right: {y_move}, Duration: {duration}')
             time.sleep(duration)
         """
-	while time.time() - start_time < duration:
+    while time.time() - start_time < duration:
             if (time.time()*1000 - lasttime) >= interval:
                 lasttime = time.time() * 1000
                 direction = self.bd_drive()  # [x, y] eached scaled [-1, 1]
@@ -66,7 +66,18 @@ class Simple_Robot:
                     self._motor_wheel_right.value = fwd_vel - right_turn
         """
 
-if __name__ == "__main__":
+def main():
+    import os
+    if os.name == 'posix' and os.uname()[1] == 'raspberrypi':
+        # We're running on Raspberry Pi. OK to start Test Pi Motor.
+        logger.info('Starting Test Pi Motor')
+    elif os.name == 'nt':
+        # Running on Windows, please drive through.
+        logger.warning('Test Pi Motor not designed to run on Windows at this time')
+        return
+    else:
+        logger.warning('Test Pi Motor - OS not identified. Please try on Raspberry Pi')
+        return
 
     ROBOT_RUN_DURATION = 60  # Seconds
     CONTROL_STEPS = 500  # milliseconds
@@ -79,11 +90,10 @@ if __name__ == "__main__":
                                                 # [MAX_SPEED, MAX_SPEED, 1],
                                                 # [-MAX_SPEED, -MAX_SPEED, 1],
                                                 [MAX_SPEED, -MAX_SPEED, 1],
-                                                [-MAX_SPEED, MAX_SPEED, 1]
+                                                [-MAX_SPEED, MAX_SPEED, 1],
                                                 # [-0.25, 0, 0.5],
                                                 # [0, -0.25, 0.5]
-                                                ])
                                                 # [speed/20, 0.0, 0.25],
                                                 #   ])
-    #                                            [0.0, 0.25, 0.5]])
-
+                                                # [0.0, 0.25, 0.5]])
+                                                ])

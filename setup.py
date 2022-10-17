@@ -1,0 +1,18 @@
+
+from setuptools import setup
+
+
+with open("README.md", encoding='utf-8') as f:
+    long_description = f.read()
+
+with open("requirements.txt") as f:
+    required = f.read().splitlines()
+
+setup(
+    name="Balance_Bot",
+    version="0.5",
+    packages=["balance_bot"],
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    install_requires=required,
+)
