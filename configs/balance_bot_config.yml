@@ -3,8 +3,8 @@
 base:
     path:
         logs: 'logs'
-        log_config: 'configs\balance_bot_logging.yml'
-        calibration: 'configs\bno055_calibration_data.yml'
+        log_config: '../configs/balance_bot_logging.yml'
+        calibration: '../configs/bno055_calibration_data.yml'
     wheel:
         left:
             motor:
@@ -16,8 +16,8 @@ base:
 
         right:
             motor:
-                fwd: "GPIO27"   # Physical Pin 13 (1, 7)
-                rwd: "GPIO22"   # Physical Pin 15 (1, 8)
+                rwd: "GPIO27"   # Physical Pin 13 (1, 7)
+                fwd: "GPIO22"   # Physical Pin 15 (1, 8)
                 max_value: 1
                 min_value: -1
             encoder: "GPIO21"     # Physical Pin 40 (2, 20)

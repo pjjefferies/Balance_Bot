@@ -19,7 +19,7 @@ import pandas as pd
 from gpiozero import Motor
 import encoder_sensor as es
 import logging
-from balance_bot.config import cfg
+from config import cfg
 
 def main():
 	import os
@@ -40,10 +40,10 @@ def main():
 	logger = logging.getLogger(__name__)
 
 	rh_wheel_motor = Motor(forward=cfg.wheel.right.motor.fwd,
-						   rearward=cfg.wheel.right.motor.rwd,
-						   pwm=True)
+                               rearward=cfg.wheel.right.motor.rwd,
+			       pwm=True)
 	rh_wheel_sensor = es.RotationEncoder(signal_pin=cfg.wheel.right.encoder,
-										 history_len=3600)
+					     history_len=3600)
 
 	with open(cfg.motor_encoder_test_sequence, 'r') as fp:
 		# Reading a sequence of rows with Speed [-1, 1], Duration in seconds
@@ -79,3 +79,4 @@ def main():
 							   'accel_avg': rh_wheel_sensor.accel,
 							   'jerk_avg': rh_wheel_sensor.jerk})
 		test_results = test_results.append(test_cond)
+

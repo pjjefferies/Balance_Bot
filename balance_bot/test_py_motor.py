@@ -25,18 +25,26 @@ class Simple_Robot:
 
         """
         # Set-up Motor Control Pins
-        self._motor_wheel_left = Motor(forward=bbc.WHEEL_L_FWD,
-                                       backward=bbc.WHEEL_L_RWD,
+        self._motor_wheel_left = Motor(forward=cfg.wheel.left.motor.fwd,
+                                       backward=cfg.wheel.left.motor.rwd,
+        # self._motor_wheel_left = Motor(forward=bbc.WHEEL_L_FWD,
+        #                                backward=bbc.WHEEL_L_RWD,
                                        pwm=True)
-        self._motor_wheel_right = Motor(forward=bbc.WHEEL_R_FWD,
-                                        backward=bbc.WHEEL_R_RWD,
+        self._motor_wheel_right = Motor(forward=cfg.wheel.right.motor.fwd,
+                                        backward=cfg.wheel.right.motor.rwd,
+        # self._motor_wheel_right = Motor(forward=bbc.WHEEL_R_FWD,
+        #                                backward=bbc.WHEEL_R_RWD,
                                         pwm=True)
 
         # Set-up Motor Encoders
-        self._enc_wheel_left = RotationEncoder(signal_pin=bbc.WHEEL_L_ENC)
-        self._enc_wheel_right = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC)
-        self._enc_arm_left = RotationEncoder(signal_pin=bbc.ARM_L_ENC)
-        self._enc_arm_right = RotationEncoder(signal_pin=bbc.ARM_R_ENC)
+        self._enc_wheel_left = RotationEncoder(signal_pin=cfg.wheel.left.encoder)
+        # signal_pin=bbc.WHEEL_L_ENC)
+        self._enc_wheel_right = RotationEncoder(signal_pin=cfg.wheel.right.encoder)
+        # bbc.WHEEL_R_ENC)
+        self._enc_arm_left = RotationEncoder(signal_pin=cfg.arm.left.encoder)
+        # bbc.ARM_L_ENC)
+        self._enc_arm_right = RotationEncoder(signal_pin=cfg.arm.right.encoder)
+        # bbc.ARM_R_ENC)
 
         # self.bd_ctl = bluedot_direction_control.bd_drive
 
@@ -81,7 +89,7 @@ def main():
 
     ROBOT_RUN_DURATION = 60  # Seconds
     CONTROL_STEPS = 500  # milliseconds
-    MAX_SPEED = 0.3
+    MAX_SPEED = 1
 
     two_wheel_robot = Simple_Robot()
 
@@ -97,3 +105,5 @@ def main():
                                                 #   ])
                                                 # [0.0, 0.25, 0.5]])
                                                 ])
+if __name__ == "__main__":
+    main()

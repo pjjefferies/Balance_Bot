@@ -3,7 +3,7 @@
 from time import sleep
 import logging
 from bluedot import BlueDot
-from balance_bot.config import cfg
+from config import cfg
 
 logger = logging.getLogger(__name__)
 

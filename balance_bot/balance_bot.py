@@ -22,15 +22,13 @@ import board
 import busio
 from  bb_bno055_sensor import BB_BNO055Sensor
 from encoder_sensor import RotationEncoder
-from balance_bot.config import cfg
+from config import cfg
 
 logger = logging.getLogger(__name__)
 
 TIMER = lambda: time.time() * 1000
 ENCODERS = False
 
-with open('balance_bot_config.yml', 'r') as ymlfile:
-    bb_cfg = Box(yaml.safe_load(ymlfile))
 
 class BalanceBot:
     """
@@ -62,17 +60,17 @@ class BalanceBot:
         self._sensor_cal()
 
         # Set-up Motor Control Pins
-        self._motor_wheel_left = Motor(forward=bbc.WHEEL_L_FWD,
-                                       backward=bbc.WHEEL_L_RWD,
+        self._motor_wheel_left = Motor(forward=cfg.wheel.left.motor.fwd,
+                                       backward=cfg.wheel.left.motor.rwd,
                                        pwm=True)
-        self._motor_wheel_right = Motor(forward=bbc.WHEEL_R_FWD,
-                                        backward=bbc.WHEEL_R_RWD,
+        self._motor_wheel_right = Motor(forward=cfg.wheel.right.motor.fwd,
+                                        backward=cfg.wheel.right.motor.rwd,
                                         pwm=True)
-        self._motor_arm_left = Motor(forward=bbc.ARM_L_FWD,
-                                     backward=bbc.ARM_L_RWD,
+        self._motor_arm_left = Motor(forward=cfg.arm.left.fwd,
+                                     backward=cfg.arm.left.rwd,
                                      pwm=True)
-        self._motor_arm_right = Motor(forward=bbc.ARM_R_FWD,
-                                      backward=bbc.ARM_R_RWD,
+        self._motor_arm_right = Motor(forward=cfg.arm.right.fwd,
+                                      backward=cfg.arm.right.rwd,
                                       pwm=True)
 
         # Set-up Motor Encoders
@@ -173,11 +171,11 @@ class BalanceBot:
 def main():
 	import os
 	if os.name == 'posix' and os.uname()[1] == 'raspberrypi':
-		# We're running on Raspberry Pi. OK to start robot.
-		logger.info('Starting Balance Bot Robt')
+	    # We're running on Raspberry Pi. OK to start robot.
+	    logger.info('Starting Balance Bot Robt')
 	    robot = BalanceBot()
 	elif os.name == 'nt':
-		# Running on Windows, please drive through.
-		logger.warning('Balance Bot not designed to run on Windows at this time')
+	    # Running on Windows, please drive through.
+            logger.warning('Balance Bot not designed to run on Windows at this time')
 	else:
-		logger.warning('Balance Bot - OS not identified. Please try on Raspberry Pi')
+	    logger.warning('Balance Bot - OS not identified. Please try on Raspberry Pi')

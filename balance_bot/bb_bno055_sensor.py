@@ -29,7 +29,7 @@ import logging
 import yaml
 from box import Box
 import adafruit_bno055
-from balance_bot.config import cfg
+from config import cfg
 
 logger = logging.getLogger(__name__)
 

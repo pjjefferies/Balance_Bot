@@ -15,7 +15,7 @@ import logging.config
 # env = os.environ['ENVIRONMENT']
 env = 'dev'
 
-with open(r'configs\balance_bot_config.yml', 'r') as ymlfile:
+with open(r'../configs/balance_bot_config.yml', 'r') as ymlfile:
     full_cfg = yaml.safe_load(ymlfile)
 
 cfg = Box({**full_cfg['base'], **full_cfg[env]},
