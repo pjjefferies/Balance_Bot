@@ -43,7 +43,7 @@ class BalanceBot:
         X
     """
     def __init__(self,
-                 start_prog=None,
+                 start_prog: tuple[tuple[float, float, float]] | None=None,
                  repeat_prog=None):
         """
         Create Balance Bat Robot Object, initiating all start-up functions
