@@ -3,6 +3,7 @@
 run.py
 """
 
+from typing import Callable
 import click
 import logging
 
@@ -14,16 +15,16 @@ from tests.function.test_BNO055_sensor import main as test_BNO055_sensor_main
 
 logger = logging.getLogger(__name__)
 
-tasks = {
-    'balance_bot': balance_bot_main,
-    'simple_robot': simple_robot_main,
-    'test_encoder_with_motor': test_enc_mot_main,
-    'motor_test': test_py_motor_main,
-    'sensor_test': test_BNO055_sensor_main
+tasks: dict[str, Callable[[], None]] = {
+    "balance_bot": balance_bot_main,
+    "simple_robot": simple_robot_main,
+    "test_encoder_with_motor": test_enc_mot_main,
+    "motor_test": test_py_motor_main,
+    "sensor_test": test_BNO055_sensor_main,
 }
 
 
-def main(task):
+def main(task: str):
     try:
         tasks[task]()
     except:
@@ -34,9 +35,9 @@ def main(task):
 @click.command()
 @click.option(
     "--task",
-    type=click.Choice(tasks.keys()),
+    type=click.Choice(tuple(tasks.keys())),
     required=True,
     help="Name of task to execute",
 )
-def main_cli(task):
-    main(task)
+def main_cli(task: str):
+    main(task=task)
