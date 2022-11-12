@@ -11,23 +11,99 @@ Misc variables:
 
 # import math
 import time
-import yaml
-from box import Box
+
+# import yaml
+# from box import Box
+from typing import Callable, Protocol
+from abc import abstractmethod
 import logging
-from importlib import reload
-import threading
-from gpiozero import Motor
-import bluedot_direction_control
-import board
-import busio
-from  bb_bno055_sensor import BB_BNO055Sensor
-from encoder_sensor import RotationEncoder
+
+# from importlib import reload
+import asyncio
 from config import cfg
+
+
+class Motor_General(Protocol):
+    def __init__(
+        self,
+        forward: int | str,
+        backward: int | str,
+        enable: int | str,
+        pwm: bool,
+    ):
+        raise NotImplementedError
+
+    @property
+    def value(self) -> float:
+        raise NotImplementedError
+
+    @value.setter
+    def value(self, value: float) -> None:
+        raise NotImplementedError
+
+
+class EncoderGeneral(Protocol):
+    def __init__(
+        self,
+        *,
+        signal_pin: int,
+        sample_freq: int,  # per second
+        slots_per_rev: int,
+        history_len: int,  # seconds
+        average_duration: int
+    ):  # seconds)
+        raise NotImplementedError
+
+
+class BBAbsoluteSensor(Protocol):
+    def __init__(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def calibrate_sensor(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def temperature(self, units: str) -> float:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def accel(self) -> dict[str, float]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def magnetic_bb(self) -> dict[str, float]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def gyro_bb(self) -> dict[str, float]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def euler_angles(self) -> dict[str, float]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def gravity_dir(self) -> dict[str, float]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def gravity_mag(self) -> float:
+        raise NotImplementedError
+
 
 logger = logging.getLogger(__name__)
 
-TIMER = lambda: time.time() * 1000
-ENCODERS = False
+TIMER_MS: Callable[[], float] = lambda: time.time() * 1000
+TIMER_S: Callable[[], float] = lambda: time.time()
+ENCODERS: bool = False
+VERBOSE: bool = True
 
 
 class BalanceBot:
@@ -40,9 +116,21 @@ class BalanceBot:
     Methods:
         X
     """
-    def __init__(self,
-                 start_prog: tuple[tuple[float, float, float]] | None=None,
-                 repeat_prog=None):
+
+    def __init__(
+        self,
+        motor_wheel_left: Motor_General,
+        motor_wheel_right: Motor_General,
+        motor_arm_left: Motor_General | None,
+        motor_arm_right: Motor_General | None,
+        enc_wheel_left: EncoderGeneral,
+        enc_wheel_right: EncoderGeneral,
+        enc_arm_left: EncoderGeneral | None,
+        enc_arm_right: EncoderGeneral | None,
+        sensor9DOF: BBAbsoluteSensor,
+        start_prog: tuple[tuple[float, float, float]] | None = None,
+        repeat_prog: tuple[tuple[float, float, float]] | None = None,
+    ):
         """
         Create Balance Bat Robot Object, initiating all start-up functions
 
@@ -53,129 +141,207 @@ class BalanceBot:
             Result: True if successful, False if not
         """
 
-        # Initialize i2C Connection to sensor- need check/try?
-        i2c = busio.I2C(board.SCL, board.SCA)
-        self._sensor = BB_BNO055Sensor(i2c)
-
-        self._sensor_cal()
-
         # Set-up Motor Control Pins
-        self._motor_wheel_left = Motor(forward=cfg.wheel.left.motor.fwd,
-                                       backward=cfg.wheel.left.motor.rwd,
-                                       pwm=True)
-        self._motor_wheel_right = Motor(forward=cfg.wheel.right.motor.fwd,
-                                        backward=cfg.wheel.right.motor.rwd,
-                                        pwm=True)
-        self._motor_arm_left = Motor(forward=cfg.arm.left.fwd,
-                                     backward=cfg.arm.left.rwd,
-                                     pwm=True)
-        self._motor_arm_right = Motor(forward=cfg.arm.right.fwd,
-                                      backward=cfg.arm.right.rwd,
-                                      pwm=True)
-
-        # Set-up Motor Encoders
-        if ENCODERS:
-            self._enc_wheel_left = RotationEncoder(signal_pin=bbc.WHEEL_L_ENC)
-            self._enc_wheel_right = RotationEncoder(signal_pin=bbc.WHEEL_R_ENC)
-            self._enc_arm_left = RotationEncoder(signal_pin=bbc.ARM_L_ENC)
-            self._enc_arm_right = RotationEncoder(signal_pin=bbc.ARM_R_ENC)
+        self._motor_wheel_left: Motor_General = motor_wheel_left
+        self._motor_wheel_right: Motor_General = motor_wheel_right
+        self._motor_arm_left: Motor_General | None = motor_arm_left
+        self._motor_arm_right: Motor_General | None = motor_arm_right
+        # Set-up Motor_General Encoders
+        self._enc_wheel_left: EncoderGeneral = enc_wheel_left
+        self._enc_wheel_right: EncoderGeneral = enc_wheel_right
+        self._enc_arm_left: EncoderGeneral | None = enc_arm_left
+        self._enc_arm_right: EncoderGeneral | None = enc_arm_right
+        # Initialize i2C Connection to sensor- need check/try?
+        self._sensor: BBAbsoluteSensor = sensor9DOF
 
         # Get Initial Values for PID Filter Initialization
-        self._roll_last, self._pitch_last, self._yaw_last = self._sensor.euler
+        temp_euler: dict[str, float] = self._sensor.euler_angles
+        self._roll_last: float = temp_euler["x"]
+        self._pitch_last: float = temp_euler["y"]
+        self._yaw_last: float = temp_euler["z"]
 
         # Set initial instructions to stand still
-        self.pitch_setpoint_angle = 0
-        self.yaw_setpoint_angle = 0
-        self.previous_fore_aft_motor_input = 0
+        self.pitch_setpoint_angle: float = 0
+        self.yaw_setpoint_angle: float = 0
+        self.previous_fore_aft_motor_input: float = 0
 
         # Set initial integral sum for PID control to zero
-        self._integral_term = 0
+        self._integral_term: float = 0
 
-        # Start Balance Loop in its own thread
-        main_loop_thread = threading.Thread(target=self.movement_loop,
-                                            args=())
-        main_loop_thread.start()
+        # Start Balance Loop
+        print("about to start Balance Loop")
+        main_control_loop = asyncio.get_event_loop()
+        tasks = [main_control_loop.create_task(self._primary_balance_loop())]
+        main_control_loop.run_until_complete(asyncio.wait(tasks))
 
         # Start start_prog if we have one
+        print("Starting Single Run Programs if any")
         if start_prog is not None and isinstance(start_prog, list):
             for a_command in start_prog:
                 if (not isinstance(a_command, list)) or (len(a_command) != 3):
-                    logging.info('Invalid start_prog step, skipping')
-                    next
+                    logging.info("Invalid start_prog step, skipping")
+                    continue
                 duration, fwd_rwd, right_left = a_command
-                if ((duration < 0 or duration > bbc.MAX_STEP_TIME) or
-                    (fwd_rwd < -1 or fwd_rwd > 1) or
-                        (right_left < -1 or right_left > 1)):
-                    logging.info('Invalid start_prog step, skipping')
-                    next
+                if (
+                    (duration < 0 or duration > cfg.duration.max_time_step)
+                    or (fwd_rwd < -1 or fwd_rwd > 1)
+                    or (right_left < -1 or right_left > 1)
+                ):
+                    logging.info("Invalid start_prog step, skipping")
+                    continue
                 self.pitch_setpoint_angle = fwd_rwd
                 self.yaw_setpoint_angle = right_left
-                self.sleep(duration)
+                time.sleep(duration)
 
         # Start repeat_prog if we have one
+        print("Starting Multiple Run Programs if any")
         if repeat_prog is not None and isinstance(repeat_prog, list):
             while True:
                 for a_command in repeat_prog:
                     if not isinstance(a_command, list) or len(a_command) != 3:
-                        logging.info('Invalid repeat_prog step, skipping')
-                        next
+                        logging.info("Invalid repeat_prog step, skipping")
+                        continue
                     duration, fwd_rwd, right_left = a_command
-                    if ((duration < 0 or duration > bbc.MAX_STEP_TIME) or
-                        (fwd_rwd < -1 or fwd_rwd > 1) or
-                            (right_left < -1 or right_left > 1)):
-                        logging.info('Invalid repeat_prog step, skipping')
-                        next
+                    if (
+                        (duration < 0 or duration > cfg.duration.max_time_step)
+                        or (fwd_rwd < -1 or fwd_rwd > 1)
+                        or (right_left < -1 or right_left > 1)
+                    ):
+                        logging.info("Invalid repeat_prog step, skipping")
+                        continue
                     self.pitch_setpoint_angle = fwd_rwd
                     self.yaw_setpoint_angle = right_left
-                    self.sleep(duration)
+                    time.sleep(duration)
 
         # Set-up BlueDot Remote Control
-        self.bd_ctl = bluedot_direction_control.bd_drive
+        # self.bd_ctl = bluedot_direction_control.bd_drive
+        main_control_loop.close()
 
-
-    def movement_loop(self):
+    async def _primary_balance_loop(self):
+        print("Main loop started")
         lasttime_control = 0
-        lasttime_params_updated = 0
+        lasttime_params_updated = TIMER_S()
         while True:
-            if ((time.time()*1000 - lasttime_control) >=
-                    bbc.CONTROL_UPDATE_INTERVAL):
+            if (time.time() * 1000 - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
-                lasttime_control = time.time() * 1000
-                self._roll, self._pitch, self._yaw = self._sensor.euler
+                lasttime_control = TIMER_S()
+                temp_euler: dict[str, float] = self._sensor.euler_angles
+                self._roll: float = temp_euler["x"]
+                self._pitch: float = temp_euler["y"]
+                self._yaw: float = temp_euler["z"]
                 fore_aft_error = self.pitch_setpoint_angle - self._pitch
-                self._integral_term += bbc.K_INTEGRAL * fore_aft_error
-                self._integral_term = max(self._intergral_term, bbc.MOTOR_MIN)
-                self._integral_term = min(self._intergral_term, bbc.MOTOR_MAX)
-                derivative_term = bbc.K_DERIVATIVE * (
-                    self._pitch - self._pitch_last)
-                proportional_term = bbc.K_PROPORTIONAL * fore_aft_error
-                motor_output = (proportional_term +
-                                self._integral_term +
-                                derivative_term)
-                motor_output = max(motor_output, bbc.MOTOR_MIN)
-                motor_output = min(motor_output, bbc.MOTOR_MAX)
+                self._integral_term += cfg.pid_param.k_integral * fore_aft_error
+                # self._integral_term = max(self._integral_term, bbc.MOTOR_MIN)
+                # self._integral_term = min(self._integral_term, bbc.MOTOR_MAX)
+                derivative_term = cfg.pid_param.k_derivative * (
+                    self._pitch - self._pitch_last
+                )
+                proportional_term = cfg.pid_param.k_proportional * fore_aft_error
+                motor_output = proportional_term + self._integral_term + derivative_term
 
-                self._motor_wheel_left.move(motor_output)
-                self._motor_wheel_right.move(motor_output)
+                motor_left_output = motor_output
+                motor_left_output = max(motor_left_output, cfg.wheel.left.motor.min)
+                motor_left_output = min(motor_left_output, cfg.wheel.left.motor.max)
+                motor_right_output = motor_output
+                motor_right_output = max(motor_right_output, cfg.wheel.right.motor.min)
+                motor_right_output = min(motor_right_output, cfg.wheel.right.motor.max)
+
+                self._motor_wheel_left.value = motor_left_output
+                self._motor_wheel_right.value = motor_right_output
 
                 self._roll_last, self._pitch_last, self._yaw_last = (
-                    self._roll, self._pitch, self._yaw)
-
-            if ((time.time() - lasttime_params_updated) >=
-                    bbc.PARAMS_UPDATE_INTERVAL):
+                    self._roll,
+                    self._pitch,
+                    self._yaw,
+                )
+                print("Main loop end...")
+            if (TIMER_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
-                lasttime_params_updated = time.time()
-                reload(bbc)
+                lasttime_params_updated = TIMER_S()
+                print("Updating parameters?")
+                # reload(bbc)
 
 
 def main():
-	import os
-	if os.name == 'posix' and os.uname()[1] == 'raspberrypi':
-	    # We're running on Raspberry Pi. OK to start robot.
-	    logger.info('Starting Balance Bot Robt')
-	    robot = BalanceBot()
-	elif os.name == 'nt':
-	    # Running on Windows, please drive through.
-            logger.warning('Balance Bot not designed to run on Windows at this time')
-	else:
-	    logger.warning('Balance Bot - OS not identified. Please try on Raspberry Pi')
+    import os
+
+    if False:  # os.name == "posix" and os.uname()[1] == "raspberrypi":
+        # We're running on Raspberry Pi. OK to start robot.
+        logger.info("Starting Balance Bot Robt")
+        from gpiozero import Motor
+        import bluedot_direction_control
+        import board
+        import busio
+        from bb_bno055_sensor import BB_BNO055Sensor
+        from encoder_sensor import RotationEncoder
+
+        motor_wheel_left: Motor_General = Motor(
+            forward=cfg.wheel.left.motor.fwd,
+            backward=cfg.wheel.left.motor.rwd,
+            pwm=True,
+        )
+        motor_wheel_right: Motor_General = Motor(
+            forward=cfg.wheel.right.motor.fwd,
+            backward=cfg.wheel.right.motor.rwd,
+            pwm=True,
+        )
+        motor_arm_left: Motor_General = Motor(
+            forward=cfg.arm.left.fwd, backward=cfg.arm.left.rwd, pwm=True
+        )
+        motor_arm_right: Motor_General = Motor(
+            forward=cfg.arm.right.fwd, backward=cfg.arm.right.rwd, pwm=True
+        )
+
+        enc_wheel_left: RotationEncoder = RotationEncoder(
+            signal_pin=cfg.wheel.left.encoder
+        )
+        enc_wheel_right: RotationEncoder = RotationEncoder(
+            signal_pin=cfg.wheel.right.encoder
+        )
+        enc_arm_left: RotationEncoder = RotationEncoder(signal_pin=cfg.arm.left.encoder)
+        enc_arm_right: RotationEncoder = RotationEncoder(
+            signal_pin=cfg.arm.right.encoder
+        )
+
+        i2c: busio.I2C = busio.I2C(board.SCL, board.SCA)
+        sensor9DOF: BBAbsoluteSensor = BB_BNO055Sensor(i2c)
+
+    elif os.name == "nt":
+        # Running on Windows, use robot simulator.
+        logger.warning("Stating Robot Simulator")
+        from motor_simulator import MotorSim
+        from encoder_simulaor import EncoderSim
+        from sensor9DOF_simulaor import Sensor9DOFSim
+
+        motor_wheel_left: Motor_General = MotorSim()
+        motor_wheel_right: Motor_General = MotorSim()
+        motor_arm_left: Motor_General = MotorSim()
+        motor_arm_right: Motor_General = MotorSim()
+
+        enc_wheel_left: Encoder_General = EncoderSim()
+        enc_wheel_right: Encoder_General = EncoderSim()
+        enc_arm_left: Encoder_General = EncoderSim()
+        enc_arm_right: Encoder_General = EncoderSim()
+
+        sensor9DOF: BBAbsoluteSensor = Sensor9DOFSim
+
+    else:
+        logger.warning("Balance Bot - OS not identified. Please try on Raspberry Pi")
+
+    robot = BalanceBot(  # type: ignore
+        motor_wheel_left=motor_wheel_left,
+        motor_wheel_right=motor_wheel_right,
+        motor_arm_left=motor_arm_left,
+        motor_arm_right=motor_arm_right,
+        enc_wheel_left=enc_wheel_left,
+        enc_wheel_right=enc_wheel_right,
+        enc_arm_left=enc_arm_left,
+        enc_arm_right=enc_arm_right,
+        sensor9DOF=sensor9DOF,
+        start_prog=None,
+        repeat_prog=None,
+    )
+
+
+if __name__ == "__main__":
+    main()
