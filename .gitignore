@@ -128,3 +128,21 @@ dmypy.json
 ~$BOM, Balance Bot 001.xlsx
 *.stats
 Electronics/~$Balance Bot Electrical Connection.xlsx
+typings/gpiozero/__init__.pyi
+typings/gpiozero/boards.pyi
+typings/gpiozero/compat.pyi
+typings/gpiozero/devices.pyi
+typings/gpiozero/exc.pyi
+typings/gpiozero/fonts.pyi
+typings/gpiozero/input_devices.pyi
+typings/gpiozero/internal_devices.pyi
+typings/gpiozero/mixins.pyi
+typings/gpiozero/output_devices.pyi
+typings/gpiozero/spi_devices.pyi
+typings/gpiozero/threads.pyi
+typings/gpiozero/tones.pyi
+typings/gpiozero/tools.pyi
+typings/gpiozero/pins/__init__.pyi
+typings/gpiozero/pins/data.pyi
+typings/gpiozero/pins/pi.pyi
+typings/gpiozero/pins/pigpio.pyi
