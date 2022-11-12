@@ -1,0 +1,25 @@
+# Balance Bot Configuration Data.
+
+base:
+    motor:
+        blank: 0
+    encoder:
+        position_change_to_motor_value_ratio: 1.0
+    sensor:
+        pitch:
+            sensed_movement:
+                magnitute: 1.0
+                frequency: 2.0  # Hz.
+                randomness_ratio: 0.25
+        roll:
+            sensed_movement:
+                magnitute: 0.01
+                frequency: 2.0  # Hz.
+                randomness_ratio: 0.05
+        yaw:
+            sensed_movement:
+                magnitute: 0.1
+                frequency: 2.0  # Hz.
+                randomness_ratio: 0.15
+dev:
+    blank: 0
