@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-from typing import Protocol
+from typing import Protocol, Any
 import logging
 
 # from config import cfg
@@ -8,13 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Motor_General(Protocol):
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: int | str,
-        backward: int | str,
-        enable: int | str,
-        pwm: bool,
     ):
         raise NotImplementedError
 
@@ -45,7 +41,7 @@ class EncoderGeneral:
         *,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds - for calc. speed, accel, etc.
-        motor: Motor_General,  # Motor object to detect direction of movement
+        motor: MotorGeneral,  # Motor object to detect direction of movement
     ):
         """
         Constructs all the necessary attributes for the EncoderGeneral
@@ -59,7 +55,7 @@ class EncoderGeneral:
             average_duration  # time in seconds speed, accel and jerk are averaged over
         )
         self._history_lines_to_use: int
-        self._motor: Motor_General = motor
+        self._motor: MotorGeneral = motor
         self.reset_history()
 
     @property
@@ -88,7 +84,7 @@ class EncoderGeneral:
         """
 
         # self._position_history = [(time.time(), 0)]
-        self._position_history = np.zeros(  # type: ignore
+        self._position_history: Any = np.zeros(  # type: ignore
             shape=(self._max_no_position_points, 6), dtype=float
         )  # (time, step duration, position, speed, acceleration, jerk)
         self._current_history_len: int = 1
@@ -97,8 +93,8 @@ class EncoderGeneral:
         self._current_history_len += 1
         if self._current_history_len > self._max_no_position_points:
             self._current_history_len = self._max_no_position_points
-            self._position_history[:, 0] = np.roll(self._position_history[:, 0], -1)
-            self._position_history[:, 2] = np.roll(self._position_history[:, 2], -1)
+            self._position_history[:, 0] = np.roll(self._position_history[:, 0], -1)  # type: ignore
+            self._position_history[:, 2] = np.roll(self._position_history[:, 2], -1)  # type: ignore
         self._position_history[self._current_history_len - 1, 0] = a_time
         self._position_history[self._current_history_len - 1, 2] = position
 
@@ -117,7 +113,7 @@ class EncoderGeneral:
         if self._current_history_len < 2:
             return 0
 
-        self._history_lines_to_use = np.argmax(
+        self._history_lines_to_use = np.argmax(  # type: ignore
             self._position_history[:, 0] >= self._average_duration
         )
         if self._history_lines_to_use == 0:
@@ -125,7 +121,7 @@ class EncoderGeneral:
             # Don't have enough for average duration so use all we have
 
         # Calculate Step Duration in column 1
-        self._position_history[0:1, 4] = np.zeros(1)
+        self._position_history[0:1, 4] = np.zeros(1)  # type: ignore
 
         self._position_history[1 : self._history_lines_to_use - 1, 1] = (
             self._position_history[1 : self._history_lines_to_use - 1, 0]
@@ -139,7 +135,7 @@ class EncoderGeneral:
             - self._position_history[0 : self._history_lines_to_use - 2, 2]
         ) / self._position_history[1 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])
+        return np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])  # type: ignore
 
     @property
     def accel(self) -> float:
@@ -159,14 +155,14 @@ class EncoderGeneral:
         self.speed
 
         # Calculate Acceleration in column 4
-        self._position_history[0:2, 4] = np.zeros(2)
+        self._position_history[0:2, 4] = np.zeros(2)  # type: ignore
 
         self._position_history[2 : self._history_lines_to_use - 1, 4] = (
             self._position_history[2 : self._history_lines_to_use - 1, 3]
             - self._position_history[1 : self._history_lines_to_use - 2, 3]
         ) / self._position_history[2 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[2 : self._history_lines_to_use - 1, 3])
+        return np.average(self._position_history[2 : self._history_lines_to_use - 1, 3])  # type: ignore
 
     @property
     def jerk(self) -> float:
@@ -186,11 +182,11 @@ class EncoderGeneral:
         self.accel
 
         # Calculate Jerk in column 5
-        self._position_history[0:3, 5] = np.zeros(3)
+        self._position_history[0:3, 5] = np.zeros(3)  # type: ignore
 
         self._position_history[3 : self._history_lines_to_use - 1, 5] = (
             self._position_history[3 : self._history_lines_to_use - 1, 4]
             - self._position_history[2 : self._history_lines_to_use - 2, 4]
         ) / self._position_history[3 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[3 : self._history_lines_to_use - 1, 4])
+        return np.average(self._position_history[3 : self._history_lines_to_use - 1, 4])  # type: ignore

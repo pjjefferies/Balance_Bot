@@ -12,13 +12,9 @@ from encoder_sensor_general import EncoderGeneral
 logger = logging.getLogger(__name__)
 
 
-class Motor_General(Protocol):
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: int | str,
-        backward: int | str,
-        enable: int | str,
-        pwm: bool,
     ):
         raise NotImplementedError
 
@@ -49,7 +45,7 @@ class EncoderSim(EncoderGeneral):
         sample_freq: float = 100,  # per second
         max_no_position_points: int = 10_000,
         average_duration: int = 1,  # seconds
-        motor: Motor_General,
+        motor: MotorGeneral,
     ) -> None:
         """
         Constructs all the necessary attributes for the EncoderSim object
@@ -93,7 +89,9 @@ class EncoderSim(EncoderGeneral):
             self._old_time = self._position_history[self._current_history_len - 1, 0]
             self._time_delta: float = self._new_time - self._old_time
 
-            self._old_position = self._position_history[self_current_history_len - 1, 2]
+            self._old_position = self._position_history[
+                self._current_history_len - 1, 2
+            ]
             self._new_position = (
                 self._old_position + self._position_change_rate * self._time_delta
             )

@@ -1,23 +1,19 @@
 #! /usr/bin/python3
 
 import time
-from typing import Callable, Protocol
+from typing import Callable, Protocol, Any
 import logging
 from encoder_sensor_general import EncoderGeneral
-from gpiozero import LineSensor
+from gpiozero import LineSensor  # type: ignore
 
 # from config import cfg
 
 logger = logging.getLogger(__name__)
 
 
-class Motor_General(Protocol):
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: int | str,
-        backward: int | str,
-        enable: int | str,
-        pwm: bool,
     ):
         raise NotImplementedError
 
@@ -50,7 +46,7 @@ class RotationEncoder(EncoderGeneral):
         slots_per_rev: int = 20,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds
-        motor: Motor_General,
+        motor: MotorGeneral,
     ):
         """
         Constructs all the necessary attributes for the Rotation_Encoder
@@ -88,12 +84,13 @@ class RotationEncoder(EncoderGeneral):
             else -1 / slots_per_rev / 2
         )
         self.position: float = 0
-        self._position_history: list[tuple[float, float]] = [(time.time(), 0)]
+        # self._position_history: list[tuple[float, float]] = [(time.time(), 0)]
+        self._position_history: Any
 
-        self._sensor.when_line = (
+        self._sensor.when_line = (  # type: ignore
             lambda: self._move_a_half_slot
         )  # sets function to be run when line is detected
-        self._sensor.when_no_line = (
+        self._sensor.when_no_line = (  # type: ignore
             lambda: self._move_a_half_slot
         )  # sets function to be run when no line is detected
 
