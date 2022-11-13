@@ -1,0 +1,26 @@
+# Balance Box Calibration for bno055 Sensor
+
+base:
+    accel:
+        offset:
+            x: 7
+            y: 67
+            z: -18
+        radius: 1000
+        range: 0x01  # (+/- 4g = default)
+
+    magnet:
+        offset:
+            x: 645
+            y: -169
+            z: -210
+        radius: 835
+
+    gyro:
+        offset:
+            x: -4
+            y: -3
+            z: 0
+
+dev:
+    pass: 0
