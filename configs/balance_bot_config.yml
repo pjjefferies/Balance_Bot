@@ -3,8 +3,8 @@
 base:
     path:
         logs: 'logs'
-        log_config: './configs/balance_bot_logging.yml'
-        calibration: './configs/bno055_calibration_data.yml'
+        log_config: './configs/balance_bot_logging_config.yml'
+        ninedof_sensor_calibration: './configs/bno055_calibration_config.yml'
     wheel:
         left:
             motor:
