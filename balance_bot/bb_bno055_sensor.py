@@ -21,7 +21,7 @@ Methods:
 Misc variables:
     x
 """
-from typing import Protocol, Union
+from typing import Protocol
 from abc import abstractmethod
 import os
 import math
@@ -57,7 +57,7 @@ class CommProtocol(Protocol):  # Generic i2c protocol
 """
 
 
-class Absolute_Sensor(Protocol):
+class AbsoluteSensor(Protocol):
     def __init__(self) -> None:
         raise NotImplementedError
 
@@ -148,14 +148,18 @@ class BB_BNO055Sensor:
     """
 
     _calibration_items = (
-        "accel_offset",
-        "magnet_offset",
-        "gyro_offset",
-        "accel_radius",
-        "magnet_radius",
+        "accel",
+        # "accel.offset",
+        # "accel.radius",
+        # "accel.range",
+        "magnet",
+        # "magnet.offset",
+        # "magnet.radius",
+        "gyro",
+        # "gyro.offset",
     )
 
-    def __init__(self, *, sensor: Absolute_Sensor) -> None:
+    def __init__(self, *, sensor: AbsoluteSensor) -> None:
         """
         Args:
              (TYPE): DESCRIPTION.
@@ -167,27 +171,7 @@ class BB_BNO055Sensor:
         # self._sensor: adafruit_bno055.BNO055_I2C = adafruit_bno055.BNO055_I2C(i2c)
         self._sensor = sensor
 
-        if cfg.bno055_sensor.restore_calibration_available:
-            if os.path.exists(cfg.path.calibration):
-                try:
-                    with open(cfg.path.log_config, "r") as ymlfile:
-                        sensor_calibration_values = Box(yaml.safe_load(ymlfile))
-                    if not self._validate_calibration_data(sensor_calibration_values):
-                        raise ValueError(
-                            "Missing configurations in " + "Senor Cal file"
-                        )
-                    if (
-                        input("Do you want to use saved configuration?").lower()[0]
-                        == "y"
-                    ):
-                        self._restore_calibration()
-                        return
-                except (yaml.YAMLError, OSError, ValueError) as e:
-                    logger.info(f"Cannot use config file: {e}")
-        else:
-            logger.info("Sensor calibration restoration not available")
-
-        self._sensor.accel_range = 0x01  # (+/- 4g = default)
+        # self._sensor.accel_range =
         self.calibrate_sensor()
 
     def calibrate_sensor(self) -> None:
@@ -236,18 +220,29 @@ class BB_BNO055Sensor:
         gyr_offset_z: int
         gyr_offset_x, gyr_offset_y, gyr_offset_z = self._sensor.offsets_gyroscope
 
-        sensor_calibration_data: dict[str, Union[int, dict[str, int]]] = {
-            "accel_offset": {"x": acc_offset_x, "y": acc_offset_y, "z": acc_offset_z},
-            "magnet_offset": {"x": mag_offset_x, "y": mag_offset_y, "z": mag_offset_z},
-            "gyro_offset": {"x": gyr_offset_x, "y": gyr_offset_y, "z": gyr_offset_z},
-            "accel_radius": self._sensor.radius_accelerometer,
-            "magnet_radius": self._sensor.radius_magnetometer,
+        sensor_calibration_data: dict[
+            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        ] = {
+            "accel": {
+                "offset": {"x": acc_offset_x, "y": acc_offset_y, "z": acc_offset_z},
+                "radius": self._sensor.radius_accelerometer,
+            },
+            "magnet": {
+                "offset": {"x": mag_offset_x, "y": mag_offset_y, "z": mag_offset_z},
+                "radius": self._sensor.radius_magnetometer,
+            },
+            "gyro": {
+                "offset": {"x": gyr_offset_x, "y": gyr_offset_y, "z": gyr_offset_z}
+            },
         }
 
         self._save_calibration(sensor_calibration_data)
 
     def _save_calibration(
-        self, sensor_calibration_data: dict[str, Union[int, dict[str, int]]]
+        self,
+        sensor_calibration_data: dict[
+            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        ],
     ) -> None:
         """Saves calibration data from dictionary to yaml file in configs folder"""
         if not self._validate_calibration_data(sensor_calibration_data):
@@ -260,24 +255,52 @@ class BB_BNO055Sensor:
                 default_flow_style=True,
                 sort_keys=True,
             )
-        logger.info("Calibration data saved")
+        logger.info(f"Calibration data saved: {sensor_calibration_data}")
 
     def _restore_calibration(self) -> bool:
         """
         Saves calibration data from dictionary to bno055 Sensor for use
         When we figure-out how to do that
         """
-        raise NotImplementedError
+        if cfg.bno055_sensor.restore_calibration_available:
+            # Import 9DOF Sensor Configuration if available
+            if os.path.exists(cfg.path.ninedof_sensor_calibration):
+                try:
+                    with open(
+                        cfg.path.ninedof_sensor_calibration, "r"
+                    ) as ninedof_sensor_cfg_file:
+                        ninedof_sensor_config: Box | None = Box(
+                            yaml.safe_load(ninedof_sensor_cfg_file)
+                        )
+                    if not self._validate_calibration_data(ninedof_sensor_config):
+                        logger.warning("Nine DOF Calibration Data is not valid")
+                        return False
+                except (yaml.YAMLError, OSError, ValueError) as e:
+                    logger.warning(f"Cannot use config file: {e}")
+                    return False
+            else:
+                logger.warning(
+                    f"Path, {cfg.path.ninedof_sensor_calibration} does not exist"
+                )
+                return False
+        else:
+            logger.info("Sensor calibration restoration not available")
+            return False
+        logger.warning(
+            "Cannot restore calibration data, haven't found a way to do that yet"
+        )
+        return False
 
     def _validate_calibration_data(
-        self, sensor_calibration_data: dict[str, Union[int, dict[str, int]]]
+        self,
+        sensor_calibration_data: dict[
+            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        ],
     ) -> bool:
-        if not all(
+        return all(
             item in sensor_calibration_data
             for item in BB_BNO055Sensor._calibration_items
-        ):
-            return False
-        return True
+        )
 
     def temperature(self, units: str = "degrees celsius") -> int:
         """

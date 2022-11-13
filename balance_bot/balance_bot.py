@@ -23,13 +23,9 @@ import asyncio
 from config import cfg
 
 
-class Motor_General(Protocol):
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: int | str,
-        backward: int | str,
-        enable: int | str,
-        pwm: bool,
     ):
         raise NotImplementedError
 
@@ -46,16 +42,14 @@ class EncoderGeneral(Protocol):
     def __init__(
         self,
         *,
-        signal_pin: int,
-        sample_freq: int,  # per second
-        slots_per_rev: int,
-        history_len: int,  # seconds
-        average_duration: int
-    ):  # seconds)
+        max_no_position_points: int,  # seconds
+        average_duration: int,
+        motor: MotorGeneral
+    ):
         raise NotImplementedError
 
 
-class BBAbsoluteSensor(Protocol):
+class BBAbsoluteSensorGeneral(Protocol):
     def __init__(self) -> None:
         raise NotImplementedError
 
@@ -119,15 +113,15 @@ class BalanceBot:
 
     def __init__(
         self,
-        motor_wheel_left: Motor_General,
-        motor_wheel_right: Motor_General,
-        motor_arm_left: Motor_General | None,
-        motor_arm_right: Motor_General | None,
+        motor_wheel_left: MotorGeneral,
+        motor_wheel_right: MotorGeneral,
+        motor_arm_left: MotorGeneral | None,
+        motor_arm_right: MotorGeneral | None,
         enc_wheel_left: EncoderGeneral,
         enc_wheel_right: EncoderGeneral,
         enc_arm_left: EncoderGeneral | None,
         enc_arm_right: EncoderGeneral | None,
-        sensor9DOF: BBAbsoluteSensor,
+        sensor9DOF: BBAbsoluteSensorGeneral,
         start_prog: tuple[tuple[float, float, float]] | None = None,
         repeat_prog: tuple[tuple[float, float, float]] | None = None,
     ):
@@ -142,17 +136,17 @@ class BalanceBot:
         """
 
         # Set-up Motor Control Pins
-        self._motor_wheel_left: Motor_General = motor_wheel_left
-        self._motor_wheel_right: Motor_General = motor_wheel_right
-        self._motor_arm_left: Motor_General | None = motor_arm_left
-        self._motor_arm_right: Motor_General | None = motor_arm_right
+        self._motor_wheel_left: MotorGeneral = motor_wheel_left
+        self._motor_wheel_right: MotorGeneral = motor_wheel_right
+        self._motor_arm_left: MotorGeneral | None = motor_arm_left
+        self._motor_arm_right: MotorGeneral | None = motor_arm_right
         # Set-up Motor_General Encoders
         self._enc_wheel_left: EncoderGeneral = enc_wheel_left
         self._enc_wheel_right: EncoderGeneral = enc_wheel_right
         self._enc_arm_left: EncoderGeneral | None = enc_arm_left
         self._enc_arm_right: EncoderGeneral | None = enc_arm_right
         # Initialize i2C Connection to sensor- need check/try?
-        self._sensor: BBAbsoluteSensor = sensor9DOF
+        self._sensor: BBAbsoluteSensorGeneral = sensor9DOF
 
         # Get Initial Values for PID Filter Initialization
         temp_euler: dict[str, float] = self._sensor.euler_angles
@@ -265,8 +259,8 @@ class BalanceBot:
 def main():
     import os
 
-    if False:  # os.name == "posix" and os.uname()[1] == "raspberrypi":
-        # We're running on Raspberry Pi. OK to start robot.
+    if os.name == "posix" and os.uname()[1] == "raspberrypi":
+        # We're running on Raspberry Pi. Start robot.
         logger.info("Starting Balance Bot Robt")
         from gpiozero import Motor
         import bluedot_direction_control
@@ -307,38 +301,42 @@ def main():
         sensor9DOF: BBAbsoluteSensor = BB_BNO055Sensor(i2c)
 
     elif os.name == "nt":
-        # Running on Windows, use robot simulator.
+        # Running on Windows, start robot simulator.
         logger.warning("Stating Robot Simulator")
         from motor_simulator import MotorSim
-        from encoder_simulaor import EncoderSim
-        from sensor9DOF_simulaor import Sensor9DOFSim
+        from encoder_simulator import EncoderSim
+        from bb_9dof_sensor_simulator import BB9DOFSensorSimulator
 
-        motor_wheel_left: Motor_General = MotorSim()
-        motor_wheel_right: Motor_General = MotorSim()
-        motor_arm_left: Motor_General = MotorSim()
-        motor_arm_right: Motor_General = MotorSim()
+        motor_wheel_left: MotorGeneral = MotorSim()
+        motor_wheel_right: MotorGeneral = MotorSim()
+        # motor_arm_left: Motor_General = MotorSim()
+        # motor_arm_right: Motor_General = MotorSim()
 
-        enc_wheel_left: Encoder_General = EncoderSim()
-        enc_wheel_right: Encoder_General = EncoderSim()
-        enc_arm_left: Encoder_General = EncoderSim()
-        enc_arm_right: Encoder_General = EncoderSim()
+        enc_wheel_left: EncoderGeneral = EncoderSim(motor=motor_wheel_left)
+        enc_wheel_left.start()
+        enc_wheel_right: EncoderGeneral = EncoderSim(motor=motor_wheel_right)
+        enc_wheel_right.start()
+        # enc_arm_left: Encoder_General = EncoderSim()
+        # enc_arm_right: Encoder_General = EncoderSim()
 
-        sensor9DOF: BBAbsoluteSensor = Sensor9DOFSim
+        sensor9DOF: BBAbsoluteSensorGeneral = BB9DOFSensorSimulator()
 
     else:
         logger.warning("Balance Bot - OS not identified. Please try on Raspberry Pi")
 
+    start_prog = [30, 0, 0]  # stand still for 30 seconds
+
     robot = BalanceBot(  # type: ignore
         motor_wheel_left=motor_wheel_left,
         motor_wheel_right=motor_wheel_right,
-        motor_arm_left=motor_arm_left,
-        motor_arm_right=motor_arm_right,
+        # motor_arm_left=motor_arm_left,
+        # motor_arm_right=motor_arm_right,
         enc_wheel_left=enc_wheel_left,
         enc_wheel_right=enc_wheel_right,
-        enc_arm_left=enc_arm_left,
-        enc_arm_right=enc_arm_right,
+        # enc_arm_left=enc_arm_left,
+        # enc_arm_right=enc_arm_right,
         sensor9DOF=sensor9DOF,
-        start_prog=None,
+        start_prog=start_prog,
         repeat_prog=None,
     )
 
