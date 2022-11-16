@@ -9,14 +9,17 @@ Misc variables:
     TBD
 """
 
-# import math
 import time
+import numpy as np
 
 # import yaml
 # from box import Box
 from typing import Callable, Protocol
 from abc import abstractmethod
-import logging
+from robot_listener import setup_robot_movement_handler
+from robot_listener import setup_robot_encoder_sensor_handler
+from robot_listener import setup_robot_9DOF_sensor_handler
+from robot_listener import setup_general_logging_handler
 
 # from importlib import reload
 import asyncio
@@ -258,6 +261,11 @@ class BalanceBot:
 
 def main():
     import os
+
+    setup_robot_movement_handler()
+    setup_robot_encoder_sensor_handler()
+    setup_robot_9DOF_sensor_handler()
+    setup_general_logging_handler()
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. Start robot.

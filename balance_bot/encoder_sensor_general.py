@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 
+import numpy as np
 from typing import Protocol, Any
+from .event import post_event
 import logging
 
 # from config import cfg
@@ -83,6 +85,8 @@ class EncoderGeneral:
               9     0        0            0        0         0         0
         """
 
+        post_event(event_type="Encoder Sensor", "Resetting Sensor History")
+
         # self._position_history = [(time.time(), 0)]
         self._position_history: Any = np.zeros(  # type: ignore
             shape=(self._max_no_position_points, 6), dtype=float
@@ -97,6 +101,7 @@ class EncoderGeneral:
             self._position_history[:, 2] = np.roll(self._position_history[:, 2], -1)  # type: ignore
         self._position_history[self._current_history_len - 1, 0] = a_time
         self._position_history[self._current_history_len - 1, 2] = position
+        post_event(event_type="Encoder Sensor", "Adding position: time: {a_time}, pos.: {position}")
 
     @property
     def speed(self) -> float:
@@ -135,7 +140,11 @@ class EncoderGeneral:
             - self._position_history[0 : self._history_lines_to_use - 2, 2]
         ) / self._position_history[1 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])  # type: ignore
+        avg_speed: float = np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])  # type: ignore
+
+        post_event(event_type="Encoder Sensor",data="Speed: {avg_speed}")
+
+        return avg_speed
 
     @property
     def accel(self) -> float:
