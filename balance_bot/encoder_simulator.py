@@ -65,7 +65,7 @@ class EncoderSim(EncoderGeneral):
             motor=motor,
         )
         self._position_change_to_motor_value_ratio: float = (
-            cfg_sim.motor.encoder.position_change_to_motor_value_ratio
+            cfg_sim.encoder.position_change_to_motor_value_ratio
         )
         self._position_change_rate = (  # distance / time (s)
             self._motor.value * self._position_change_to_motor_value_ratio
