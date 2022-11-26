@@ -45,7 +45,7 @@ class EncoderGeneral(Protocol):
     def __init__(
         self,
         *,
-        max_no_position_points: int,  # seconds
+        max_no_position_points: int,
         average_duration: int,
         motor: MotorGeneral
     ):
@@ -127,6 +127,7 @@ class BalanceBot:
         sensor9DOF: BBAbsoluteSensorGeneral,
         start_prog: tuple[tuple[float, float, float]] | None = None,
         repeat_prog: tuple[tuple[float, float, float]] | None = None,
+        manual_control_time: int = 0,  # Duration of manual control in seconds
     ):
         """
         Create Balance Bat Robot Object, initiating all start-up functions
@@ -134,6 +135,10 @@ class BalanceBot:
         Args:
             start_prog (list): Sequence of steps to run once.
             repeat_prog (list): Sequence of steps to run repeatedly
+                a step is a tuple of:
+                    (duration (sec.),
+                     forward speed or angle (-1 to +1),
+                     right turn speed or angle (-1 to +1))
         Returns:
             Result: True if successful, False if not
         """
@@ -172,29 +177,36 @@ class BalanceBot:
         main_control_loop.run_until_complete(asyncio.wait(tasks))
 
         # Start start_prog if we have one
-        print("Starting Single Run Programs if any")
-        if start_prog is not None and isinstance(start_prog, list):
-            for a_command in start_prog:
-                if (not isinstance(a_command, list)) or (len(a_command) != 3):
-                    logging.info("Invalid start_prog step, skipping")
-                    continue
-                duration, fwd_rwd, right_left = a_command
-                if (
-                    (duration < 0 or duration > cfg.duration.max_time_step)
-                    or (fwd_rwd < -1 or fwd_rwd > 1)
-                    or (right_left < -1 or right_left > 1)
-                ):
-                    logging.info("Invalid start_prog step, skipping")
-                    continue
-                self.pitch_setpoint_angle = fwd_rwd
-                self.yaw_setpoint_angle = right_left
-                time.sleep(duration)
+        if start_prog is not None:
+            self._run_repeat_program(a_prog=start_prog)
 
         # Start repeat_prog if we have one
         print("Starting Multiple Run Programs if any")
-        if repeat_prog is not None and isinstance(repeat_prog, list):
+        if repeat_prog is not None:
             while True:
-                for a_command in repeat_prog:
+                self._run_repeat_program(a_prog=repeat_prog)
+
+        # Set-up BlueDot Remote Control for manual control
+        if manual_control_time > 0:
+            import bluedot_direction_control
+
+            bd_ctl: bluedot_direction_control.BlueDotRobotController = (
+                bluedot_direction_control.BlueDotRobotController()
+            )
+
+            start_time: float = time.time()
+            right: float
+            fwd: float
+            while time.time() - start_time < manual_control_time:
+                right, fwd = bd_ctl.bd_drive()
+                self.pitch_setpoint_angle = max(-1, min(1, fwd))
+                self.yaw_setpoint_angle = max(-1, min(1, right))
+            bd_ctl.stop()
+
+        main_control_loop.close()
+
+    def _run_repeat_program(self, a_prog: tuple[tuple[float, float, float]]):
+        for a_command in a_prog:
                     if not isinstance(a_command, list) or len(a_command) != 3:
                         logging.info("Invalid repeat_prog step, skipping")
                         continue
