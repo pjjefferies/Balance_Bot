@@ -11,8 +11,6 @@ Misc variables:
 
 import time
 
-# import numpy as np
-
 # import yaml
 # from box import Box
 from typing import Callable, Protocol
