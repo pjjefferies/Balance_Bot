@@ -10,20 +10,30 @@ Misc variables:
 """
 
 import time
-import numpy as np
+
+# import numpy as np
 
 # import yaml
 # from box import Box
 from typing import Callable, Protocol
 from abc import abstractmethod
-from robot_listener import setup_robot_movement_handler
-from robot_listener import setup_robot_encoder_sensor_handler
-from robot_listener import setup_robot_9DOF_sensor_handler
-from robot_listener import setup_general_logging_handler
+from robot_listener import (
+    setup_robot_movement_handler,
+)  # post_event("robot moved", "message")
+from robot_listener import (
+    setup_robot_encoder_sensor_handler,
+)  # post_event("robot encoder sensor", "message")
+from robot_listener import (
+    setup_robot_9DOF_sensor_handler,
+)  # post_event("robot 9DOF sensor, "message")
+from robot_listener import (
+    setup_general_logging_handler,
+)  # post_event("log", "INFO: The grass is greener")
 
 # from importlib import reload
 import asyncio
 from config import cfg
+from event import EventHandler
 
 
 class MotorGeneral(Protocol):
@@ -47,7 +57,8 @@ class EncoderGeneral(Protocol):
         *,
         max_no_position_points: int,
         average_duration: int,
-        motor: MotorGeneral
+        motor: MotorGeneral,
+        eh: EventHandler,
     ):
         raise NotImplementedError
 
@@ -95,8 +106,6 @@ class BBAbsoluteSensorGeneral(Protocol):
         raise NotImplementedError
 
 
-logger = logging.getLogger(__name__)
-
 TIMER_MS: Callable[[], float] = lambda: time.time() * 1000
 TIMER_S: Callable[[], float] = lambda: time.time()
 ENCODERS: bool = False
@@ -116,6 +125,7 @@ class BalanceBot:
 
     def __init__(
         self,
+        *,
         motor_wheel_left: MotorGeneral,
         motor_wheel_right: MotorGeneral,
         motor_arm_left: MotorGeneral | None,
@@ -128,6 +138,7 @@ class BalanceBot:
         start_prog: tuple[tuple[float, float, float]] | None = None,
         repeat_prog: tuple[tuple[float, float, float]] | None = None,
         manual_control_time: int = 0,  # Duration of manual control in seconds
+        eh: EventHandler,
     ):
         """
         Create Balance Bat Robot Object, initiating all start-up functions
@@ -142,6 +153,9 @@ class BalanceBot:
         Returns:
             Result: True if successful, False if not
         """
+
+        # Set-up Evenet Handler
+        self._eh = eh
 
         # Set-up Motor Control Pins
         self._motor_wheel_left: MotorGeneral = motor_wheel_left
@@ -171,17 +185,18 @@ class BalanceBot:
         self._integral_term: float = 0
 
         # Start Balance Loop
-        print("about to start Balance Loop")
+        self._eh.post(event_type="log", message="about to start Balance Loop")
         main_control_loop = asyncio.get_event_loop()
         tasks = [main_control_loop.create_task(self._primary_balance_loop())]
         main_control_loop.run_until_complete(asyncio.wait(tasks))
 
         # Start start_prog if we have one
+        self._eh.post(event_type="log", message="Starting Single Run Programs if any")
         if start_prog is not None:
             self._run_repeat_program(a_prog=start_prog)
 
         # Start repeat_prog if we have one
-        print("Starting Multiple Run Programs if any")
+        self._eh.post(event_type="log", message="Starting Multiple Run Programs if any")
         if repeat_prog is not None:
             while True:
                 self._run_repeat_program(a_prog=repeat_prog)
@@ -207,27 +222,29 @@ class BalanceBot:
 
     def _run_repeat_program(self, a_prog: tuple[tuple[float, float, float]]):
         for a_command in a_prog:
-                    if not isinstance(a_command, list) or len(a_command) != 3:
-                        logging.info("Invalid repeat_prog step, skipping")
-                        continue
-                    duration, fwd_rwd, right_left = a_command
-                    if (
-                        (duration < 0 or duration > cfg.duration.max_time_step)
-                        or (fwd_rwd < -1 or fwd_rwd > 1)
-                        or (right_left < -1 or right_left > 1)
-                    ):
-                        logging.info("Invalid repeat_prog step, skipping")
-                        continue
-                    self.pitch_setpoint_angle = fwd_rwd
-                    self.yaw_setpoint_angle = right_left
-                    time.sleep(duration)
+            if not isinstance(a_command, list) or len(a_command) != 3:
+                self._eh.post(
+                    event_type="log",
+                    message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
+                )
+                continue
+            duration, fwd_rwd, right_left = a_command
+            if (
+                (duration < 0 or duration > cfg.duration.max_time_step)
+                or (fwd_rwd < -1 or fwd_rwd > 1)
+                or (right_left < -1 or right_left > 1)
+            ):
+                self._eh.post(
+                    event_type="log",
+                    message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
+                )
+                continue
+            self.pitch_setpoint_angle = fwd_rwd
+            self.yaw_setpoint_angle = right_left
+            time.sleep(duration)
 
-        # Set-up BlueDot Remote Control
-        # self.bd_ctl = bluedot_direction_control.bd_drive
-        main_control_loop.close()
-
-    async def _primary_balance_loop(self):
-        print("Main loop started")
+    async def _primary_balance_loop(self) -> None:
+        self._eh.post(event_type="log", message="Main loop started")
         lasttime_control = 0
         lasttime_params_updated = TIMER_S()
         while True:
@@ -263,16 +280,18 @@ class BalanceBot:
                     self._pitch,
                     self._yaw,
                 )
-                print("Main loop end...")
+                self._eh.post(event_type="log", message="Main loop ended")
             if (TIMER_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
                 lasttime_params_updated = TIMER_S()
-                print("Updating parameters?")
+                self._eh.post(event_type="log", message="Updating parameters?")
                 # reload(bbc)
 
 
 def main():
     import os
+
+    eh = EventHandler()
 
     setup_robot_movement_handler()
     setup_robot_encoder_sensor_handler()
@@ -322,7 +341,7 @@ def main():
 
     elif os.name == "nt":
         # Running on Windows, start robot simulator.
-        logger.warning("Stating Robot Simulator")
+        eh.post(event_type="log", message="INFO: Stating Robot Simulator")
         from motor_simulator import MotorSim
         from encoder_simulator import EncoderSim
         from bb_9dof_sensor_simulator import BB9DOFSensorSimulator
@@ -332,9 +351,9 @@ def main():
         # motor_arm_left: Motor_General = MotorSim()
         # motor_arm_right: Motor_General = MotorSim()
 
-        enc_wheel_left: EncoderGeneral = EncoderSim(motor=motor_wheel_left)
+        enc_wheel_left: EncoderGeneral = EncoderSim(motor=motor_wheel_left, eh=eh)
         enc_wheel_left.start()
-        enc_wheel_right: EncoderGeneral = EncoderSim(motor=motor_wheel_right)
+        enc_wheel_right: EncoderGeneral = EncoderSim(motor=motor_wheel_right, eh=eh)
         enc_wheel_right.start()
         # enc_arm_left: Encoder_General = EncoderSim()
         # enc_arm_right: Encoder_General = EncoderSim()
@@ -342,7 +361,9 @@ def main():
         sensor9DOF: BBAbsoluteSensorGeneral = BB9DOFSensorSimulator()
 
     else:
-        logger.warning("Balance Bot - OS not identified. Please try on Raspberry Pi")
+        post_event(
+            "log", "ERROR: Balance Bot - OS not identified. Please try on Raspberry Pi"
+        )
 
     start_prog = [30, 0, 0]  # stand still for 30 seconds
 
