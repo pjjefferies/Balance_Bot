@@ -121,6 +121,26 @@ class EncoderGeneral:
         )
 
     @property
+    def distance(self) -> float:
+        """
+        Getter for Distance Encoder has observed
+
+        Args:
+            None
+
+        Returns:
+            Distance as a float
+        """
+
+        distance: float = self._position_history[self._history_lines_to_use - 1, 2]
+
+        self._eh.post(
+            event_type="robot encoder sensor", message=f"Distance: {distance:.2f}"
+        )
+
+        return distance
+
+    @property
     def speed(self) -> float:
         """
         Getter for speed Encoder has observed, averaged by time over the
