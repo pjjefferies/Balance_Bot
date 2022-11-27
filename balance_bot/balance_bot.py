@@ -15,18 +15,7 @@ import time
 # from box import Box
 from typing import Callable, Protocol
 from abc import abstractmethod
-from robot_listener import (
-    setup_robot_movement_handler,
-)  # post_event("robot moved", "message")
-from robot_listener import (
-    setup_robot_encoder_sensor_handler,
-)  # post_event("robot encoder sensor", "message")
-from robot_listener import (
-    setup_robot_9DOF_sensor_handler,
-)  # post_event("robot 9DOF sensor, "message")
-from robot_listener import (
-    setup_general_logging_handler,
-)  # post_event("log", "INFO: The grass is greener")
+import robot_listener
 
 # from importlib import reload
 import asyncio
@@ -204,7 +193,7 @@ class BalanceBot:
             import bluedot_direction_control
 
             bd_ctl: bluedot_direction_control.BlueDotRobotController = (
-                bluedot_direction_control.BlueDotRobotController()
+                bluedot_direction_control.BlueDotRobotController(eh=self._eh)
             )
 
             start_time: float = time.time()
@@ -291,10 +280,11 @@ def main():
 
     eh = EventHandler()
 
-    setup_robot_movement_handler()
-    setup_robot_encoder_sensor_handler()
-    setup_robot_9DOF_sensor_handler()
-    setup_general_logging_handler()
+    robot_listener.setup_robot_movement_handler()
+    robot_listener.setup_robot_encoder_sensor_handler()
+    robot_listener.setup_robot_9DOF_sensor_handler()
+    robot_listener.setup_general_logging_handler()
+    robot_listener.setup_bluedot_handler()
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. Start robot.
@@ -356,7 +346,7 @@ def main():
         # enc_arm_left: Encoder_General = EncoderSim()
         # enc_arm_right: Encoder_General = EncoderSim()
 
-        sensor9DOF: BBAbsoluteSensorGeneral = BB9DOFSensorSimulator()
+        sensor9DOF: BB9DOFSensorSimulator = BB9DOFSensorSimulator(eh=eh)
 
     else:
         post_event(

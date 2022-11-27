@@ -26,35 +26,14 @@ from abc import abstractmethod
 import os
 import math
 import time
-import logging
 import yaml
 from box import Box
 from config import cfg
 
-logger = logging.getLogger(__name__)
 
-"""
-class PinProt(Protocol):
-    def __init__(self, bcm_number: int):
+class EventHandlerTemplate(Protocol):
+    def post(self, *, event_type: str, message: str) -> None:
         raise NotImplementedError
-
-    def init(self, mode: int, pull: int) -> None:
-        raise NotImplementedError
-
-    def value(self, val: int | None) -> int | None:
-        # method to read (if val is None) or write
-        raise NotImplementedError
-
-
-class CommProtocol(Protocol):  # Generic i2c protocol
-    @abstractmethod
-    def write_then_readinto(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def write(self) -> None:
-        raise NotImplementedError
-"""
 
 
 class AbsoluteSensor(Protocol):
@@ -159,7 +138,7 @@ class BB_BNO055Sensor:
         # "gyro.offset",
     )
 
-    def __init__(self, *, sensor: AbsoluteSensor) -> None:
+    def __init__(self, *, sensor: AbsoluteSensor, eh: EventHandlerTemplate) -> None:
         """
         Args:
              (TYPE): DESCRIPTION.
@@ -170,6 +149,7 @@ class BB_BNO055Sensor:
         """
         # self._sensor: adafruit_bno055.BNO055_I2C = adafruit_bno055.BNO055_I2C(i2c)
         self._sensor = sensor
+        self._eh = eh
 
         # self._sensor.accel_range =
         self.calibrate_sensor()
@@ -187,24 +167,37 @@ class BB_BNO055Sensor:
 
         # Wait for, read and save calibration information
         while self._sensor.calibration_status[1] != 0x03:  # Gyro
-            logger.info("Waiting for gyro calibration")
+            self._eh.post(
+                event_type="robot 9DOF sensor", message="Waiting for gyro calibration"
+            )
             time.sleep(2)
-        logger.info("Gyro calibrated")
+        self._eh.post(event_type="robot 9DOF sensor", message="Gyro calibrated")
 
         while self._sensor.calibration_status[2] != 0x03:  # Accel
-            logger.info("Waiting for accel calibration")
+            self._eh.post(
+                event_type="robot 9DOF sensor", message="Waiting for accel calibration"
+            )
             time.sleep(2)
-        logger.info("Accelerometer calibrated")
+        self._eh.post(
+            event_type="robot 9DOF sensor", message="Accelerometer calibrated"
+        )
 
         while self._sensor.calibration_status[2] != 0x03:  # Mag
-            logger.info("Waiting for magnetrometer calibration")
+            self._eh.post(
+                event_type="robot 9DOF sensor",
+                message="Waiting for magnetrometer calibration",
+            )
             time.sleep(2)
-        logger.info("Magnetrometer calibrated")
+        self._eh.post(
+            event_type="robot 9DOF sensor", message="Magnetrometer calibrated"
+        )
 
         while self._sensor.calibration_status[0] != 0x03:  # System
-            logger.info("Waiting for system calibration")
+            self._eh.post(
+                event_type="robot 9DOF sensor", message="Waiting for system calibration"
+            )
             time.sleep(2)
-        logger.info("System calibrated")
+        self._eh.post(event_type="robot 9DOF sensor", message="System calibrated")
 
         # Read Calibration Data
         acc_offset_x: int
@@ -246,7 +239,10 @@ class BB_BNO055Sensor:
     ) -> None:
         """Saves calibration data from dictionary to yaml file in configs folder"""
         if not self._validate_calibration_data(sensor_calibration_data):
-            logger.error("Could not save calibration data. Data invalid")
+            self._eh.post(
+                event_type="log",
+                message="ERROR: Could not save calibration data. Data invalid",
+            )
             return
         with open(cfg.path.calibration, "w") as fp:
             yaml.dump(
@@ -255,7 +251,10 @@ class BB_BNO055Sensor:
                 default_flow_style=True,
                 sort_keys=True,
             )
-        logger.info(f"Calibration data saved: {sensor_calibration_data}")
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Calibration data saved: {sensor_calibration_data}",
+        )
 
     def _restore_calibration(self) -> bool:
         """
@@ -273,21 +272,32 @@ class BB_BNO055Sensor:
                             yaml.safe_load(ninedof_sensor_cfg_file)
                         )
                     if not self._validate_calibration_data(ninedof_sensor_config):
-                        logger.warning("Nine DOF Calibration Data is not valid")
+                        self._eh.post(
+                            event_type="robot 9DOF sensor",
+                            message="ERROR: Nine DOF Calibration Data is not valid",
+                        )
                         return False
                 except (yaml.YAMLError, OSError, ValueError) as e:
-                    logger.warning(f"Cannot use config file: {e}")
+                    self._eh.post(
+                        event_type="robot 9DOF sensor",
+                        message=f"ERROR: Cannot use config file: {e}",
+                    )
                     return False
             else:
-                logger.warning(
-                    f"Path, {cfg.path.ninedof_sensor_calibration} does not exist"
+                self._eh.post(
+                    event_type="robot 9DOF sensor",
+                    message=f"ERROR: Path, {cfg.path.ninedof_sensor_calibration} does not exist",
                 )
                 return False
         else:
-            logger.info("Sensor calibration restoration not available")
+            self._eh.post(
+                event_type="robot 9DOF sensor",
+                message="ERROR: Sensor calibration restoration not available",
+            )
             return False
-        logger.warning(
-            "Cannot restore calibration data, haven't found a way to do that yet"
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message="ERROR: Cannot restore calibration data, haven't found a way to do that yet",
         )
         return False
 
@@ -310,9 +320,14 @@ class BB_BNO055Sensor:
             temperature in specified units.
         """
         if units in ("degrees Fahrenheit", "degrees F", "deg F", "deg. F", "°F"):
-            return int(self._sensor.temperature * 9 / 5 + 32)
+            temperature: int = int(self._sensor.temperature * 9 / 5 + 32)
         else:
-            return self._sensor.temperature
+            temperature: int = self._sensor.temperature
+
+        self._eh.post(
+            event_type="robot 9DOF sensor", message=f"Temperature: {temperature}"
+        )
+        return temperature
 
     @property
     def accel(self) -> dict[str, float]:
@@ -328,6 +343,10 @@ class BB_BNO055Sensor:
         accel_y, accel_x, accel_z = self._sensor.linear_acceleration
         if accel_x is None or accel_y is None or accel_z is None:
             raise ValueError("Accel not available, check mode")
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Accel: x: {accel_x}, y: {accel_y}, z: {accel_z}",
+        )
         return {"x": accel_x, "y": accel_y, "z": accel_z}
 
     @property
@@ -344,6 +363,10 @@ class BB_BNO055Sensor:
         mag_x, mag_y, mag_z = self._sensor.magnetic  # ORDER NOT VERIFIED
         if mag_x is None or mag_y is None or mag_z is None:
             raise ValueError("Magnetic reading not available, check mode")
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Magnetic Field: x: {mag_x}, y: {mag_y}, z: {mag_z}",
+        )
         return {"x": mag_x, "y": mag_y, "z": mag_z}
 
     @property
@@ -360,6 +383,10 @@ class BB_BNO055Sensor:
         gyro_y, gyro_x, gyro_z = self._sensor.gyro
         if gyro_x is None or gyro_y is None or gyro_z is None:
             raise ValueError("Gyro not available, check mode")
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Gyro: x: {gyro_x}, y: {gyro_y}, z: {gyro_z}",
+        )
         return {"x": gyro_x, "y": gyro_y, "z": gyro_z}
 
     @property
@@ -376,6 +403,10 @@ class BB_BNO055Sensor:
         yaw_z, roll_x, pitch_y = self._sensor.euler
         if yaw_z is None or roll_x is None or pitch_y is None:
             raise ValueError("Euler angles not available, check mode")
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"roll: x: {roll_x}, pitch y: {pitch_y}, yaw z: {yaw_z}",
+        )
         return {"x": roll_x, "y": pitch_y, "z": yaw_z}
 
     @property
@@ -394,6 +425,10 @@ class BB_BNO055Sensor:
             raise ValueError("Gravity not available, check mode")
         xy_grav_angle: float = math.atan2(y_grav, x_grav)
         xz_grav_angle: float = math.atan2(z_grav, x_grav)
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Gravity Dir: xy_angle: {xy_grav_angle}, xz_angle: {xz_grav_angle}",
+        )
         return {"xy": xy_grav_angle, "xz": xz_grav_angle}  # ORDER NOT VERIVIED
 
     @property
@@ -411,6 +446,10 @@ class BB_BNO055Sensor:
         x_grav = x_grav if x_grav is not None else 0
         y_grav = y_grav if y_grav is not None else 0
         z_grav = z_grav if z_grav is not None else 0
+        self._eh.post(
+            event_type="robot 9DOF sensor",
+            message=f"Gravity Magnitude: {grav_mag}",
+        )
         return math.sqrt(sum([x_grav**2, y_grav**2, z_grav**2]))
 
     """

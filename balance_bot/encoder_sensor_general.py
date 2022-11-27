@@ -2,12 +2,13 @@
 
 import numpy as np
 from typing import Protocol, Any
-from .event import post_event
-import logging
 
 # from config import cfg
 
-logger = logging.getLogger(__name__)
+
+class EventHandlerTemplate(Protocol):
+    def post(self, *, event_type: str, message: str) -> None:
+        raise NotImplementedError
 
 
 class MotorGeneral(Protocol):
@@ -44,6 +45,7 @@ class EncoderGeneral:
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds - for calc. speed, accel, etc.
         motor: MotorGeneral,  # Motor object to detect direction of movement
+        eh: EventHandlerTemplate,
     ):
         """
         Constructs all the necessary attributes for the EncoderGeneral
@@ -58,7 +60,15 @@ class EncoderGeneral:
         )
         self._history_lines_to_use: int
         self._motor: MotorGeneral = motor
+        self._eh: EventHandlerTemplate = eh
+        self._running = False
         self.reset_history()
+
+    def start(self) -> None:
+        raise NotImplementedError
+
+    def stop(self) -> None:
+        raise NotImplementedError
 
     @property
     def moving_forward(self):
@@ -85,13 +95,17 @@ class EncoderGeneral:
               9     0        0            0        0         0         0
         """
 
-        post_event(event_type="Encoder Sensor", "Resetting Sensor History")
+        self._eh.post(event_type="Encoder Sensor", message="Resetting Sensor History")
 
         # self._position_history = [(time.time(), 0)]
         self._position_history: Any = np.zeros(  # type: ignore
             shape=(self._max_no_position_points, 6), dtype=float
         )  # (time, step duration, position, speed, acceleration, jerk)
         self._current_history_len: int = 1
+        self._eh.post(
+            event_type="Encoder Sensor",
+            message="Encoder Sensor history reset",
+        )
 
     def add_position(self, a_time: float, position: float) -> None:
         self._current_history_len += 1
@@ -101,7 +115,10 @@ class EncoderGeneral:
             self._position_history[:, 2] = np.roll(self._position_history[:, 2], -1)  # type: ignore
         self._position_history[self._current_history_len - 1, 0] = a_time
         self._position_history[self._current_history_len - 1, 2] = position
-        post_event(event_type="Encoder Sensor", "Adding position: time: {a_time}, pos.: {position}")
+        self._eh.post(
+            event_type="Encoder Sensor",
+            message="Adding position: time: {a_time}, pos.: {position}",
+        )
 
     @property
     def speed(self) -> float:
@@ -140,9 +157,11 @@ class EncoderGeneral:
             - self._position_history[0 : self._history_lines_to_use - 2, 2]
         ) / self._position_history[1 : self._history_lines_to_use - 1, 1]
 
-        avg_speed: float = np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])  # type: ignore
+        avg_speed: float = float(
+            np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])
+        )
 
-        post_event(event_type="Encoder Sensor",data="Speed: {avg_speed}")
+        self._eh.post(event_type="Encoder Sensor", message=f"Speed: {avg_speed}")
 
         return avg_speed
 
@@ -171,7 +190,12 @@ class EncoderGeneral:
             - self._position_history[1 : self._history_lines_to_use - 2, 3]
         ) / self._position_history[2 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[2 : self._history_lines_to_use - 1, 3])  # type: ignore
+        avg_accel: float = float(
+            np.average(self._position_history[2 : self._history_lines_to_use - 1, 4])
+        )
+        self._eh.post(event_type="Encoder Sensor", message=f"Accel: {avg_accel}")
+
+        return avg_accel
 
     @property
     def jerk(self) -> float:
@@ -198,4 +222,10 @@ class EncoderGeneral:
             - self._position_history[2 : self._history_lines_to_use - 2, 4]
         ) / self._position_history[3 : self._history_lines_to_use - 1, 1]
 
-        return np.average(self._position_history[3 : self._history_lines_to_use - 1, 4])  # type: ignore
+        avg_jerk: float = float(
+            np.average(self._position_history[3 : self._history_lines_to_use - 1, 5])
+        )
+
+        self._eh.post(event_type="Encoder Sensor", message=f"Jerk: {avg_jerk}")
+
+        return avg_jerk

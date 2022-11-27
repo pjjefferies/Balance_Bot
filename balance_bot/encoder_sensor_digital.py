@@ -2,13 +2,13 @@
 
 import time
 from typing import Callable, Protocol, Any
-import logging
 from encoder_sensor_general import EncoderGeneral
 from gpiozero import LineSensor  # type: ignore
 
-# from config import cfg
 
-logger = logging.getLogger(__name__)
+class EventHandlerTemplate(Protocol):
+    def post(self, *, event_type: str, message: str) -> None:
+        raise NotImplementedError
 
 
 class MotorGeneral(Protocol):
@@ -22,12 +22,12 @@ class MotorGeneral(Protocol):
         raise NotImplementedError
 
 
-class RotationEncoder(EncoderGeneral):
+class EncoderDigital(EncoderGeneral):
     """
-    A class to represent a two-state digital, rotary encoder.
+    A class to represent a two-state digital, encoder.
 
     Attributes:
-        position: float: number and fractions of rotations
+        position: float: number and fractions of distance
         moving_forward: bool: True if moving forward, False if moving backwards
 
     Methods:
@@ -47,6 +47,7 @@ class RotationEncoder(EncoderGeneral):
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds
         motor: MotorGeneral,
+        eh: EventHandlerTemplate,
     ):
         """
         Constructs all the necessary attributes for the Rotation_Encoder
@@ -69,6 +70,7 @@ class RotationEncoder(EncoderGeneral):
             max_no_position_points=max_no_position_points,
             average_duration=average_duration,
             motor=motor,
+            eh=eh,
         )
 
         self._sensor: LineSensor = LineSensor(
@@ -78,27 +80,18 @@ class RotationEncoder(EncoderGeneral):
             # sample_rate=self._sample_freq,
             partial=True,
         )
-        self._rev_per_half_slot: Callable[[], float] = (
+        self._dist_per_half_slot: Callable[[], float] = (
             lambda: 1 / slots_per_rev / 2
             if self.moving_forward
             else -1 / slots_per_rev / 2
         )
-        self.position: float = 0
-        # self._position_history: list[tuple[float, float]] = [(time.time(), 0)]
+        self.position: float
         self._position_history: Any
 
-        self._sensor.when_line = (  # type: ignore
-            lambda: self._move_a_half_slot
-        )  # sets function to be run when line is detected
-        self._sensor.when_no_line = (  # type: ignore
-            lambda: self._move_a_half_slot
-        )  # sets function to be run when no line is detected
+        self.start()
+        self._eh.post(event_type="Encoder Sensor", message="Created Digital Sensor")
 
-    @property
-    def moving_forward(self):
-        return self._motor.value >= 0
-
-    def _move_a_half_slot(self):
+    def _move_a_half_slot(self) -> None:
         """
         Increments the distance traveled when triggered. Stores distance
         traveled at time in _posiiton_history.
@@ -106,9 +99,28 @@ class RotationEncoder(EncoderGeneral):
         Returns:
             None.
         """
+        if not self._running:
+            return
         move_time = time.time()  # seconds
         self.position = (
             self._position_history[self._current_history_len - 1, 2]
-            + self._rev_per_half_slot()
+            + self._dist_per_half_slot()
         )
         self.add_position(a_time=move_time, position=self.position)
+
+    def start(self):
+        self._sensor.when_line = (
+            self._move_a_half_slot
+        )  # sets function to be run when line is detected
+        self._sensor.when_no_line = (  # type: ignore
+            self._move_a_half_slot
+        )  # sets function to be run when no line is detected
+        self._running = True
+        self.reset_history()
+        self._eh.post(event_type="Encoder Sensor", message="Started Digital Sensor")
+
+    def stop(self):
+        self._sensor.when_line = None
+        self._sensor.when_no_line = None
+        self._running = False
+        self._eh.post(event_type="Encoder Sensor", message="Stopped Digital Sensor")
