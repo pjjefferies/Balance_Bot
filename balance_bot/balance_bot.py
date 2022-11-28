@@ -93,10 +93,18 @@ class BBAbsoluteSensorGeneral(Protocol):
         raise NotImplementedError
 
 
-TIMER_MS: Callable[[], float] = lambda: time.time() * 1000
-TIMER_S: Callable[[], float] = lambda: time.time()
-ENCODERS: bool = False
-VERBOSE: bool = True
+class DirectionController(Protocol):
+    def __init__(self, eh: EventHandlerTemplate) -> None:
+        raise NotImplementedError
+
+    def bd_drive(self) -> tuple[float, float]:
+        raise NotImplementedError
+
+    def start(self) -> None:
+        raise NotImplementedError
+
+    def stop(self) -> None:
+        raise NotImplementedError
 
 
 class BalanceBot:
@@ -125,6 +133,7 @@ class BalanceBot:
         start_prog: tuple[tuple[float, float, float]] | None = None,
         repeat_prog: tuple[tuple[float, float, float]] | None = None,
         manual_control_time: int = 0,  # Duration of manual control in seconds
+        bluedot_control: DirectionController | None = None,
         eh: EventHandler,
     ):
         """
@@ -156,6 +165,11 @@ class BalanceBot:
         self._enc_arm_right: EncoderGeneral | None = enc_arm_right
         # Initialize i2C Connection to sensor- need check/try?
         self._sensor: BBAbsoluteSensorGeneral = sensor9DOF
+        # Initialize BlueDot Controller if using
+        if bluedot_control is not None and manual_control_time > 0:
+            self._bluedot_control: DirectionController | None = bluedot_control
+        else:
+            self._bluedot_control: DirectionController | None = None
 
         # Get Initial Values for PID Filter Initialization
         temp_euler: dict[str, float] = self._sensor.euler_angles
@@ -189,21 +203,15 @@ class BalanceBot:
                 self._run_repeat_program(a_prog=repeat_prog)
 
         # Set-up BlueDot Remote Control for manual control
-        if manual_control_time > 0:
-            import bluedot_direction_control
-
-            bd_ctl: bluedot_direction_control.BlueDotRobotController = (
-                bluedot_direction_control.BlueDotRobotController(eh=self._eh)
-            )
-
-            start_time: float = time.time()
+        if self._bluedot_control is not None:
+            start_time: float = TIME_S()
             right: float
             fwd: float
-            while time.time() - start_time < manual_control_time:
-                right, fwd = bd_ctl.bd_drive()
+            while (TIME_S() - start_time) < manual_control_time:
+                right, fwd = self._bluedot_control.bd_drive()
                 self.pitch_setpoint_angle = max(-1, min(1, fwd))
                 self.yaw_setpoint_angle = max(-1, min(1, right))
-            bd_ctl.stop()
+            self._bluedot_control.stop()
 
         main_control_loop.close()
 
@@ -290,11 +298,11 @@ def main():
         # We're running on Raspberry Pi. Start robot.
         logger.info("Starting Balance Bot Robt")
         from gpiozero import Motor
-        import bluedot_direction_control
         import board
         import busio
         from bb_bno055_sensor import BB_BNO055Sensor
-        from encoder_sensor import RotationEncoder
+        from encoder_sensor_digital import EncoderDigital
+        import bluedot_direction_control
 
         motor_wheel_left: Motor_General = Motor(
             forward=cfg.wheel.left.motor.fwd,
@@ -327,6 +335,10 @@ def main():
         i2c: busio.I2C = busio.I2C(board.SCL, board.SCA)
         sensor9DOF: BBAbsoluteSensor = BB_BNO055Sensor(i2c)
 
+        bluedot_control: DirectionController | None = (
+            bluedot_direction_control.BlueDotRobotController(eh=eh)
+        )
+
     elif os.name == "nt":
         # Running on Windows, start robot simulator.
         eh.post(event_type="log", message="INFO: Stating Robot Simulator")
@@ -348,6 +360,8 @@ def main():
 
         sensor9DOF: BB9DOFSensorSimulator = BB9DOFSensorSimulator(eh=eh)
 
+        bluedot_control: DirectionController | None = None
+
     else:
         post_event(
             "log", "ERROR: Balance Bot - OS not identified. Please try on Raspberry Pi"
@@ -367,6 +381,7 @@ def main():
         sensor9DOF=sensor9DOF,
         start_prog=start_prog,
         repeat_prog=None,
+        bluedot_control=bluedot_control,
     )
 
 
