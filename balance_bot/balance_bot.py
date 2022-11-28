@@ -109,6 +109,10 @@ class DirectionController(Protocol):
         raise NotImplementedError
 
 
+TIME_MS: Callable[[], float] = lambda: time.time() * 1000
+TIME_S: Callable[[], float] = lambda: time.time()
+
+
 class BalanceBot:
     """
     A class to represent the Balance Bot Robot
@@ -243,11 +247,11 @@ class BalanceBot:
     async def _primary_balance_loop(self) -> None:
         self._eh.post(event_type="log", message="Main loop started")
         lasttime_control = 0
-        lasttime_params_updated = TIMER_S()
+        lasttime_params_updated = TIME_S()
         while True:
             if (time.time() * 1000 - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
-                lasttime_control = TIMER_S()
+                lasttime_control = TIME_S()
                 temp_euler: dict[str, float] = self._sensor.euler_angles
                 self._roll: float = temp_euler["x"]
                 self._pitch: float = temp_euler["y"]
@@ -278,9 +282,9 @@ class BalanceBot:
                     self._yaw,
                 )
                 self._eh.post(event_type="log", message="Main loop ended")
-            if (TIMER_S() - lasttime_params_updated) >= cfg.duration.params_update:
+            if (TIME_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
-                lasttime_params_updated = TIMER_S()
+                lasttime_params_updated = TIME_S()
                 self._eh.post(event_type="log", message="Updating parameters?")
                 # reload(bbc)
 
