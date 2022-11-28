@@ -20,6 +20,11 @@ from config import cfg
 from event import EventHandler
 
 
+class EventHandlerTemplate(Protocol):
+    def post(self, *, event_type: str, message: str) -> None:
+        raise NotImplementedError
+
+
 class MotorGeneral(Protocol):
     def __init__(
         self,
