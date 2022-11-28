@@ -10,9 +10,6 @@ Misc variables:
 """
 
 import time
-
-# import yaml
-# from box import Box
 from typing import Callable, Protocol
 from abc import abstractmethod
 import robot_listener
