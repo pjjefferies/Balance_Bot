@@ -306,12 +306,12 @@ def main():
             backward=cfg.wheel.right.motor.rwd,
             pwm=True,
         )
-        motor_arm_left: Motor_General = Motor(
-            forward=cfg.arm.left.fwd, backward=cfg.arm.left.rwd, pwm=True
-        )
-        motor_arm_right: Motor_General = Motor(
-            forward=cfg.arm.right.fwd, backward=cfg.arm.right.rwd, pwm=True
-        )
+        # motor_arm_left: Motor_General = Motor(
+        #     forward=cfg.arm.left.fwd, backward=cfg.arm.left.rwd, pwm=True
+        # )
+        # motor_arm_right: Motor_General = Motor(
+        #     forward=cfg.arm.right.fwd, backward=cfg.arm.right.rwd, pwm=True
+        # )
 
         enc_wheel_left: RotationEncoder = RotationEncoder(
             signal_pin=cfg.wheel.left.encoder
@@ -319,10 +319,10 @@ def main():
         enc_wheel_right: RotationEncoder = RotationEncoder(
             signal_pin=cfg.wheel.right.encoder
         )
-        enc_arm_left: RotationEncoder = RotationEncoder(signal_pin=cfg.arm.left.encoder)
-        enc_arm_right: RotationEncoder = RotationEncoder(
-            signal_pin=cfg.arm.right.encoder
-        )
+        # enc_arm_left: EncoderGeneral = RotationEncoder(signal_pin=cfg.arm.left.encoder)
+        # enc_arm_right: EncoderGeneral = RotationEncoder(
+        #     signal_pin=cfg.arm.right.encoder
+        # )
 
         i2c: busio.I2C = busio.I2C(board.SCL, board.SCA)
         sensor9DOF: BBAbsoluteSensor = BB_BNO055Sensor(i2c)
