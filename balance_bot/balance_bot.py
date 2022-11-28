@@ -323,10 +323,10 @@ def main():
         #     forward=cfg.arm.right.fwd, backward=cfg.arm.right.rwd, pwm=True
         # )
 
-        enc_wheel_left: RotationEncoder = RotationEncoder(
+        enc_wheel_left: EncoderGeneral = EncoderDigital(
             signal_pin=cfg.wheel.left.encoder
         )
-        enc_wheel_right: RotationEncoder = RotationEncoder(
+        enc_wheel_right: EncoderGeneral = EncoderDigital(
             signal_pin=cfg.wheel.right.encoder
         )
         # enc_arm_left: EncoderGeneral = RotationEncoder(signal_pin=cfg.arm.left.encoder)
