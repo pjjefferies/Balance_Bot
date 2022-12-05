@@ -1,9 +1,12 @@
 #! /usr/bin/python3
 
 import time
-from typing import Callable, Protocol, Any
+from typing import Callable, Protocol, Any, Union
 from encoder_sensor_general import EncoderGeneral
 from gpiozero import LineSensor  # type: ignore
+from gpiozero import Motor
+from motor_simulator import MotorSim
+from event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):
@@ -42,12 +45,12 @@ class EncoderDigital(EncoderGeneral):
     def __init__(
         self,
         *,
-        signal_pin: int | str,
+        signal_pin: Union[int, str],
         slots_per_rev: int = 20,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds
-        motor: MotorGeneral,
-        eh: EventHandlerTemplate,
+        motor: Union[Motor, MotorSim],
+        eh: EventHandler,
     ):
         """
         Constructs all the necessary attributes for the Rotation_Encoder

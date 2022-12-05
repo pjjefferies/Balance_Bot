@@ -2,12 +2,18 @@
 
 import time
 import asyncio
-from typing import Protocol
+from typing import Union  # Protocol
 from config import cfg_sim
 from encoder_sensor_general import EncoderGeneral
+from gpiozero import Motor
+from motor_simulator import MotorSim
+from event import EventHandler
 
 # from config import cfg
 
+"""
+Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
+not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
@@ -21,6 +27,7 @@ class MotorGeneral(Protocol):
     @property
     def value(self) -> float:
         raise NotImplementedError
+"""
 
 
 class EncoderSim(EncoderGeneral):
@@ -45,8 +52,8 @@ class EncoderSim(EncoderGeneral):
         sample_freq: float = 100,  # per second
         max_no_position_points: int = 10_000,
         average_duration: int = 1,  # seconds
-        motor: MotorGeneral,
-        eh: EventHandlerTemplate,
+        motor: Union[Motor, MotorSim],
+        eh: EventHandler,
     ) -> None:
         """
         Constructs all the necessary attributes for the EncoderSim object
@@ -70,7 +77,7 @@ class EncoderSim(EncoderGeneral):
             cfg_sim.encoder.position_change_to_motor_value_ratio
         )
         self._position_change_rate = (  # distance / time (s)
-            self._motor.value * self._position_change_to_motor_value_ratio
+            float(self._motor.value) * self._position_change_to_motor_value_ratio
         )
         self._sample_freq: float = sample_freq
 

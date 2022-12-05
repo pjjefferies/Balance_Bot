@@ -8,6 +8,7 @@ Loads BNO055 Sensor configuration if available
 """
 
 import os
+from typing import Dict
 import yaml
 from box import Box
 import logging.config
@@ -16,7 +17,7 @@ import logging.config
 env = "dev"
 
 with open(r"./configs/balance_bot_config.yml", "r") as ymlfile:
-    full_cfg: dict[str, dict[str, str]] = yaml.safe_load(ymlfile)
+    full_cfg: Dict[str, Dict[str, str]] = yaml.safe_load(ymlfile)
 
 cfg: Box = Box(
     {**full_cfg["base"], **full_cfg[env]}, default_box=True, default_box_attr=None
@@ -27,7 +28,7 @@ os.makedirs(cfg.path.logs, exist_ok=True)
 
 if os.path.exists(cfg.path.log_config):
     with open(cfg.path.log_config, "r") as ymlfile:
-        log_config: dict[str, str] = yaml.safe_load(ymlfile)
+        log_config: Dict[str, str] = yaml.safe_load(ymlfile)
 
     # Set up the logger configuration
     logging.config.dictConfig(log_config)
@@ -38,7 +39,7 @@ else:
 
 # Import Simulation Configuration if available
 with open(r"./configs/balance_bot_simulator_config.yml", "r") as ymlfile:
-    full_sim_cfg: dict[str, dict[str, str]] = yaml.safe_load(ymlfile)
+    full_sim_cfg: Dict[str, Dict[str, str]] = yaml.safe_load(ymlfile)
 
 cfg_sim: Box = Box(
     {**full_sim_cfg["base"], **full_sim_cfg[env]},
