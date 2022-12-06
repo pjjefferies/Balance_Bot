@@ -1,16 +1,10 @@
 #! /usr/bin/python3
 
 import numpy as np
-from typing import Any, Union  # Protocol
-from gpiozero import Motor
-from motor_simulator import MotorSim
-from event import EventHandler
+from typing import Protocol, Any
 
 # from config import cfg
 
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
@@ -26,7 +20,6 @@ class MotorGeneral(Protocol):
     @property
     def value(self) -> float:
         raise NotImplementedError
-"""
 
 
 class EncoderGeneral:
@@ -51,10 +44,8 @@ class EncoderGeneral:
         *,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds - for calc. speed, accel, etc.
-        motor: Union[
-            Motor, MotorSim
-        ],  # MotorGeneral,  # Motor object to detect direction of movement
-        eh: EventHandler,
+        motor: MotorGeneral,  # Motor object to detect direction of movement
+        eh: EventHandlerTemplate,
     ):
         """
         Constructs all the necessary attributes for the EncoderGeneral
@@ -68,8 +59,8 @@ class EncoderGeneral:
             average_duration  # time in seconds speed, accel and jerk are averaged over
         )
         self._history_lines_to_use: int
-        self._motor: Union[Motor, MotorSim] = motor
-        self._eh: EventHandler = eh
+        self._motor: MotorGeneral = motor
+        self._eh: EventHandlerTemplate = eh
         self._running = False
         self.reset_history()
 
@@ -80,7 +71,7 @@ class EncoderGeneral:
         raise NotImplementedError
 
     @property
-    def moving_forward(self) -> bool:
+    def moving_forward(self):
         return self._motor.value >= 0
 
     def reset_history(self) -> None:

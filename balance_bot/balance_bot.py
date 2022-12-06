@@ -10,26 +10,15 @@ Misc variables:
 """
 
 import time
-from typing import Callable, Dict, Tuple, Union  # Protocol - V3.10
-
-# from abc import abstractmethod
+from typing import Callable, Protocol
+from abc import abstractmethod
 import robot_listener
-from motor_simulator import MotorSim
-from encoder_sensor_digital import EncoderDigital
-from encoder_simulator import EncoderSim
-from gpiozero import Motor
-from bb_9dof_sensor_simulator import BB9DOFSensorSimulator
-from bb_bno055_sensor import BB_BNO055Sensor
-from bluedot_direction_control import BlueDotRobotController
 
 # from importlib import reload
 import asyncio
 from config import cfg
 from event import EventHandler
 
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
@@ -77,27 +66,27 @@ class BBAbsoluteSensorGeneral(Protocol):
 
     @property
     @abstractmethod
-    def accel(self) -> Dict[str, float]:
+    def accel(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def magnetic_bb(self) -> Dict[str, float]:
+    def magnetic_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gyro_bb(self) -> Dict[str, float]:
+    def gyro_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def euler_angles(self) -> Dict[str, float]:
+    def euler_angles(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gravity_dir(self) -> Dict[str, float]:
+    def gravity_dir(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
@@ -110,7 +99,7 @@ class DirectionController(Protocol):
     def __init__(self, eh: EventHandlerTemplate) -> None:
         raise NotImplementedError
 
-    def bd_drive(self) -> Tuple[float, float]:
+    def bd_drive(self) -> tuple[float, float]:
         raise NotImplementedError
 
     def start(self) -> None:
@@ -118,7 +107,7 @@ class DirectionController(Protocol):
 
     def stop(self) -> None:
         raise NotImplementedError
-"""
+
 
 TIME_MS: Callable[[], float] = lambda: time.time() * 1000
 TIME_S: Callable[[], float] = lambda: time.time()
@@ -138,19 +127,19 @@ class BalanceBot:
     def __init__(
         self,
         *,
-        motor_wheel_left: Union[Motor, MotorSim],  #: MotorGenera,
-        motor_wheel_right: Union[Motor, MotorSim],
-        motor_arm_left: Union[Motor, MotorSim, None],
-        motor_arm_right: Union[Motor, MotorSim, None],
-        enc_wheel_left: Union[EncoderDigital, EncoderSim],
-        enc_wheel_right: Union[EncoderDigital, EncoderSim],
-        enc_arm_left: Union[EncoderDigital, EncoderSim, None],
-        enc_arm_right: Union[EncoderDigital, EncoderSim, None],
-        sensor9DOF: Union[BB_BNO055Sensor, BB9DOFSensorSimulator],
-        start_prog: Union[Tuple[Tuple[float, float, float]], None] = None,
-        repeat_prog: Union[Tuple[Tuple[float, float, float]], None] = None,
+        motor_wheel_left: MotorGeneral,
+        motor_wheel_right: MotorGeneral,
+        motor_arm_left: MotorGeneral | None,
+        motor_arm_right: MotorGeneral | None,
+        enc_wheel_left: EncoderGeneral,
+        enc_wheel_right: EncoderGeneral,
+        enc_arm_left: EncoderGeneral | None,
+        enc_arm_right: EncoderGeneral | None,
+        sensor9DOF: BBAbsoluteSensorGeneral,
+        start_prog: tuple[tuple[float, float, float]] | None = None,
+        repeat_prog: tuple[tuple[float, float, float]] | None = None,
         manual_control_time: int = 0,  # Duration of manual control in seconds
-        bluedot_control: Union[BlueDotRobotController, None] = None,
+        bluedot_control: DirectionController | None = None,
         eh: EventHandler,
     ):
         """
@@ -171,29 +160,25 @@ class BalanceBot:
         self._eh = eh
 
         # Set-up Motor Control Pins
-        self._motor_wheel_left: Union[Motor, MotorSim] = motor_wheel_left
-        self._motor_wheel_right: Union[Motor, MotorSim] = motor_wheel_right
-        self._motor_arm_left: Union[Motor, MotorSim, None] = motor_arm_left
-        self._motor_arm_right: Union[Motor, MotorSim, None] = motor_arm_right
+        self._motor_wheel_left: MotorGeneral = motor_wheel_left
+        self._motor_wheel_right: MotorGeneral = motor_wheel_right
+        self._motor_arm_left: MotorGeneral | None = motor_arm_left
+        self._motor_arm_right: MotorGeneral | None = motor_arm_right
         # Set-up Motor_General Encoders
-        self._enc_wheel_left: Union[EncoderDigital, EncoderSim] = enc_wheel_left
-        self._enc_wheel_right: Union[EncoderDigital, EncoderSim] = enc_wheel_right
-        self._enc_arm_left: Union[
-            Union[EncoderDigital, EncoderSim], None
-        ] = enc_arm_left
-        self._enc_arm_right: Union[
-            Union[EncoderDigital, EncoderSim], None
-        ] = enc_arm_right
+        self._enc_wheel_left: EncoderGeneral = enc_wheel_left
+        self._enc_wheel_right: EncoderGeneral = enc_wheel_right
+        self._enc_arm_left: EncoderGeneral | None = enc_arm_left
+        self._enc_arm_right: EncoderGeneral | None = enc_arm_right
         # Initialize i2C Connection to sensor- need check/try?
-        self._sensor: Union[BB9DOFSensorSimulator, BB_BNO055Sensor] = sensor9DOF
+        self._sensor: BBAbsoluteSensorGeneral = sensor9DOF
         # Initialize BlueDot Controller if using
         if bluedot_control is not None and manual_control_time > 0:
-            self._bluedot_control: Union[BlueDotRobotController, None] = bluedot_control
+            self._bluedot_control: DirectionController | None = bluedot_control
         else:
-            self._bluedot_control: Union[BlueDotRobotController, None] = None
+            self._bluedot_control: DirectionController | None = None
 
         # Get Initial Values for PID Filter Initialization
-        temp_euler: Dict[str, float] = self._sensor.euler_angles
+        temp_euler: dict[str, float] = self._sensor.euler_angles
         self._roll_last: float = temp_euler["x"]
         self._pitch_last: float = temp_euler["y"]
         self._yaw_last: float = temp_euler["z"]
@@ -236,7 +221,7 @@ class BalanceBot:
 
         main_control_loop.close()
 
-    def _run_repeat_program(self, a_prog: Tuple[Tuple[float, float, float]]):
+    def _run_repeat_program(self, a_prog: tuple[tuple[float, float, float]]):
         for a_command in a_prog:
             if not isinstance(a_command, list) or len(a_command) != 3:
                 self._eh.post(
@@ -267,7 +252,7 @@ class BalanceBot:
             if (time.time() * 1000 - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
                 lasttime_control = TIME_S()
-                temp_euler: Dict[str, float] = self._sensor.euler_angles
+                temp_euler: dict[str, float] = self._sensor.euler_angles
                 self._roll: float = temp_euler["x"]
                 self._pitch: float = temp_euler["y"]
                 self._yaw: float = temp_euler["z"]
@@ -354,15 +339,11 @@ def main():
         # )
 
         i2c: busio.I2C = busio.I2C(board.SCL, board.SCA)
-        sensor9DOF: BB_BNO055Sensor = BB_BNO055Sensor(i2c, eh=eh)
+        sensor9DOF: BBAbsoluteSensor = BB_BNO055Sensor(i2c)
 
-        try:
-            bluedot_control: DirectionController | None = (
-                bluedot_direction_control.BlueDotRobotController(eh=eh, timeout=60)
-            )
-        except ConnectionError as e:
-            eh.post(evnet_type="bluedot", message=f"No BlueDot Controller: {e}")
-            bluedot_control: BlueDotRobotController | None = None
+        bluedot_control: DirectionController | None = (
+            bluedot_direction_control.BlueDotRobotController(eh=eh)
+        )
 
     elif os.name == "nt":
         # Running on Windows, start robot simulator.
@@ -371,21 +352,21 @@ def main():
         from encoder_simulator import EncoderSim
         from bb_9dof_sensor_simulator import BB9DOFSensorSimulator
 
-        motor_wheel_left: MotorSim = MotorSim(eh=eh)
-        motor_wheel_right: MotorSim = MotorSim(eh=eh)
+        motor_wheel_left: MotorGeneral = MotorSim()
+        motor_wheel_right: MotorGeneral = MotorSim()
         # motor_arm_left: Motor_General = MotorSim()
         # motor_arm_right: Motor_General = MotorSim()
 
-        enc_wheel_left: EncoderSim = EncoderSim(motor=motor_wheel_left, eh=eh)
+        enc_wheel_left: EncoderGeneral = EncoderSim(motor=motor_wheel_left, eh=eh)
         enc_wheel_left.start()
-        enc_wheel_right: EncoderSim = EncoderSim(motor=motor_wheel_right, eh=eh)
+        enc_wheel_right: EncoderGeneral = EncoderSim(motor=motor_wheel_right, eh=eh)
         enc_wheel_right.start()
         # enc_arm_left: Encoder_General = EncoderSim()
         # enc_arm_right: Encoder_General = EncoderSim()
 
         sensor9DOF: BB9DOFSensorSimulator = BB9DOFSensorSimulator(eh=eh)
 
-        bluedot_control: Union[BlueDotRobotController, None] = None
+        bluedot_control: DirectionController | None = None
 
     else:
         post_event(

@@ -22,7 +22,7 @@ Misc variables:
 
 import random
 import math
-from typing import Protocol, Dict
+from typing import Protocol
 
 # from box import Box
 # from config import cfg
@@ -93,7 +93,7 @@ class BB9DOFSensorSimulator:
             return a_temp
 
     @property
-    def accel(self) -> Dict[str, float]:
+    def accel(self) -> dict[str, float]:
         """
         Getter for acceleration readings
 
@@ -110,7 +110,7 @@ class BB9DOFSensorSimulator:
         return {"x": accel_x, "y": accel_y, "z": accel_z}
 
     @property
-    def magnetic_bb(self) -> Dict[str, float]:
+    def magnetic_bb(self) -> dict[str, float]:
         """
         Getter for magnetic field strength readings
 
@@ -127,7 +127,7 @@ class BB9DOFSensorSimulator:
         return {"x": mag_x, "y": mag_y, "z": mag_z}
 
     @property
-    def gyro_bb(self) -> Dict[str, float]:
+    def gyro_bb(self) -> dict[str, float]:
         """
         Getter for gyroscope readings
 
@@ -144,7 +144,7 @@ class BB9DOFSensorSimulator:
         return {"x": gyro_x, "y": gyro_y, "z": gyro_z}
 
     @property
-    def euler_angles(self) -> Dict[str, float]:
+    def euler_angles(self) -> dict[str, float]:
         """
         Getter for Euler angle orientation of sensor
 
@@ -161,7 +161,7 @@ class BB9DOFSensorSimulator:
         return {"x": roll_x, "y": pitch_y, "z": yaw_z}
 
     @property
-    def gravity_dir(self) -> Dict[str, float]:
+    def gravity_dir(self) -> dict[str, float]:
         """
         Getter for gravity direction readings
 

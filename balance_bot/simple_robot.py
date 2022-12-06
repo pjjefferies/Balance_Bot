@@ -1,7 +1,8 @@
 #! /usr/bin/python3
 
 import time
-from typing import Callable  # , Protocol - V3.10
+from typing import Protocol, Callable
+from abc import abstractmethod
 import robot_listener
 
 # from config import cfg
@@ -9,20 +10,12 @@ from gpiozero import Motor
 import bluedot_direction_control
 from config import cfg
 from event import EventHandler
-from encoder_sensor_digital import EncoderDigital
+from encoder_sensor_digital import RotationEncoder
 
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
-class MotorGeneral:  # (Protocol): - V3.10
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: Union[int, None] = None,
-        backward: Union[int, None] = None,
-        enable: Union[int, None] = None,
-        pwm: bool = True,
-        pin_factory: None = None,
     ):
         raise NotImplementedError
 
@@ -35,7 +28,7 @@ class MotorGeneral:  # (Protocol): - V3.10
         raise NotImplementedError
 
 
-class EncoderGeneral:  # (Protocol): - V3.10
+class EncoderGeneral(Protocol):
     def __init__(
         self,
         *,
@@ -55,7 +48,7 @@ class EncoderGeneral:  # (Protocol): - V3.10
         raise NotImplementedError
 
 
-class BBAbsoluteSensorGeneral:  # (Protocol): - V3.10
+class BBAbsoluteSensorGeneral(Protocol):
     def __init__(self) -> None:
         raise NotImplementedError
 
@@ -69,34 +62,33 @@ class BBAbsoluteSensorGeneral:  # (Protocol): - V3.10
 
     @property
     @abstractmethod
-    def accel(self) -> Dict[str, float]:
+    def accel(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def magnetic_bb(self) -> Dict[str, float]:
+    def magnetic_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gyro_bb(self) -> Dict[str, float]:
+    def gyro_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def euler_angles(self) -> Dict[str, float]:
+    def euler_angles(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gravity_dir(self) -> Dict[str, float]:
+    def gravity_dir(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
     def gravity_mag(self) -> float:
         raise NotImplementedError
-"""
 
 
 TIME_MS: Callable[[], int] = lambda: int(time.time() * 1000)
@@ -111,12 +103,12 @@ class SimpleRobot:
     def __init__(
         self,
         *,
-        motor_wheel_left: Motor,
-        motor_wheel_right: Motor,
+        motor_wheel_left: MotorGeneral,
+        motor_wheel_right: MotorGeneral,
         # motor_arm_left: MotorGeneral | None,
         # motor_arm_right: MotorGeneral | None,
-        enc_wheel_left: EncoderDigital,
-        enc_wheel_right: EncoderDigital,
+        enc_wheel_left: EncoderGeneral,
+        enc_wheel_right: EncoderGeneral,
         # enc_arm_left: EncoderGeneral | None,
         # enc_arm_right: EncoderGeneral | None,
         # sensor9DOF: BBAbsoluteSensorGeneral,
@@ -208,28 +200,26 @@ def main():
     robot_listener.setup_bluedot_handler()
 
     # Set-up Motor Control Pins
-    motor_wheel_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
+    motor_wheel_left: MotorGeneral = Motor(
         forward=cfg.wheel.left.motor.fwd,
         backward=cfg.wheel.left.motor.rwd,
         pwm=True,
     )
-    motor_wheel_right: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
+    motor_wheel_right: MotorGeneral = Motor(
         forward=cfg.wheel.right.motor.fwd,
         backward=cfg.wheel.right.motor.rwd,
         pwm=True,
     )
 
     # Set-up Motor Encoders
-    enc_wheel_left: EncoderDigital = EncoderDigital(
-        signal_pin=cfg.wheel.left.encoder, motor=motor_wheel_left, eh=eh
+    enc_wheel_left: EncoderGeneral = RotationEncoder(signal_pin=cfg.wheel.left.encoder)
+    enc_wheel_right: EncoderGeneral = RotationEncoder(
+        signal_pin=cfg.wheel.right.encoder
     )
-    enc_wheel_right: EncoderDigital = EncoderDigital(
-        signal_pin=cfg.wheel.right.encoder, motor=motor_wheel_left, eh=eh
-    )
-    # enc_arm_left: EncoderGeneral = EncoderDigital(
+    # enc_arm_left: EncoderGeneral = RotationEncoder(
     #     signal_pin=cfg.arm.left.encoder
     # )
-    # enc_arm_right: EncoderGeneral = EncoderDigital(
+    # enc_arm_right: EncoderGeneral = RotationEncoder(
     #     signal_pin=cfg.arm.right.encoder
     # )
 
@@ -246,7 +236,7 @@ def main():
         eh=eh,
     )
 
-    robot.drive_two_wheel_robot_by_bd(duration=10)
+    robot.drive_two_wheel_robot_by_bd()
 
 
 if __name__ == "__main__":
