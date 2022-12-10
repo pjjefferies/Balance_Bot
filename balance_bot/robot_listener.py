@@ -4,7 +4,7 @@
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
 import datetime as dt
-from .event import EventHandler
+from event import EventHandler
 
 eh = EventHandler()
 

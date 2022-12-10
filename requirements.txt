@@ -1,0 +1,9 @@
+autokey==0.96.0
+bluedot==2.0.0
+colorzero==2.0
+dbus-next==0.2.3
+gpiozero==1.6.2
+packaging==22.0
+pyinotify==0.9.6
+python-xlib==0.32
+six==1.16.0
