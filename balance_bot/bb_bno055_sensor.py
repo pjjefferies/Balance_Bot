@@ -21,14 +21,22 @@ Methods:
 Misc variables:
     x
 """
-from typing import Protocol
-from abc import abstractmethod
+from typing import Tuple, Dict, Union  # Protocol
+
+# from abc import abstractmethod
 import os
 import math
 import time
 import yaml
 from box import Box
 from config import cfg
+from event import EventHandler
+import adafruit_bno055
+import busio
+
+"""
+Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
+not work with 32-bit Linux (e.g. Raspberry Pi).
 
 
 class EventHandlerTemplate(Protocol):
@@ -41,7 +49,7 @@ class AbsoluteSensor(Protocol):
         raise NotImplementedError
 
     @property
-    def calibration_status(self) -> tuple[int, int, int, int]:
+    def calibration_status(self) -> Tuple[int, int, int, int]:
         raise NotImplementedError
 
     @property
@@ -56,17 +64,17 @@ class AbsoluteSensor(Protocol):
 
     @property
     @abstractmethod
-    def offsets_accelerometer(self) -> tuple[int, int, int]:
+    def offsets_accelerometer(self) -> Tuple[int, int, int]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def offsets_magnetometer(self) -> tuple[int, int, int]:
+    def offsets_magnetometer(self) -> Tuple[int, int, int]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def offsets_gyroscope(self) -> tuple[int, int, int]:
+    def offsets_gyroscope(self) -> Tuple[int, int, int]:
         raise NotImplementedError
 
     @property
@@ -86,33 +94,40 @@ class AbsoluteSensor(Protocol):
 
     @property
     @abstractmethod
-    def linear_acceleration(self) -> tuple[float | None, float | None, float | None]:
+    def linear_acceleration(
+        self,
+    ) -> Tuple[Union[float, None], Union[float, None], Union[float, None]]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def magnetic(self) -> tuple[int | None, int | None, int | None]:
+    def magnetic(self) -> Tuple[Union[int, None], Union[int, None], Union[int, None]]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gyro(self) -> tuple[int | None, int | None, int | None]:
+    def gyro(self) -> Tuple[Union[int, None], Union[int, None], Union[int, None]]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def euler(self) -> tuple[int | None, int | None, int | None]:
+    def euler(self) -> Tuple[Union[int, None], Union[int, None], Union[int, None]]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def quaternion(self) -> tuple[int | None, int | None, int | None, int | None]:
+    def quaternion(
+        self,
+    ) -> Tuple[Union[int, None], Union[int, None], Union[int, None], Union[int, None]]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gravity(self) -> tuple[float | None, float | None, float | None]:
+    def gravity(
+        self,
+    ) -> Tuple[Union[float, None], Union[float, None], Union[float, None]]:
         raise NotImplementedError
+"""
 
 
 class BB_BNO055Sensor:
@@ -138,7 +153,9 @@ class BB_BNO055Sensor:
         # "gyro.offset",
     )
 
-    def __init__(self, *, sensor: AbsoluteSensor, eh: EventHandlerTemplate) -> None:
+    def __init__(
+        self, *, i2c: busio.I2C, eh: EventHandler
+    ) -> None:  # sensor: AbsoluteSensor, V3.10
         """
         Args:
              (TYPE): DESCRIPTION.
@@ -148,7 +165,7 @@ class BB_BNO055Sensor:
 
         """
         # self._sensor: adafruit_bno055.BNO055_I2C = adafruit_bno055.BNO055_I2C(i2c)
-        self._sensor = sensor
+        self._sensor = adafruit_bno055.sensorBNO055_I2C(i2c)
         self._eh = eh
 
         # self._sensor.accel_range =
@@ -213,8 +230,8 @@ class BB_BNO055Sensor:
         gyr_offset_z: int
         gyr_offset_x, gyr_offset_y, gyr_offset_z = self._sensor.offsets_gyroscope
 
-        sensor_calibration_data: dict[
-            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        sensor_calibration_data: Dict[
+            str, Union[Dict[str, Union[Dict[str, int], int]], Dict[str, Dict[str, int]]]
         ] = {
             "accel": {
                 "offset": {"x": acc_offset_x, "y": acc_offset_y, "z": acc_offset_z},
@@ -233,8 +250,8 @@ class BB_BNO055Sensor:
 
     def _save_calibration(
         self,
-        sensor_calibration_data: dict[
-            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        sensor_calibration_data: Dict[
+            str, Union[Dict[str, Union[Dict[str, int], int]], Dict[str, Dict[str, int]]]
         ],
     ) -> None:
         """Saves calibration data from dictionary to yaml file in configs folder"""
@@ -268,7 +285,7 @@ class BB_BNO055Sensor:
                     with open(
                         cfg.path.ninedof_sensor_calibration, "r"
                     ) as ninedof_sensor_cfg_file:
-                        ninedof_sensor_config: Box | None = Box(
+                        ninedof_sensor_config: Union[Box, None] = Box(
                             yaml.safe_load(ninedof_sensor_cfg_file)
                         )
                     if not self._validate_calibration_data(ninedof_sensor_config):
@@ -303,8 +320,8 @@ class BB_BNO055Sensor:
 
     def _validate_calibration_data(
         self,
-        sensor_calibration_data: dict[
-            str, dict[str, dict[str, int] | int] | dict[str, dict[str, int]]
+        sensor_calibration_data: Dict[
+            str, Union[Dict[str, Union[Dict[str, int], int]], Dict[str, Dict[str, int]]]
         ],
     ) -> bool:
         return all(
@@ -330,16 +347,16 @@ class BB_BNO055Sensor:
         return temperature
 
     @property
-    def accel(self) -> dict[str, float]:
+    def accel(self) -> Dict[str, float]:
         """
         Getter for acceleration readings
 
         Returns:
             Dict of X, Y, Z axis accelerrometer values in meters/sec.^2
         """
-        accel_x: float | None
-        accel_y: float | None
-        accel_z: float | None
+        accel_x: Union[float, None]
+        accel_y: Union[float, None]
+        accel_z: Union[float, None]
         accel_y, accel_x, accel_z = self._sensor.linear_acceleration
         if accel_x is None or accel_y is None or accel_z is None:
             raise ValueError("Accel not available, check mode")
@@ -350,16 +367,16 @@ class BB_BNO055Sensor:
         return {"x": accel_x, "y": accel_y, "z": accel_z}
 
     @property
-    def magnetic_bb(self) -> dict[str, float]:
+    def magnetic_bb(self) -> Dict[str, float]:
         """
         Getter for magnetic field strength readings
 
         Returns:
             Dict of X, Y, Z megnetometer values in microteslas
         """
-        mag_x: float | None
-        mag_y: float | None
-        mag_z: float | None
+        mag_x: Union[float, None]
+        mag_y: Union[float, None]
+        mag_z: Union[float, None]
         mag_x, mag_y, mag_z = self._sensor.magnetic  # ORDER NOT VERIFIED
         if mag_x is None or mag_y is None or mag_z is None:
             raise ValueError("Magnetic reading not available, check mode")
@@ -370,16 +387,16 @@ class BB_BNO055Sensor:
         return {"x": mag_x, "y": mag_y, "z": mag_z}
 
     @property
-    def gyro_bb(self) -> dict[str, float]:
+    def gyro_bb(self) -> Dict[str, float]:
         """
         Getter for gyroscope readings
 
         Returns:
             Dict of X, Y, Z axis gyroscope values in degrees/sec.
         """
-        gyro_x: float | None
-        gyro_y: float | None
-        gyro_z: float | None
+        gyro_x: Union[float, None]
+        gyro_y: Union[float, None]
+        gyro_z: Union[float, None]
         gyro_y, gyro_x, gyro_z = self._sensor.gyro
         if gyro_x is None or gyro_y is None or gyro_z is None:
             raise ValueError("Gyro not available, check mode")
@@ -390,16 +407,16 @@ class BB_BNO055Sensor:
         return {"x": gyro_x, "y": gyro_y, "z": gyro_z}
 
     @property
-    def euler_angles(self) -> dict[str, float]:
+    def euler_angles(self) -> Dict[str, float]:
         """
         Getter for Euler angle orientation of sensor
 
         Returns:
             3-tuple of orientation angles
         """
-        yaw_z: float | None
-        roll_x: float | None
-        pitch_y: float | None
+        yaw_z: Union[float, None]
+        roll_x: Union[float, None]
+        pitch_y: Union[float, None]
         yaw_z, roll_x, pitch_y = self._sensor.euler
         if yaw_z is None or roll_x is None or pitch_y is None:
             raise ValueError("Euler angles not available, check mode")
@@ -410,16 +427,16 @@ class BB_BNO055Sensor:
         return {"x": roll_x, "y": pitch_y, "z": yaw_z}
 
     @property
-    def gravity_dir(self) -> dict[str, float]:
+    def gravity_dir(self) -> Dict[str, float]:
         """
         Getter for gravity direction readings
 
         Returns:
             2-tuple of XY and XZ angle orientations of gravity vector
         """
-        x_grav: float | None
-        y_grav: float | None
-        z_grav: float | None
+        x_grav: Union[float, None]
+        y_grav: Union[float, None]
+        z_grav: Union[float, None]
         x_grav, y_grav, z_grav = self._sensor.gravity
         if x_grav is None or y_grav is None or z_grav is None:
             raise ValueError("Gravity not available, check mode")
@@ -439,22 +456,23 @@ class BB_BNO055Sensor:
         Returns:
             magnitude of gravity vector        # ORDER NOT VERIFIED
         """
-        x_grav: float | None
-        y_grav: float | None
-        z_grav: float | None
+        x_grav: Union[float, None]
+        y_grav: Union[float, None]
+        z_grav: Union[float, None]
         x_grav, y_grav, z_grav = self._sensor.gravity
         x_grav = x_grav if x_grav is not None else 0
         y_grav = y_grav if y_grav is not None else 0
         z_grav = z_grav if z_grav is not None else 0
+        grav_mag: float = math.sqrt(sum([x_grav**2, y_grav**2, z_grav**2]))
         self._eh.post(
             event_type="robot 9DOF sensor",
             message=f"Gravity Magnitude: {grav_mag}",
         )
-        return math.sqrt(sum([x_grav**2, y_grav**2, z_grav**2]))
+        return grav_mag
 
     """
     @property
-    def quaternion_bb(self) -> tuple[int, ]:
+    def quaternion_bb(self) -> Tuple[int, ]:
 
         Getter for quaternion giving orientation
 
