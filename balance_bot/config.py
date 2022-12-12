@@ -16,7 +16,7 @@ import logging.config
 # env = os.environ['ENVIRONMENT']
 env = "dev"
 
-with open(r"./configs/balance_bot_config.yml", "r") as ymlfile:
+with open(r"/home/pi/Balance_Bot/configs/balance_bot_config.yml", "r") as ymlfile:
     full_cfg: Dict[str, Dict[str, str]] = yaml.safe_load(ymlfile)
 
 cfg: Box = Box(
@@ -38,7 +38,7 @@ else:
     )
 
 # Import Simulation Configuration if available
-with open(r"./configs/balance_bot_simulator_config.yml", "r") as ymlfile:
+with open(r"/home/pi/Balance_Bot/configs/balance_bot_simulator_config.yml", "r") as ymlfile:
     full_sim_cfg: Dict[str, Dict[str, str]] = yaml.safe_load(ymlfile)
 
 cfg_sim: Box = Box(

@@ -207,6 +207,9 @@ def main():
     robot_listener.setup_general_logging_handler()
     robot_listener.setup_bluedot_handler()
 
+    print(f"cfg.wheel.left.motor.fwd: {cfg.wheel.left.motor.fwd}")
+    print(f"cfg.wheel.left.motor.rwd: {cfg.wheel.left.motor.rwd}")
+
     # Set-up Motor Control Pins
     motor_wheel_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
         forward=cfg.wheel.left.motor.fwd,
