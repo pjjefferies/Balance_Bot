@@ -303,13 +303,17 @@ def main():
     robot = SimpleRobot(
         motor_wheel_left=motor_wheel_left,
         motor_wheel_right=motor_wheel_right,
+        motor_wheel_relay=motor_wheel_relay,
         enc_wheel_left=enc_wheel_left,
         enc_wheel_right=enc_wheel_right,
         bluedot_control=bd_ctl,
         eh=eh,
     )
 
-    robot.drive_two_wheel_robot_by_bd(duration=10)
+    # robot.drive_two_wheel_robot_by_bd(duration=10)
+
+    steps = [(5, 1, 0), (5, -1, 0), (5, 0, 1), (5, 0, -1)]
+    robot.drive_program(steps=steps)
 
 
 if __name__ == "__main__":
