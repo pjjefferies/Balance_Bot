@@ -43,6 +43,13 @@ def bluedot_eh(message: str) -> None:
 def setup_bluedot_handler() -> None:
     eh.subscribe(event_type="bluedot", fn=bluedot_eh)
 
+# Power Event Handler
+def power_eh(message: str) -> None:
+    print(f"Power: {message}")
+
+
+def setup_power_handler() -> None:
+    eh.subscribe(event_type="power", fn=power_eh)
 
 # General Logging Event Handlers
 def general_logging_handler(message: str) -> None:

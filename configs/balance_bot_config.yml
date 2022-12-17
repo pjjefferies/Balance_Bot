@@ -20,7 +20,8 @@ base:
                 fwd: "GPIO22"   # Physical Pin 15 (1, 8)
                 max_value: 1
                 min_value: -1
-            encoder: "GPIO21"     # Physical Pin 40 (2, 20)
+            encoder: "GPIO21"   # Physical Pin 40 (2, 20)
+        power: "GPIO14"         # Physical Pin 8
 
     arm:
         left:
@@ -29,14 +30,15 @@ base:
                 drop: "GPIO6"   # Physical Pin 31 (1, 16)
                 max_value: 1
                 min_value: -1
-            encoder: "GPIO20"      # Physical Pin 38 (2, 19)
+            encoder: "GPIO20"   # Physical Pin 38 (2, 19)
         right:
             motor:
                 lift: "GPIO13"  # Physical Pin 33 (1, 17)
                 drop: "GPIO19"  # Physical Pin 35 (1, 18)
                 max_value: 1
                 min_value: -1
-            encoder: "GPIO16"     # Physical Pin 36 (2, 18)
+            encoder: "GPIO16"   # Physical Pin 36 (2, 18)
+        power: "GPIO15"         # Physical Pin 10
 
     # SENSOR_PIN = "GPIO12"     # Physical Pin 32 (2, 16)
 

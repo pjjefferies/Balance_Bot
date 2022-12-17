@@ -1,11 +1,12 @@
 #! /usr/bin/python3
 
 import time
-from typing import Callable  # , Protocol - V3.10
+from typing import Callable, Tuple, List  # , Protocol - V3.10
 import robot_listener
 
 # from config import cfg
 from gpiozero import Motor
+from motor_battery_relay import MotorBatteryRelay
 import bluedot_direction_control
 from config import cfg
 from event import EventHandler
@@ -113,8 +114,10 @@ class SimpleRobot:
         *,
         motor_wheel_left: Motor,
         motor_wheel_right: Motor,
+        motor_wheel_relay: MotorBatteryRelay,
         # motor_arm_left: MotorGeneral | None,
         # motor_arm_right: MotorGeneral | None,
+        # arm_motor_relay: MotorBatteryRelay,
         enc_wheel_left: EncoderDigital,
         enc_wheel_right: EncoderDigital,
         # enc_arm_left: EncoderGeneral | None,
@@ -130,7 +133,11 @@ class SimpleRobot:
         Initialize Simple Robot using values in balance_bot_config
 
         Args:
-            None
+            TBD
+            a step is a tuple of:
+                    (duration (sec.),
+                     forward speed or angle (-1 to +1),
+                     right turn speed or angle (-1 to +1))
 
         Returns:
             None.
@@ -138,6 +145,7 @@ class SimpleRobot:
         """
         self._motor_wheel_left = motor_wheel_left
         self._motor_wheel_right = motor_wheel_right
+        self._motor_wheel_relay = motor_wheel_relay
         self._enc_wheel_left = enc_wheel_left
         self._enc_wheel_right = enc_wheel_right
         self._bluedot_control = bluedot_control
@@ -197,6 +205,37 @@ class SimpleRobot:
             self._enc_wheel_right.jerk
             time.sleep(interval / 5)
 
+    def drive_program(self, steps: List[Tuple[int, int, int]]) -> None:
+        """
+        a step is a tuple of:
+            (duration (sec.),
+            forward speed or angle (-1 to +1),
+            right turn speed or angle (-1 to +1))
+        """
+
+        for step in steps:
+            if (
+                not isinstance(step, tuple)
+                or len(step) != 3
+                or not (isinstance(step[0], int))
+                or not (isinstance(step[1], int))
+                or not (isinstance(step[1], int))
+            ):
+                continue
+            duration, fwd_rwd, right_left = step
+
+            left_motor_setting = max(min(fwd_rws - right_left, 1), -1)
+            right_motor_setting = max(min(fwd_rws + right_left, 1), -1)
+
+            self._self._motor_wheel_relay.on()
+            start_time: int = TIME_S
+            self._motor_wheel_left = left_motor_setting
+            self._motor_wheel_right = right_motor_setting
+            while (TIME_S - start_time) < step[0]:
+                time.sleep(1)
+            self._motor_wheel_left = 0
+            self._motor_wheel_right = 0
+
 
 def main():
     eh = EventHandler()
@@ -206,11 +245,15 @@ def main():
     robot_listener.setup_robot_9DOF_sensor_handler()
     robot_listener.setup_general_logging_handler()
     robot_listener.setup_bluedot_handler()
+    robot_listener.setup_power_handler()
 
     print(f"cfg.wheel.left.motor.fwd: {cfg.wheel.left.motor.fwd}")
     print(f"cfg.wheel.left.motor.rwd: {cfg.wheel.left.motor.rwd}")
 
-    # Set-up Motor Control Pins
+    # set-up Wheel Motor Power Relay
+    motor_wheel_relay: MotorBatteryRelay = MotorBatteryRelay(cfg.wheel.power)
+
+    # Set-up Wheel Motor Control Pins
     motor_wheel_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
         forward=cfg.wheel.left.motor.fwd,
         backward=cfg.wheel.left.motor.rwd,
@@ -221,6 +264,23 @@ def main():
         backward=cfg.wheel.right.motor.rwd,
         pwm=True,
     )
+
+    """
+    #set-up Arm Motor Power Relay
+    motor_arm_relay:MotorBatteryRelay = MotorBatteryRelay(cfg.arm.power)
+
+    # Set-up Arm Motor Control Pins
+    motor_arm_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
+        forward=cfg.arm.left.motor.fwd,
+        backward=cfg.arm.left.motor.rwd,
+        pwm=True,
+    )
+    motor_arm_right: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
+        forward=cfg.arm.right.motor.fwd,
+        backward=cfg.arm.right.motor.rwd,
+        pwm=True,
+    )
+    """
 
     # Set-up Motor Encoders
     enc_wheel_left: EncoderDigital = EncoderDigital(
