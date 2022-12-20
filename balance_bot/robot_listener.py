@@ -4,17 +4,31 @@
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
 import datetime as dt
+import sys
+from typing import Optional
+
+from config import log_cfg
 from event import EventHandler
 
 eh = EventHandler()
 
-# Robot Moved Event Handler
-def robot_movement_eh(message: str) -> None:
-    print(f"Robot Move: {message}")
+# General Event Handler
+def general_eh(
+    event_type: str, level: Optional[str] = None, message: str
+) -> None:
+    now = dt.datetime.now()
+    level_text = ": " + level if level is not None else ""
+    log_file = log_cfg.handler.log_file
+    if log_file == "sys.stdout":
+        print(log_cfg.format.simple, file=sys.stdout)
+    else:
+        with open(log_file, "w") as f:
+            print(log_cfg.format.simple, file=f)
+
 
 
 def setup_robot_movement_handler() -> None:
-    eh.subscribe(event_type="robot moved", fn=robot_movement_eh)
+    eh.subscribe(event_type="robot moved", fn=general_eh)
 
 
 # Robot Encoder Sensor Event Handler
@@ -23,7 +37,7 @@ def robot_encoder_sensor_eh(message: str) -> None:
 
 
 def setup_robot_encoder_sensor_handler() -> None:
-    eh.subscribe(event_type="robot encoder sensor", fn=robot_encoder_sensor_eh)
+    eh.subscribe(event_type="robot encoder sensor", fn=general_eh)
 
 
 # Robot 9DOF Sensor Event Handler
@@ -32,7 +46,7 @@ def robot_9DOF_sensor_eh(message: str) -> None:
 
 
 def setup_robot_9DOF_sensor_handler() -> None:
-    eh.subscribe(event_type="robot 9DOF sensor", fn=robot_9DOF_sensor_eh)
+    eh.subscribe(event_type="robot 9DOF sensor", fn=general_eh)
 
 
 # BlueDot Event Handler
@@ -41,7 +55,8 @@ def bluedot_eh(message: str) -> None:
 
 
 def setup_bluedot_handler() -> None:
-    eh.subscribe(event_type="bluedot", fn=bluedot_eh)
+    eh.subscribe(event_type="bluedot", fn=general_eh)
+
 
 # Power Event Handler
 def power_eh(message: str) -> None:
@@ -49,7 +64,8 @@ def power_eh(message: str) -> None:
 
 
 def setup_power_handler() -> None:
-    eh.subscribe(event_type="power", fn=power_eh)
+    eh.subscribe(event_type="power", fn=general_eh)
+
 
 # General Logging Event Handlers
 def general_logging_handler(message: str) -> None:
@@ -67,4 +83,4 @@ def general_logging_handler(message: str) -> None:
 
 
 def setup_general_logging_handler() -> None:
-    eh.subscribe(event_type="log", fn=general_logging_handler)
+    eh.subscribe(event_type="log", fn=general_eh)
