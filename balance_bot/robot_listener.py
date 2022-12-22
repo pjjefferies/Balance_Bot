@@ -13,9 +13,7 @@ from event import EventHandler
 eh = EventHandler()
 
 # General Event Handler
-def general_eh(
-    event_type: str, level: Optional[str] = None, message: str
-) -> None:
+def general_eh(event_type: str, message: str, level: Optional[str] = None) -> None:
     now = dt.datetime.now()
     level_text = ": " + level if level is not None else ""
     log_file = log_cfg.handler.log_file
@@ -24,7 +22,6 @@ def general_eh(
     else:
         with open(log_file, "w") as f:
             print(log_cfg.format.simple, file=f)
-
 
 
 def setup_robot_movement_handler() -> None:

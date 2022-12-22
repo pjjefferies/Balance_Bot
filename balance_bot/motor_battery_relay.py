@@ -2,8 +2,10 @@
 
 
 from typing import Tuple, Union
+
 from gpiozero import OutputDevice
-from event import EventHandler
+
+from .event import EventHandler
 
 AVAIL_GPIO_PINS: Tuple[Union[int, str]] = tuple(range(2, 28)) + tuple(
     ["GPIO" + str(a_no) for a_no in range(2, 28)]
@@ -24,20 +26,24 @@ class MotorBatteryRelay:
             )
 
         self._relay = OutputDevice(gpio_pin_no, active_high=False, initial_value=False)
+        self._gpio_pin_no = gpio_pin_no
+        self._eh = eh
 
         eh.post(
             event_type="power", message=f"Output Device Created on pin: {gpio_pin_no}"
         )
 
     def on(self) -> None:
-        eh.post(
-            event_type="power", message=f"Output Device on pin {gpio_pin_no} turned: on"
+        self._eh.post(
+            event_type="power",
+            message=f"Output Device on pin {self._gpio_pin_no} turned: on",
         )
         self._relay.on()
 
     def off(self) -> None:
-        eh.post(
-            event_type="power", message=f"Output Device on pin {gpio_pin_no} turned: on"
+        self._eh.post(
+            event_type="power",
+            message=f"Output Device on pin {self._gpio_pin_no} turned: on",
         )
         self._relay.off()
 
