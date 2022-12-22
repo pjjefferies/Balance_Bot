@@ -57,8 +57,10 @@ def main(argv: List[str]):
     for filename in argv:
         # Import program to run motor and data to collect
         try:
-            with open(filename, newline="") as f:
-                reader = csv.reader(f)
+            with open(file=filename, newline="") as f:
+                reader = csv.reader(
+                    filter(lambda row: row[0] != "#", f)
+                )  # filter comments out
                 motor_tests = [tuple(row) for row in reader]
             for test_no, test in enumerate(motor_tests):
                 if len(test) != 6:
