@@ -138,7 +138,6 @@ def main(argv: List[str]):
             and test["motor_pin_fwd"] != 0
             and test["motor_pin_rwd"] != 0
         ):
-            is_motor = True
             motor_power_relay = MotorBatteryRelay(
                 gpio_pin_no=int(test["motor_power_pin"]), eh=eh
             )
@@ -148,6 +147,7 @@ def main(argv: List[str]):
                 backward=int(test["motor_pin_rwd"]),
                 pwm=True,
             )
+            motor.value = test["velocity"]
             if test["encoder_pin"] != 0:
                 encoder = EncoderDigital(
                     signal_pin=int(test["encoder_pin"]), motor=motor, eh=eh
@@ -156,19 +156,16 @@ def main(argv: List[str]):
                 is_encoder = True
             else:
                 is_encoder = False
-        else:
-            is_motor = False
-
-        start_time = TIME_S()
-        if is_motor:
-            motor.value = test["velocity"]
         time.sleep(test["duration"])
-        if is_motor:
+                continue
+            time.sleep(test["duration"])
             motor.value = 0
             if is_encoder:
                 encoder.stop()
                 _ = encoder.distance  # posts to log distance
                 _ = encoder.jerk  # posts to log average speed, accel and jerk
+        else:
+            time.sleep(test["duration"])
 
 
 if __name__ == "__main__":
