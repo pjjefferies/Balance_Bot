@@ -1,18 +1,14 @@
 #! /usr/bin/python3
 
 
-from box import Box
 import csv
 import sys
 import time
-from typing import Dict, List, Union
-
-# import yaml
+from typing import Dict, List, Union, Callable
 
 from gpiozero import Motor
 
 from ...balance_bot import robot_listener
-from ...balance_bot.config import cfg
 from ...balance_bot.encoder_sensor_digital import EncoderDigital
 from ...balance_bot.event import EventHandler
 from ...balance_bot.motor_battery_relay import MotorBatteryRelay
@@ -156,7 +152,7 @@ def main(argv: List[str]):
                 is_encoder = True
             else:
                 is_encoder = False
-        time.sleep(test["duration"])
+                time.sleep(test["duration"])
                 continue
             time.sleep(test["duration"])
             motor.value = 0
