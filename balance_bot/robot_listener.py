@@ -7,8 +7,8 @@ import datetime as dt
 import sys
 from typing import Optional
 
-from config import log_cfg
-from event import EventHandler
+from balance_bot.config import log_cfg
+from balance_bot.event import EventHandler
 
 eh = EventHandler()
 

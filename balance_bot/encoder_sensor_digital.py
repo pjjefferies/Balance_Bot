@@ -2,11 +2,13 @@
 
 import time
 from typing import Callable, Protocol, Any, Union
-from encoder_sensor_general import EncoderGeneral
+
 from gpiozero import LineSensor  # type: ignore
 from gpiozero import Motor
-from motor_simulator import MotorSim
-from event import EventHandler
+
+from balance_bot.encoder_sensor_general import EncoderGeneral
+from balance_bot.motor_simulator import MotorSim
+from balance_bot.event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):

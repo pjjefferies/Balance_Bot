@@ -2,9 +2,11 @@
 
 import numpy as np
 from typing import Any, Union  # Protocol
+
 from gpiozero import Motor
-from motor_simulator import MotorSim
-from event import EventHandler
+
+from balance_bot.motor_simulator import MotorSim
+from balance_bot.event import EventHandler
 
 # from config import cfg
 

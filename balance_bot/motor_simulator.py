@@ -8,7 +8,7 @@ class EventHandlerTemplate:
     def post(self, *, event_type: str, message: str) -> None:
         raise NotImplementedError
 """
-from event import EventHandler
+from balance_bot.event import EventHandler
 
 
 class MotorSim:
