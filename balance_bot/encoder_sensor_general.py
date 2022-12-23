@@ -69,7 +69,6 @@ class EncoderGeneral:
         self._average_duration: float = (
             average_duration  # time in seconds speed, accel and jerk are averaged over
         )
-        self._history_lines_to_use: int
         self._motor: Union[Motor, MotorSim] = motor
         self._eh: EventHandler = eh
         self._running = False
@@ -93,6 +92,7 @@ class EncoderGeneral:
           self._position_history format, e.g. at 2 Hz. (p=t^3) after 3 seconds,
           self_current_history_len = 7,
           self._max_history_len = 10
+            col_ind 0        1            2        3         4         5
             index time  step_duration  postion  speed  acceleration  jerk
               0     0        0            0        0         0         0
               1     0.5      0.5          0.125    0.25      0         0
@@ -110,7 +110,6 @@ class EncoderGeneral:
             event_type="robot encoder sensor", message="Resetting Sensor History"
         )
 
-        # self._position_history = [(time.time(), 0)]
         self._position_history: Any = np.zeros(  # type: ignore
             shape=(self._max_no_position_points, 6), dtype=float
         )  # (time, step duration, position, speed, acceleration, jerk)
@@ -145,7 +144,7 @@ class EncoderGeneral:
             Distance as a float
         """
 
-        distance: float = self._position_history[self._history_lines_to_use - 1, 2]
+        distance: float = self._position_history[self._current_history_len - 1, 2]
 
         self._eh.post(
             event_type="robot encoder sensor", message=f"Distance: {distance:.2f}"
@@ -170,7 +169,7 @@ class EncoderGeneral:
 
         self._history_lines_to_use = np.argmax(  # type: ignore
             self._position_history[:, 0] >= self._average_duration
-        )
+        )  # find the row number of the first data point with cumulative time > _average_duration
         if self._history_lines_to_use == 0:
             self._history_lines_to_use = self._current_history_len
             # Don't have enough for average duration so use all we have
