@@ -17,12 +17,15 @@ def general_eh(event_type: str, message: str, level: Optional[str] = None) -> No
     # general_eh_handler = "console"
     general_eh_handler = "log_file"
 
+    print("Trying to capture a general event")
+
     now = dt.datetime.now()
     level_text = ": " + level if level is not None else ""
     log_filename = log_cfg.handler[general_eh_handler].filename
     if log_filename == "sys.stdout":
         print(log_cfg.format.simple, file=sys.stdout)
     else:
+        print(f"Trying to cature a general event to a file: {log_filename}")
         with open(log_filename, "w") as f:
             print(log_cfg.format[log_cfg.handler[general_eh_handler].formatter], file=f)
 
