@@ -18,12 +18,12 @@ TIME_S: Callable[[], int] = lambda: int(time.time())
 
 def main(argv: List[str]):
     eh = EventHandler()
-    robot_listener.setup_robot_movement_handler()
-    robot_listener.setup_robot_encoder_sensor_handler()
-    robot_listener.setup_robot_9DOF_sensor_handler()
-    robot_listener.setup_general_logging_handler()
-    robot_listener.setup_bluedot_handler()
-    robot_listener.setup_power_handler()
+    robot_listener.setup_robot_movement_handler(eh=eh)
+    robot_listener.setup_robot_encoder_sensor_handler(eh=eh)
+    # robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
+    robot_listener.setup_general_logging_handler(eh=eh)
+    # robot_listener.setup_bluedot_handler(eh=eh)
+    robot_listener.setup_power_handler(eh=eh)
 
     import os
 

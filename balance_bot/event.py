@@ -33,6 +33,9 @@ class EventHandler:
         self, *, event_type: str, message: str, level: Optional[str] = None
     ) -> None:
         if event_type not in self._subscribers:
+            print(f"event_type: '{event_type}' not found")
+            # print(f"self._subscribers: {self._subscribers}")
             return
         for fn in self._subscribers[event_type]:
+            # print(f"event_type: '{event_type}', function: {fn}")
             fn(event_type, message, level)

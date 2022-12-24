@@ -93,6 +93,8 @@ class EncoderDigital(EncoderGeneral):
         self.position: float
         self._position_history: Any
 
+        self._signal_pin = signal_pin
+        self._eh.post(event_type="encoder sensor", message=f"Created Digital Sensor on pin {signal_pin}")
         self.start()
         self._eh.post(event_type="encoder sensor", message="Created Digital Sensor")
 
@@ -131,4 +133,5 @@ class EncoderDigital(EncoderGeneral):
         self._eh.post(event_type="encoder sensor", message="Stopped Digital Sensor")
 
     def close(self):  # releases pins from use by encoder sensor
+        self._eh.post(event_type="encoder sensor", message="Digital Sensor Destroyed on pin {self._signal_pin}")
         self._sensor.close()
