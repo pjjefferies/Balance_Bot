@@ -19,7 +19,7 @@ def main(argv: List[str]):
     eh = EventHandler()
     robot_listener.setup_robot_movement_handler(eh=eh)
     robot_listener.setup_robot_encoder_sensor_handler(eh=eh)
-    # robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
+    #  robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
     robot_listener.setup_general_logging_handler(eh=eh)
     # robot_listener.setup_bluedot_handler(eh=eh)
     robot_listener.setup_power_handler(eh=eh)
@@ -59,8 +59,8 @@ def main(argv: List[str]):
                 motor_tests = [tuple(row) for row in reader]
             for test_no, test in enumerate(motor_tests):
                 if len(test) != 6:
-                    print(
-                        f"In csv file, '{filename}', line {test_no+1} does not have 6 values. Skipping line."
+                    eh.post(event_type="log",
+                            message=f"WARNING:In csv file, '{filename}', line {test_no+1} does not have 6 values. Skipping line."
                     )
                     continue
                 try:
@@ -76,8 +76,8 @@ def main(argv: List[str]):
                         test_detail["motor_power_pin"] < 1
                         or test_detail["motor_power_pin"] > 27
                     ):
-                        print(
-                            f"In csv file, '{filename}', line {test_no+1}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
+                        eh.post(event_type="log",
+                                message=f"WARNING:In csv file, '{filename}', line {test_no+1}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
                         )
                         test_detail["motor_power_pin"] = 0
                     if (
@@ -86,8 +86,8 @@ def main(argv: List[str]):
                         or test_detail["motor_pin_fwd"]
                         == test_detail["motor_power_pin"]
                     ):
-                        print(
-                            f"In csv file, '{filename}, line {test_no+1}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
+                        eh.post(event_type="log",
+                            message=f"WARNING:In csv file, '{filename}, line {test_no+1}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
                         )
                         test_detail["motor_pin_fwd"] = 0
                     if (
@@ -97,8 +97,8 @@ def main(argv: List[str]):
                         or test_detail["motor_pin_rwd"]
                         == test_detail["motor_power_pin"]
                     ):
-                        print(
-                            f"In csv file, '{filename}, line {test_no+1}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
+                        eh.post(event_type="log",
+                                message=f"WARNING:In csv file, '{filename}, line {test_no+1}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
                         )
                         test_detail["motor_pin_rwd"] = 0
                     if (
@@ -108,28 +108,34 @@ def main(argv: List[str]):
                         or test_detail["encoder_pin"] == test_detail["motor_pin_rwd"]
                         or test_detail["encoder_pin"] == test_detail["motor_power_pin"]
                     ):
-                        print(
-                            f"In csv file, '{filename}', line {test_no+1}, encoder_pin is invalid GPIO number, {test_detail['encoder_pin']}."
+                        eh.post(event_type="log",
+                                message=f"WARNING:In csv file, '{filename}', line {test_no+1}, encoder_pin is invalid GPIO number, {test_detail['encoder_pin']}."
                         )
                         test_detail["encoder_pin"] = 0
                 except ValueError:
-                    print(
-                        f"In csv file, '{filename}', line {test_no+1}, could not convert values to (int, int, int, int, float, float)."
+                    eh.post(event_type="log",
+                            message=f"ERROR:In csv file, '{filename}', line {test_no+1}, could not convert values to (int, int, int, int, float, float)."
                     )
                     continue
                 tests.append(test_detail)  # type: ignore
         except FileNotFoundError:
             print(f"File: {filename} not found. Skipped.")
+            eh.post(event_type="log", message=f"ERROR:File: {filename} not found. Skipped.")
         except csv.Error:
             print(f"File: {filename} is not a valid csv file. Skipped.")
+            eh.post(event_type="log", message=f"ERROR:File: {filename} is not valid csv file. Skipped.")
 
     if not tests:
         print(f"No tests found. Exiting.")
+        eh.post(event_type="log", message=f"WARNING:No tests found in file: {filename}.")
         return
 
-    print(f"Tests:\n{tests}", flush=True)
+    print(f"Found {len(tests)} tests", flush=True)
+    eh.post(event_type="log", message=f"Found {len(tests)} tests")
 
     for test_no, test in enumerate(tests):
+        print(f"Starting test no.: {test_no+1}. (see log for details)", flush=True)
+        eh.post(event_type="log", message=f"INFO:Starting Test No.: {test_no+1}")
         if (
             test["motor_power_pin"] != 0
             and test["motor_pin_fwd"] != 0
@@ -166,6 +172,7 @@ def main(argv: List[str]):
                 _ = encoder.jerk  # posts to log average speed, accel and jerk
                 encoder.close()
         else:
+            eh.post(event_type="log", message=f"INFO:Wait step for {test['duration']} seconds")
             time.sleep(test["duration"])
 
 
