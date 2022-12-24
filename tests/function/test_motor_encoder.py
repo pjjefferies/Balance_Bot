@@ -130,9 +130,7 @@ def main(argv: List[str]):
 
     print(f"Tests:\n{tests}", flush=True)
 
-    print("Running tests...")
     for test_no, test in enumerate(tests):
-        print(f"Test {test_no}: {test}")
         if (
             test["motor_power_pin"] != 0
             and test["motor_pin_fwd"] != 0

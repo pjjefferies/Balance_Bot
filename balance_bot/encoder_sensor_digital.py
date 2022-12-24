@@ -94,7 +94,7 @@ class EncoderDigital(EncoderGeneral):
         self._position_history: Any
 
         self.start()
-        self._eh.post(event_type="Encoder Sensor", message="Created Digital Sensor")
+        self._eh.post(event_type="encoder sensor", message="Created Digital Sensor")
 
     def _move_a_half_slot(self) -> None:
         """
@@ -122,13 +122,13 @@ class EncoderDigital(EncoderGeneral):
         )  # sets function to be run when no line is detected
         self._running = True
         self.reset_history()
-        self._eh.post(event_type="Encoder Sensor", message="Started Digital Sensor")
+        self._eh.post(event_type="encoder sensor", message="Started Digital Sensor")
 
     def stop(self):
         self._sensor.when_line = None
         self._sensor.when_no_line = None
         self._running = False
-        self._eh.post(event_type="Encoder Sensor", message="Stopped Digital Sensor")
+        self._eh.post(event_type="encoder sensor", message="Stopped Digital Sensor")
 
     def close(self):  # releases pins from use by encoder sensor
         self._sensor.close()
