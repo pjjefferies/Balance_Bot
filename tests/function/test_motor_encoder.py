@@ -72,25 +72,25 @@ def main(argv: List[str]):
                         "encoder_pin": int(test[3]),
                         "velocity": min(max(float(test[4]), -1), 1),
                         "duration": float(test[5]),
-                        "type": "movement"
                     }
                     if (
-                        test_detail["motor_power_pin"] < 0
+                        test_detail["motor_power_pin"] < 1
                         or test_detail["motor_power_pin"] > 27
                     ):
                         print(
-                            f"In csv file, '{filename}', line {test_no}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}.")
-                        test_detail["type"] = "no action"
+                            f"In csv file, '{filename}', line {test_no}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
+                        )
+                        test_detail["motor_power_pin"] = 0
                     if (
-                        test_detail["motor_pin_fwd"] < 0
+                        test_detail["motor_pin_fwd"] < 1
                         or test_detail["motor_pin_fwd"] > 27
                         or test_detail["motor_pin_fwd"]
                         == test_detail["motor_power_pin"]
                     ):
                         print(
                             f"In csv file, '{filename}, line {test_no}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
-                            )
-                        test_detail["type"] = "no action"
+                        )
+                        test_detail["motor_pin_fwd"] = 0
                     if (
                         test_detail["motor_pin_rwd"] < 0
                         or test_detail["motor_pin_rwd"] > 27
@@ -101,11 +101,9 @@ def main(argv: List[str]):
                         print(
                             f"In csv file, '{filename}, line {test_no}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
                         )
-                        test_detail["type"] = "no action"
-                        
-                        # continue
+                        test_detail["motor_pin_rwd"] = 0
                     if (
-                        test_detail["encoder_pin"] < 0
+                        test_detail["encoder_pin"] < 1
                         or test_detail["encoder_pin"] > 27
                         or test_detail["encoder_pin"] == test_detail["motor_pin_fwd"]
                         or test_detail["encoder_pin"] == test_detail["motor_pin_rwd"]
@@ -114,13 +112,13 @@ def main(argv: List[str]):
                         print(
                             f"In csv file, '{filename}', line {test_no}, encoder_pin is invalid GPIO number, {test_detail['encoder_pin']}."
                         )
-                        # continue
+                        test_detail["encoder_pin"] = 0
                 except ValueError:
                     print(
                         f"In csv file, '{filename}', line {test_no}, could not convert values to (int, int, int, int, float, float)."
                     )
                     continue
-            tests.append(test_detail)  # type: ignore
+                tests.append(test_detail)  # type: ignore
         except FileNotFoundError:
             print(f"File: {filename} not found. Skipped.")
         except csv.Error:
