@@ -6,12 +6,11 @@ import sys
 import time
 from typing import Dict, List, Union, Callable
 
-from rpi_motor import RPI_Motor
-
 from balance_bot import robot_listener
 from balance_bot.encoder_sensor_digital import EncoderDigital
 from balance_bot.event import EventHandler
 from balance_bot.motor_battery_relay import MotorBatteryRelay
+from balance_bot.rpi_motor import RPI_Motor
 
 TIME_S: Callable[[], int] = lambda: int(time.time())
 
@@ -61,7 +60,7 @@ def main(argv: List[str]):
             for test_no, test in enumerate(motor_tests):
                 if len(test) != 6:
                     print(
-                        f"In csv file, '{filename}', line {test_no} does not have 6 values. Skipping line."
+                        f"In csv file, '{filename}', line {test_no+1} does not have 6 values. Skipping line."
                     )
                     continue
                 try:
@@ -78,7 +77,7 @@ def main(argv: List[str]):
                         or test_detail["motor_power_pin"] > 27
                     ):
                         print(
-                            f"In csv file, '{filename}', line {test_no}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
+                            f"In csv file, '{filename}', line {test_no+1}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
                         )
                         test_detail["motor_power_pin"] = 0
                     if (
@@ -88,7 +87,7 @@ def main(argv: List[str]):
                         == test_detail["motor_power_pin"]
                     ):
                         print(
-                            f"In csv file, '{filename}, line {test_no}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
+                            f"In csv file, '{filename}, line {test_no+1}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
                         )
                         test_detail["motor_pin_fwd"] = 0
                     if (
@@ -99,7 +98,7 @@ def main(argv: List[str]):
                         == test_detail["motor_power_pin"]
                     ):
                         print(
-                            f"In csv file, '{filename}, line {test_no}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
+                            f"In csv file, '{filename}, line {test_no+1}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
                         )
                         test_detail["motor_pin_rwd"] = 0
                     if (
@@ -110,12 +109,12 @@ def main(argv: List[str]):
                         or test_detail["encoder_pin"] == test_detail["motor_power_pin"]
                     ):
                         print(
-                            f"In csv file, '{filename}', line {test_no}, encoder_pin is invalid GPIO number, {test_detail['encoder_pin']}."
+                            f"In csv file, '{filename}', line {test_no+1}, encoder_pin is invalid GPIO number, {test_detail['encoder_pin']}."
                         )
                         test_detail["encoder_pin"] = 0
                 except ValueError:
                     print(
-                        f"In csv file, '{filename}', line {test_no}, could not convert values to (int, int, int, int, float, float)."
+                        f"In csv file, '{filename}', line {test_no+1}, could not convert values to (int, int, int, int, float, float)."
                     )
                     continue
                 tests.append(test_detail)  # type: ignore
@@ -144,6 +143,7 @@ def main(argv: List[str]):
                 forward=int(test["motor_pin_fwd"]),
                 backward=int(test["motor_pin_rwd"]),
                 pwm=True,
+                eh=eh,
             )
             if test["encoder_pin"] != 0:
                 encoder = EncoderDigital(

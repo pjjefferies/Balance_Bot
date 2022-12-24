@@ -4,9 +4,9 @@ from typing import Tuple, Union
 
 from gpiozero import Motor
 
-from event import EventHandler
+from balance_bot.event import EventHandler
 
-AVAIL_GPIO_PINS: Tuple[Union[int, str]] = tuple(range(2, 28)) + tuple(
+RPI_GPIO_PINS: Tuple[Union[int, str]] = tuple(range(2, 28)) + tuple(
     ["GPIO" + str(a_no) for a_no in range(2, 28)]
 )
 
@@ -17,25 +17,27 @@ class RPI_Motor:
     """
 
     def __init__(
-        self, forward: Union[int, str], rearward: Union[int, str], eh: EventHandler
+        self, *, forward: Union[int, str], backward: Union[int, str], pwm: bool=True, eh: EventHandler
     ):
-        if forward not in RPI_GPIO_PINS or rearward not in RPI_GPIO_PINS:
+        if forward not in RPI_GPIO_PINS or backward not in RPI_GPIO_PINS:
             raise ValueError(
-                f"forward and rearward must be one of the following: {AVAIL_GPIO_PINS}"
+                f"forward and rearward must be one of the following: {RPI_GPIO_PINS}"
             )
-        self._motor = Motor(forward=forward, backward=backward, pwm=True)
+        self._motor = Motor(forward=forward, backward=backward, pwm=pwm)
         self._motor.value = 0
+        self._forward_pin = forward
+        self._backward_pin = backward
         self._eh = eh
         self._eh.post(
             event_type="robot moved",
-            message="RPI_Motor created with pins {fowrard} and {rearward}",
+            message=f"RPI_Motor created with pins {forward} and {backward}",
         )
 
     @property
     def value(self) -> float:
         self._eh.post(
             event_type="robot moved",
-            message="RPI_Motor, on Pins {fowrard} and {rearward}, moving at velocity: {self._motor.value}",
+            message=f"RPI_Motor, on Pins {self._forward_pin} and {self._backward_pin}, moving at velocity: {self._motor.value}",
         )
         return self._motor.value
 
@@ -51,19 +53,19 @@ class RPI_Motor:
         self._motor.value = velocity
         self._eh.post(
             event_type="robot moved",
-            message="RPI_Motor, on Pins {fowrard} and {rearward}, moving at velocity: {self._motor.value}",
+            message=f"RPI_Motor, on Pins {self._forward_pin} and {self._backward_pin}, moving at velocity: {self._motor.value}",
         )
 
     def stop(self) -> None:
         self._motor.value = 0
         self._eh.post(
             event_type="robot moved",
-            message="RPI_Motor, on Pins {fowrard} and {rearward}, stopped",
+            message=f"RPI_Motor, on Pins {self._forward_pin} and {self._backward_pin}, stopped",
         )
 
     def close(self):
         self._motor.close()
         self._eh.post(
             event_type="robot moved",
-            message="RPI_Motor, on Pins {fowrard} and {rearward}, destroyed",
+            message=f"RPI_Motor, on Pins {self._forward_pin} and {self._backward_pin}, destroyed",
         )

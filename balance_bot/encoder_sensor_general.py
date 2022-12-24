@@ -72,7 +72,7 @@ class EncoderGeneral:
         self._motor: Union[Motor, MotorSim] = motor
         self._eh: EventHandler = eh
         self._running = False
-        self.reset_history()
+        # self.reset_history()  # depend on child objects to reset for intial object
 
     def start(self) -> None:
         raise NotImplementedError
@@ -125,7 +125,7 @@ class EncoderGeneral:
         self._position_history[self._current_history_len - 1, 2] = position
         self._eh.post(
             event_type="encoder sensor",
-            message="Adding position: time: {a_time}, pos.: {position}",
+            message=f"Adding position: time: {a_time}, pos.: {position}",
         )
 
     @property
