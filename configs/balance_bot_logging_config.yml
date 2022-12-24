@@ -1,7 +1,7 @@
 # Formatters that are assigned to outputs ("handlers") below
 base:
     format:
-        simple: f"{now:%Y-%m-%d %H:%M}:{event_type}{level_text}:{message}"
+        simple: "{now:%Y-%m-%d %H:%M:%S}:{event_type}{level_text}:{message}"
 
     # Outputs, one or more of which can be assigned to loggers
     handler:
@@ -11,5 +11,6 @@ base:
 
         log_file:
             formatter: simple
-            filename: logs/debug.log
+            folder: logs
+            filename: debug.log
             maxBytes: 20485760  # 20 MB

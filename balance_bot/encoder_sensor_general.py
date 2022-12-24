@@ -106,16 +106,12 @@ class EncoderGeneral:
               9     0        0            0        0         0         0
         """
 
-        self._eh.post(
-            event_type="robot encoder sensor", message="Resetting Sensor History"
-        )
-
         self._position_history: Any = np.zeros(  # type: ignore
             shape=(self._max_no_position_points, 6), dtype=float
         )  # (time, step duration, position, speed, acceleration, jerk)
         self._current_history_len: int = 1
         self._eh.post(
-            event_type="robot encoder sensor",
+            event_type="encoder sensor",
             message="Encoder Sensor history reset",
         )
 
@@ -128,7 +124,7 @@ class EncoderGeneral:
         self._position_history[self._current_history_len - 1, 0] = a_time
         self._position_history[self._current_history_len - 1, 2] = position
         self._eh.post(
-            event_type="robot encoder sensor",
+            event_type="encoder sensor",
             message="Adding position: time: {a_time}, pos.: {position}",
         )
 
@@ -147,7 +143,7 @@ class EncoderGeneral:
         distance: float = self._position_history[self._current_history_len - 1, 2]
 
         self._eh.post(
-            event_type="robot encoder sensor", message=f"Distance: {distance:.2f}"
+            event_type="encoder sensor", message=f"Distance: {distance:.2f}"
         )
 
         return distance
@@ -194,7 +190,7 @@ class EncoderGeneral:
         )
 
         self._eh.post(
-            event_type="robot encoder sensor", message=f"Speed: {avg_speed:.2f}"
+            event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}"
         )
 
         return avg_speed
@@ -228,7 +224,7 @@ class EncoderGeneral:
             np.average(self._position_history[2 : self._history_lines_to_use - 1, 4])
         )
         self._eh.post(
-            event_type="robot encoder sensor", message=f"Accel: {avg_accel:.2f}"
+            event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}"
         )
 
         return avg_accel
@@ -263,7 +259,7 @@ class EncoderGeneral:
         )
 
         self._eh.post(
-            event_type="robot encoder sensor", message=f"Jerk: {avg_jerk:.2f}"
+            event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}"
         )
 
         return avg_jerk

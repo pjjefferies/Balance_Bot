@@ -30,20 +30,20 @@ class MotorBatteryRelay:
         self._eh = eh
 
         eh.post(
-            event_type="power", message=f"Output Device Created on pin: {gpio_pin_no}"
+            event_type="power", message=f"Motor Battery Relay Created on pin: {gpio_pin_no}"
         )
 
     def on(self) -> None:
         self._eh.post(
             event_type="power",
-            message=f"Output Device on pin {self._gpio_pin_no} turned: on",
+            message=f"Motor Battery Relay on pin {self._gpio_pin_no} turned: on",
         )
         self._relay.on()
 
     def off(self) -> None:
         self._eh.post(
             event_type="power",
-            message=f"Output Device on pin {self._gpio_pin_no} turned: on",
+            message=f"Motor Battery Relay on pin {self._gpio_pin_no} turned: off",
         )
         self._relay.off()
 
@@ -52,4 +52,7 @@ class MotorBatteryRelay:
         return bool(self._relay.value)
 
     def close(self):
+        self._eh.post(
+            event_type="power",
+            message=f"Motor Battery Relay on pin {self._gpio_pin_no} destroyed")
         self._relay.close()
