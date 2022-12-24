@@ -79,9 +79,8 @@ def main(argv: List[str]):
                         or test_detail["motor_power_pin"] > 27
                     ):
                         print(
-                            f"In csv file, '{filename}', line {test_no}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}."
-                            test_detail["type"] = "no action"
-                        )
+                            f"In csv file, '{filename}', line {test_no}, motor_power_pin is invalid GPIO number, {test_detail['motor_power_pin']}.")
+                        test_detail["type"] = "no action"
                     if (
                         test_detail["motor_pin_fwd"] < 0
                         or test_detail["motor_pin_fwd"] > 27
@@ -90,8 +89,8 @@ def main(argv: List[str]):
                     ):
                         print(
                             f"In csv file, '{filename}, line {test_no}, motor_pin_fwd is invalid GPIO number, {test_detail['motor_pin_fwd']}."
-                            test_detail["type"] = "no action"
-                        )
+                            )
+                        test_detail["type"] = "no action"
                     if (
                         test_detail["motor_pin_rwd"] < 0
                         or test_detail["motor_pin_rwd"] > 27
@@ -101,8 +100,9 @@ def main(argv: List[str]):
                     ):
                         print(
                             f"In csv file, '{filename}, line {test_no}, motor_pin_rwd is invalid GPIO number, {test_detail['motor_pin_rwd']}."
-                            test_detail["type"] = "no action"
                         )
+                        test_detail["type"] = "no action"
+                        
                         # continue
                     if (
                         test_detail["encoder_pin"] < 0
@@ -130,9 +130,11 @@ def main(argv: List[str]):
         print(f"No tests found. Exiting.")
         return
 
-    print(f"Tests:\n{tests}")
+    print(f"Tests:\n{tests}", flush=True)
 
-    for test in tests:
+    print("Running tests...")
+    for test_no, test in enumerate(tests):
+        print(f"Test {test_no}: {test}")
         if (
             test["motor_power_pin"] != 0
             and test["motor_pin_fwd"] != 0
