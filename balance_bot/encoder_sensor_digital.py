@@ -129,3 +129,6 @@ class EncoderDigital(EncoderGeneral):
         self._sensor.when_no_line = None
         self._running = False
         self._eh.post(event_type="Encoder Sensor", message="Stopped Digital Sensor")
+
+    def close(self):  # releases pins from use by encoder sensor
+        self._sensor.close()

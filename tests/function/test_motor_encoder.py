@@ -147,7 +147,6 @@ def main(argv: List[str]):
                 backward=int(test["motor_pin_rwd"]),
                 pwm=True,
             )
-            motor.value = test["velocity"]
             if test["encoder_pin"] != 0:
                 encoder = EncoderDigital(
                     signal_pin=int(test["encoder_pin"]), motor=motor, eh=eh
@@ -156,14 +155,16 @@ def main(argv: List[str]):
                 is_encoder = True
             else:
                 is_encoder = False
-                time.sleep(test["duration"])
                 continue
+            motor.value = test["velocity"]
             time.sleep(test["duration"])
             motor.value = 0
+            motor.close()
             if is_encoder:
                 encoder.stop()
                 _ = encoder.distance  # posts to log distance
                 _ = encoder.jerk  # posts to log average speed, accel and jerk
+                encoder.close()
         else:
             time.sleep(test["duration"])
 
