@@ -50,3 +50,6 @@ class MotorBatteryRelay:
     @property
     def active(self) -> bool:
         return bool(self._relay.value)
+
+    def close(self):
+        self._relay.close()

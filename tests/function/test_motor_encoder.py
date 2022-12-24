@@ -160,6 +160,8 @@ def main(argv: List[str]):
             time.sleep(test["duration"])
             motor.value = 0
             motor.close()
+            motor_power_relay.off()
+            motor_power_relay.close()
             if is_encoder:
                 encoder.stop()
                 _ = encoder.distance  # posts to log distance
