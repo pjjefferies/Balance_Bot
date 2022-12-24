@@ -6,7 +6,7 @@ import sys
 import time
 from typing import Dict, List, Union, Callable
 
-from gpiozero import Motor
+from rpi_motor import RPI_Motor
 
 from balance_bot import robot_listener
 from balance_bot.encoder_sensor_digital import EncoderDigital
@@ -140,7 +140,7 @@ def main(argv: List[str]):
                 gpio_pin_no=int(test["motor_power_pin"]), eh=eh
             )
             motor_power_relay.on()
-            motor = Motor(
+            motor = RPI_Motor(
                 forward=int(test["motor_pin_fwd"]),
                 backward=int(test["motor_pin_rwd"]),
                 pwm=True,
