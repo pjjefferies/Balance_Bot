@@ -14,14 +14,17 @@ eh = EventHandler()
 
 # General Event Handler
 def general_eh(event_type: str, message: str, level: Optional[str] = None) -> None:
+    # general_eh_handler = "console"
+    general_eh_handler = "log_file"
+
     now = dt.datetime.now()
     level_text = ": " + level if level is not None else ""
-    log_file = log_cfg.handler.log_file
-    if log_file == "sys.stdout":
+    log_filename = log_cfg.handler[general_eh_handler].filename
+    if log_filename == "sys.stdout":
         print(log_cfg.format.simple, file=sys.stdout)
     else:
-        with open(log_file, "w") as f:
-            print(log_cfg.format.simple, file=f)
+        with open(log_filename, "w") as f:
+            print(log_cfg.format[log_cfg.handler[general_eh_handler].formatter], file=f)
 
 
 def setup_robot_movement_handler() -> None:
