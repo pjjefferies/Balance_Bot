@@ -2,15 +2,16 @@
 
 import time
 from typing import Callable, Tuple, List  # , Protocol - V3.10
-import robot_listener
+
+from gpiozero import Motor
 
 # from config import cfg
-from gpiozero import Motor
-from motor_battery_relay import MotorBatteryRelay
-import bluedot_direction_control
-from config import cfg
-from event import EventHandler
-from encoder_sensor_digital import EncoderDigital
+from .motor_battery_relay import MotorBatteryRelay
+from .bluedot_direction_control import BlueDotRobotController
+from .config import cfg
+from .event import EventHandler
+from .encoder_sensor_digital import EncoderDigital
+from . import robot_listener
 
 """
 Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
@@ -126,7 +127,7 @@ class SimpleRobot:
         # start_prog: tuple[tuple[float, float, float]] | None = None,
         # repeat_prog: tuple[tuple[float, float, float]] | None = None,
         # manual_control_time: int = 0,  # Duration of manual control in seconds
-        bluedot_control: bluedot_direction_control.BlueDotRobotController,
+        bluedot_control: BlueDotRobotController,
         eh: EventHandler,
     ):
         """
@@ -198,11 +199,11 @@ class SimpleRobot:
                         min(fwd_vel - right_turn, 1), -1
                     )
             self._eh.post(event_type="robot encoder sensor", message="Left Wheel:")
-            self._enc_wheel_left.distance  # trigger posting of distance
-            self._enc_wheel_left.jerk
+            _ = self._enc_wheel_left.distance  # trigger posting of distance
+            _ = self._enc_wheel_left.jerk
             self._eh.post(event_type="robot encoder sensor", message="Right Wheel:")
-            self._enc_wheel_right.distance  # trigger posting of distance
-            self._enc_wheel_right.jerk
+            _ = self._enc_wheel_right.distance  # trigger posting of distance
+            _ = self._enc_wheel_right.jerk
             time.sleep(interval / 5)
 
     def drive_program(self, steps: List[Tuple[int, int, int]]) -> None:
@@ -214,6 +215,7 @@ class SimpleRobot:
         """
 
         for step in steps:
+            """
             if (
                 not isinstance(step, tuple)
                 or len(step) != 3
@@ -222,16 +224,17 @@ class SimpleRobot:
                 or not (isinstance(step[1], int))
             ):
                 continue
+            """
             duration, fwd_rwd, right_left = step
 
-            left_motor_setting = max(min(fwd_rws - right_left, 1), -1)
-            right_motor_setting = max(min(fwd_rws + right_left, 1), -1)
+            left_motor_setting = max(min(fwd_rwd - right_left, 1), -1)
+            right_motor_setting = max(min(fwd_rwd + right_left, 1), -1)
 
-            self._self._motor_wheel_relay.on()
-            start_time: int = TIME_S
+            self._motor_wheel_relay.on()
+            start_time: int = TIME_S()
             self._motor_wheel_left = left_motor_setting
             self._motor_wheel_right = right_motor_setting
-            while (TIME_S - start_time) < step[0]:
+            while (TIME_S() - start_time) < duration:
                 time.sleep(1)
             self._motor_wheel_left = 0
             self._motor_wheel_right = 0
@@ -247,11 +250,11 @@ def main():
     robot_listener.setup_bluedot_handler()
     robot_listener.setup_power_handler()
 
-    print(f"cfg.wheel.left.motor.fwd: {cfg.wheel.left.motor.fwd}")
-    print(f"cfg.wheel.left.motor.rwd: {cfg.wheel.left.motor.rwd}")
+    # print(f"cfg.wheel.left.motor.fwd: {cfg.wheel.left.motor.fwd}")
+    # print(f"cfg.wheel.left.motor.rwd: {cfg.wheel.left.motor.rwd}")
 
     # set-up Wheel Motor Power Relay
-    motor_wheel_relay: MotorBatteryRelay = MotorBatteryRelay(cfg.wheel.power)
+    motor_wheel_relay = MotorBatteryRelay(cfg.wheel.power, eh=eh)
 
     # Set-up Wheel Motor Control Pins
     motor_wheel_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
@@ -296,9 +299,7 @@ def main():
     #     signal_pin=cfg.arm.right.encoder
     # )
 
-    bd_ctl: bluedot_direction_control.BlueDotRobotController = (
-        bluedot_direction_control.BlueDotRobotController(eh=eh)
-    )
+    bd_ctl = BlueDotRobotController(eh=eh)
 
     robot = SimpleRobot(
         motor_wheel_left=motor_wheel_left,
