@@ -25,7 +25,7 @@ def general_eh(event_type: str, message: str, level: Optional[str] = None) -> No
         print(log_cfg.format.simple.format(now=now, event_type=event_type,
                                            level_text=level_text, message=message), file=sys.stdout)
     else:
-        log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H}_" + log_filename_base
+        log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H_%M}_" + log_filename_base
         # print(f"Trying to cature a general event to a file: {log_filename_path}")
         with open(log_filename_path, "a") as f:
             print(log_cfg.format[log_cfg.handler[general_eh_handler].formatter].format(now=now, event_type=event_type,

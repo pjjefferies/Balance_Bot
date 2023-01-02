@@ -128,6 +128,7 @@ class EncoderGeneral:
             message=f"Adding position: time: {a_time}, pos.: {position}",
         )
 
+
     @property
     def distance(self) -> float:
         """
@@ -160,8 +161,12 @@ class EncoderGeneral:
         Returns:
             Average speed as a float
         """
-        if self._current_history_len < 2:
+        if self._current_history_len < 3:
             return 0
+
+        if self._position_history[0, 0] == 0:  # initial time is uninitiallized
+            self._position_history[0, 0] = 2 * self._position_history[1, 0] - self._position_history[2, 0]
+
 
         self._history_lines_to_use = np.argmax(  # type: ignore
             self._position_history[:, 0] >= self._average_duration
@@ -172,6 +177,8 @@ class EncoderGeneral:
 
         # Calculate Step Duration in column 1
         self._position_history[0:1, 4] = np.zeros(1)  # type: ignore
+
+        # print(f"esg:177:self._position_history\n{self._position_history}")
 
         self._position_history[1 : self._history_lines_to_use - 1, 1] = (
             self._position_history[1 : self._history_lines_to_use - 1, 0]
