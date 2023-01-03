@@ -21,7 +21,7 @@ Methods:
 Misc variables:
     x
 """
-from typing import Tuple, Dict, Union  # Protocol
+from typing import Dict, Union  # Protocol
 
 # from abc import abstractmethod
 import os
