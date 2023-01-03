@@ -32,7 +32,7 @@ def general_eh(event_type: str, message: str, level: Optional[str] = None) -> No
         )
     else:
         log_filename_path = (
-            log_folder + "/" + f"{now:%Y-%m-%d_%H_%M}_" + log_filename_base
+            log_folder + "/" + f"{now:%Y-%m-%d_%H_%M_%S}_" + log_filename_base
         )
         # print(f"Trying to cature a general event to a file: {log_filename_path}")
         with open(log_filename_path, "a") as f:
@@ -113,8 +113,8 @@ def position_history_eh(
     now = dt.datetime.now()
     log_folder = log_cfg.handler["position_history_file"].folder
     log_filename_base = log_cfg.handler["position_history_file"].filename
-    log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H_%M}_" + log_filename_base
-    message.savetxt(fname=log_filename_path, fmt="%.5e", delimiter=",")
+    log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H_%M_%S}_" + log_filename_base
+    np.savetxt(fname=log_filename_path, X=message, fmt="%.7f", delimiter=",")
 
 
 def setup_position_history_logging_handler(eh: EventHandler) -> None:

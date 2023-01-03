@@ -2,6 +2,7 @@
 
 import time
 from typing import Callable, Protocol, Any, Union
+import numpy as np
 
 from gpiozero import LineSensor  # type: ignore
 from gpiozero import Motor
@@ -144,7 +145,11 @@ class EncoderDigital(EncoderGeneral):
             event_type="encoder sensor",
             message=f"Digital Sensor Destroyed on pin {self._signal_pin}",
         )
+
+        # Strip history of all empty rows
+        temp_history = self._position_history[~np.all(self._position_history == 0, axis=1)]
+
         self._eh.post(
-            event_type="position_history", position_history=self._position_history
+            event_type="position_history", message=temp_history
         )
         self._sensor.close()
