@@ -1,0 +1,142 @@
+2023-01-02 23:46:01:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:01:encoder sensor:Adding position: time: 1672721161.7079382, pos.: -0.325
+2023-01-02 23:46:01:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:01:encoder sensor:Adding position: time: 1672721161.7200985, pos.: -0.35000000000000003
+2023-01-02 23:46:01:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:01:encoder sensor:Adding position: time: 1672721161.731621, pos.: -0.37500000000000006
+2023-01-02 23:46:01:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:01:encoder sensor:Adding position: time: 1672721161.7532115, pos.: -0.4000000000000001
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.2589447, pos.: -0.4250000000000001
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.3012297, pos.: -0.4500000000000001
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.770676, pos.: -0.47500000000000014
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.7821305, pos.: -0.5000000000000001
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.7934732, pos.: -0.5250000000000001
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.8150167, pos.: -0.5500000000000002
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.9483283, pos.: -0.5750000000000002
+2023-01-02 23:46:04:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:04:encoder sensor:Adding position: time: 1672721164.9902194, pos.: -0.6000000000000002
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.2153974, pos.: -0.6250000000000002
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.2369409, pos.: -0.6500000000000002
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.2483385, pos.: -0.6750000000000003
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.2598286, pos.: -0.7000000000000003
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.3118966, pos.: -0.7250000000000003
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.3232925, pos.: -0.7500000000000003
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.3346157, pos.: -0.7750000000000004
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.356236, pos.: -0.8000000000000004
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.6118155, pos.: -0.8250000000000004
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.6231873, pos.: -0.8500000000000004
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.6345766, pos.: -0.8750000000000004
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.6560998, pos.: -0.9000000000000005
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.7895904, pos.: -0.9250000000000005
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.8722794, pos.: -0.9500000000000005
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.8837316, pos.: -0.9750000000000005
+2023-01-02 23:46:05:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:05:encoder sensor:Adding position: time: 1672721165.8950653, pos.: -1.0000000000000004
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.425676, pos.: -1.0250000000000004
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.4372754, pos.: -1.0500000000000003
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.4486754, pos.: -1.0750000000000002
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.4703221, pos.: -1.1
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.685246, pos.: -1.125
+2023-01-02 23:46:06:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:06:encoder sensor:Adding position: time: 1672721166.706818, pos.: -1.15
+2023-01-02 23:46:07:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:07:encoder sensor:Adding position: time: 1672721167.4713488, pos.: -1.1749999999999998
+2023-01-02 23:46:07:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:07:encoder sensor:Adding position: time: 1672721167.5846124, pos.: -1.1999999999999997
+2023-01-02 23:46:07:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:07:encoder sensor:Adding position: time: 1672721167.5960195, pos.: -1.2249999999999996
+2023-01-02 23:46:07:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:07:encoder sensor:Adding position: time: 1672721167.6074889, pos.: -1.2499999999999996
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.1562452, pos.: -1.2749999999999995
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.203442, pos.: -1.2999999999999994
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.5205197, pos.: -1.3249999999999993
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.5323193, pos.: -1.3499999999999992
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.5437899, pos.: -1.3749999999999991
+2023-01-02 23:46:09:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:09:encoder sensor:Adding position: time: 1672721169.5653324, pos.: -1.399999999999999
+2023-01-02 23:46:10:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:10:encoder sensor:Adding position: time: 1672721170.543898, pos.: -1.424999999999999
+2023-01-02 23:46:10:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:10:encoder sensor:Adding position: time: 1672721170.5861788, pos.: -1.4499999999999988
+2023-01-02 23:46:11:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:11:encoder sensor:Adding position: time: 1672721171.116926, pos.: -1.4749999999999988
+2023-01-02 23:46:11:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:11:encoder sensor:Adding position: time: 1672721171.1590326, pos.: -1.4999999999999987
+2023-01-02 23:46:12:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:12:encoder sensor:Adding position: time: 1672721172.0154333, pos.: -1.5249999999999986
+2023-01-02 23:46:12:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:12:encoder sensor:Adding position: time: 1672721172.0575323, pos.: -1.5499999999999985
+2023-01-02 23:46:12:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:12:encoder sensor:Adding position: time: 1672721172.740773, pos.: -1.5749999999999984
+2023-01-02 23:46:12:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:12:encoder sensor:Adding position: time: 1672721172.7828557, pos.: -1.5999999999999983
+2023-01-02 23:46:13:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:13:encoder sensor:Adding position: time: 1672721173.9448063, pos.: -1.6249999999999982
+2023-01-02 23:46:13:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:13:encoder sensor:Adding position: time: 1672721173.9869146, pos.: -1.6499999999999981
+2023-01-02 23:46:14:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:14:encoder sensor:Adding position: time: 1672721174.8433843, pos.: -1.674999999999998
+2023-01-02 23:46:14:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:14:encoder sensor:Adding position: time: 1672721174.8563154, pos.: -1.699999999999998
+2023-01-02 23:46:14:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:14:encoder sensor:Adding position: time: 1672721174.867862, pos.: -1.7249999999999979
+2023-01-02 23:46:14:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:14:encoder sensor:Adding position: time: 1672721174.8894072, pos.: -1.7499999999999978
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.4503338, pos.: -1.7749999999999977
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.461833, pos.: -1.7999999999999976
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.4732141, pos.: -1.8249999999999975
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.4947236, pos.: -1.8499999999999974
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.6891932, pos.: -1.8749999999999973
+2023-01-02 23:46:15:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:15:encoder sensor:Adding position: time: 1672721175.7413366, pos.: -1.8999999999999972
+2023-01-02 23:46:16:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:16:encoder sensor:Adding position: time: 1672721176.3838134, pos.: -1.9249999999999972
+2023-01-02 23:46:16:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: -0.5
+2023-01-02 23:46:16:encoder sensor:Adding position: time: 1672721176.4260037, pos.: -1.949999999999997
+2023-01-02 23:46:18:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.0
+2023-01-02 23:46:18:robot moved:RPI_Motor, on Pins 27 and 22, destroyed
+2023-01-02 23:46:18:power:Motor Battery Relay on pin 14 turned: off
+2023-01-02 23:46:18:power:Motor Battery Relay on pin 14 destroyed
+2023-01-02 23:46:18:encoder sensor:Stopped Digital Sensor on pin 21
+2023-01-02 23:46:18:encoder sensor:Distance: -1.95
+2023-01-02 23:46:18:encoder sensor:Speed: -1.11
+2023-01-02 23:46:18:encoder sensor:Accel: -23.95
+2023-01-02 23:46:18:encoder sensor:Jerk: 234.42
+2023-01-02 23:46:18:encoder sensor:Digital Sensor Destroyed on pin 21
