@@ -8,9 +8,13 @@ base:
         console:
             formatter: simple
             stream: sys.stdout
-
         log_file:
             formatter: simple
             folder: logs
             filename: debug.log
             maxBytes: 20485760  # 20 MB
+
+        position_history_file:
+            formatter: simple
+            folder: logs
+            filename: position_history.csv

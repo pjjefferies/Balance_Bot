@@ -3,7 +3,8 @@
 # Based on Observer Pattern Tutorial by ArjanCodes on YouTube
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
+import numpy.typing as npt
 
 
 class EventHandler:
@@ -14,7 +15,7 @@ class EventHandler:
                 Callable[
                     [
                         str,
-                        str,
+                        Union[str, npt.ArrayLike],  # typehint: ignore
                         Optional[str],
                     ],
                     None,
@@ -23,14 +24,14 @@ class EventHandler:
         ] = dict()
 
     def subscribe(
-        self, *, event_type: str, fn: Callable[[str, str, Optional[str]], None]
+        self, *, event_type: str, fn: Callable[[str, Union[str, npt.ArrayLike], Optional[str]], None]
     ) -> None:
         if event_type not in self._subscribers:
             self._subscribers[event_type] = []
         self._subscribers[event_type].append(fn)
 
     def post(
-        self, *, event_type: str, message: str, level: Optional[str] = None
+        self, *, event_type: str, message: Union[str, npt.ArrayLike], level: Optional[str] = None
     ) -> None:
         if event_type not in self._subscribers:
             print(f"event_type: '{event_type}' not found")

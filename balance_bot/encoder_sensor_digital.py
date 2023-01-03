@@ -144,4 +144,7 @@ class EncoderDigital(EncoderGeneral):
             event_type="encoder sensor",
             message=f"Digital Sensor Destroyed on pin {self._signal_pin}",
         )
+        self._eh.post(
+            event_type="position_history", position_history=self._position_history
+        )
         self._sensor.close()

@@ -4,6 +4,8 @@
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
 import datetime as dt
+import numpy as np
+import numpy.typing as npt
 import sys
 from typing import Optional
 
@@ -89,3 +91,16 @@ def general_logging_handler(message: str) -> None:
 
 def setup_general_logging_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="log", fn=general_eh)
+
+
+# Position History Event Handler
+def position_history_eh(event_type: str, message: npt.ArrayLike) -> None:
+    now = dt.datetime.now()
+    log_folder = log_cfg.handler["position_history_file"].folder
+    log_filename_base = log_cfg.handler["position_history_file"].filename
+    log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H_%M}_" + log_filename_base
+    message.savetxt(fname=log_filename_path, fmt="%.5e", delimiter=",")
+
+
+def setup_position_history_logging_handler(eh: EventHandler) -> None:
+    eh.subscribe(event_type="position_history", fn=position_history_eh)
