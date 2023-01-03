@@ -1,0 +1,20 @@
+2022-12-24 12:55:45:log:INFO: Starting Test Pi Motor
+2022-12-24 12:55:45:power:Motor Battery Relay Created on pin: 14
+2022-12-24 12:55:45:power:Motor Battery Relay on pin 14 turned: on
+2022-12-24 12:55:45:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:45:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:45:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:47:power:Motor Battery Relay on pin 14 turned: ff
+2022-12-24 12:55:47:power:Motor Battery Relay on pin 14 destroyed
+2022-12-24 12:55:47:robot encoder sensor:Distance: 0.00
+2022-12-24 12:55:49:power:Motor Battery Relay Created on pin: 14
+2022-12-24 12:55:49:power:Motor Battery Relay on pin 14 turned: on
+2022-12-24 12:55:49:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:49:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:49:robot encoder sensor:Encoder Sensor history reset
+2022-12-24 12:55:51:power:Motor Battery Relay on pin 14 turned: ff
+2022-12-24 12:55:51:power:Motor Battery Relay on pin 14 destroyed
+2022-12-24 12:55:51:robot encoder sensor:Distance: 0.00
+2022-12-24 12:59:58:log:INFO: Starting Test Pi Motor
+2022-12-24 12:59:58:power:Motor Battery Relay Created on pin: 14
+2022-12-24 12:59:58:power:Motor Battery Relay on pin 14 turned: on
