@@ -128,7 +128,6 @@ class EncoderGeneral:
             message=f"Adding position: time: {a_time}, pos.: {position}",
         )
 
-
     @property
     def distance(self) -> float:
         """
@@ -143,9 +142,7 @@ class EncoderGeneral:
 
         distance: float = self._position_history[self._current_history_len - 1, 2]
 
-        self._eh.post(
-            event_type="encoder sensor", message=f"Distance: {distance:.2f}"
-        )
+        self._eh.post(event_type="encoder sensor", message=f"Distance: {distance:.2f}")
 
         return distance
 
@@ -165,8 +162,9 @@ class EncoderGeneral:
             return 0
 
         if self._position_history[0, 0] == 0:  # initial time is uninitiallized
-            self._position_history[0, 0] = 2 * self._position_history[1, 0] - self._position_history[2, 0]
-
+            self._position_history[0, 0] = (
+                2 * self._position_history[1, 0] - self._position_history[2, 0]
+            )
 
         self._history_lines_to_use = np.argmax(  # type: ignore
             self._position_history[:, 0] >= self._average_duration
@@ -196,9 +194,7 @@ class EncoderGeneral:
             np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])
         )
 
-        self._eh.post(
-            event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}"
-        )
+        self._eh.post(event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}")
 
         return avg_speed
 
@@ -230,9 +226,7 @@ class EncoderGeneral:
         avg_accel: float = float(
             np.average(self._position_history[2 : self._history_lines_to_use - 1, 4])
         )
-        self._eh.post(
-            event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}"
-        )
+        self._eh.post(event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}")
 
         return avg_accel
 
@@ -265,8 +259,6 @@ class EncoderGeneral:
             np.average(self._position_history[3 : self._history_lines_to_use - 1, 5])
         )
 
-        self._eh.post(
-            event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}"
-        )
+        self._eh.post(event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}")
 
         return avg_jerk

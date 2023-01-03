@@ -11,26 +11,30 @@ Misc variables:
 
 import datetime as dt
 import time
-import re
-import json
 import logging
-import pandas as pd
-from config import cfg
+
+# from config import cfg
 
 # Initialize Logging
 logger = logging.getLogger(__name__)
 
+
 def main():
     import os
-    if os.name == 'posix' and os.uname()[1] == 'raspberrypi':
+
+    if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. OK to start robot.
-        logger.info('Starting Test B?NO055 Sensor')
-    elif os.name == 'nt':
+        logger.info("Starting Test B?NO055 Sensor")
+    elif os.name == "nt":
         # Running on Windows, please drive through.
-        logger.warning('Test B?NO055 Sensor not designed to run on Windows at this time')
+        logger.warning(
+            "Test B?NO055 Sensor not designed to run on Windows at this time"
+        )
         return
     else:
-        logger.warning('Test B?NO055 Sensor - OS not identified. Please try on Raspberry Pi')
+        logger.warning(
+            "Test B?NO055 Sensor - OS not identified. Please try on Raspberry Pi"
+        )
         return
 
     import board
@@ -81,29 +85,37 @@ def main():
     """
 
     update_time_measure = 0  # Seconds
-    update_time_save = 100000    # Seconds
+    update_time_save = 100000  # Seconds
 
     params_hist = pd.DataFrame()
     try:
         lasttime_control_measure = 0
         lasttime_control_save = 0
         while True:
-            if ((time.time() - lasttime_control_measure) >= update_time_measure):
+            if (time.time() - lasttime_control_measure) >= update_time_measure:
                 # exec every UPDATE_TIME seconds
                 lasttime_control_measure = time.time()
-                params = pd.Series(dtype='float64')
+                params = pd.Series(dtype="float64")
                 # print('params1:', params)
-                params = params.append(pd.Series(data=sensor.linear_acceleration,
-                                                 index=['y_accel', 'x_accel', 'z_accel']))
+                params = params.append(
+                    pd.Series(
+                        data=sensor.linear_acceleration,
+                        index=["y_accel", "x_accel", "z_accel"],
+                    )
+                )
                 # print('params2:', params)
-                params = params.append(pd.Series(data=sensor.euler,
-                                                 index=['yaw(z)', 'roll(x)', 'pitch(y)']))
+                params = params.append(
+                    pd.Series(
+                        data=sensor.euler, index=["yaw(z)", "roll(x)", "pitch(y)"]
+                    )
+                )
                 # params = params.append(pd.Series(data=sensor.temperature,
                 #                                  index=['temperature']))
                 # params = params.append(pd.Series(data=sensor.magnetic,
                 #                                  index=['mag_x', 'mag_y', 'mag_z']))
-                params = params.append(pd.Series(data=sensor.gyro,
-                                                 index=['gyro_y', 'gyro_x', 'gyro_z']))
+                params = params.append(
+                    pd.Series(data=sensor.gyro, index=["gyro_y", "gyro_x", "gyro_z"])
+                )
                 # params = params.append(pd.Series(data=sensor.gravity,
                 #                                  index=['gravity_x', 'gravity_y', 'gravity_z']))
 
@@ -121,24 +133,27 @@ def main():
                 #       f'gyro_y: {params["gyro_y"]:4.1f}  ' +
                 #       f'gyro_z: {params["gyro_z"]:4.1f}')
 
-                if params['x_accel'] is not None:
-                    print(f'Accel: ' +
-                          f'Accel_x: {params["x_accel"]:4.0f}  ' +
-                          f'Accel_y: {params["y_accel"]:4.0f}  ' +
-                          f'Accel_z: {params["z_accel"]:4.0f}  ')
+                if params["x_accel"] is not None:
+                    print(
+                        f"Accel: "
+                        + f'Accel_x: {params["x_accel"]:4.0f}  '
+                        + f'Accel_y: {params["y_accel"]:4.0f}  '
+                        + f'Accel_z: {params["z_accel"]:4.0f}  '
+                    )
                 else:
                     pass
                     # print('No Accel data')
 
                 params_hist = params_hist.append(params)
 
-            if ((time.time() - lasttime_control_save) >= update_time_save):
-                logger.debug('Saving CSV File')
+            if (time.time() - lasttime_control_save) >= update_time_save:
+                logger.debug("Saving CSV File")
                 lasttime_control_save = time.time()
                 sensor_history_filename = (
-                    'sensor_history-' +
-                    dt.datetime.now().strftime('%Y-%m-%d_%H%M%S') +
-                    '.csv')
+                    "sensor_history-"
+                    + dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+                    + ".csv"
+                )
                 params_hist.to_csv(path_or_buf=sensor_history_filename)
 
     except KeyboardInterrupt:
