@@ -4,7 +4,7 @@ import time
 from typing import Callable, Protocol, Any, Union
 import numpy as np
 
-from gpiozero import LineSensor  # type: ignore
+from gpiozero import LineSensor
 from gpiozero import Motor
 
 from balance_bot.encoder_sensor_general import EncoderGeneral
@@ -86,10 +86,13 @@ class EncoderDigital(EncoderGeneral):
             # sample_rate=self._sample_freq,
             partial=True,
         )
-        self._dist_per_half_slot: Callable[[], float] = (
+        self._revs_per_half_slot: Callable[[], float] = (
             lambda: 1 / slots_per_rev / 2
             if self.moving_forward
             else -1 / slots_per_rev / 2
+        )
+        self._revs_per_slot: Callable[[], float] = (
+            lambda: 1 / slots_per_rev if self.moving_forward else -1 / slots_per_rev
         )
         self.position: float
         self._position_history: Any
@@ -113,17 +116,40 @@ class EncoderDigital(EncoderGeneral):
         move_time = time.time()  # seconds
         self.position = (
             self._position_history[self._current_history_len - 1, 2]
-            + self._dist_per_half_slot()
+            + self._revs_per_half_slot()
+        )
+        self.add_position(a_time=move_time, position=self.position)
+
+    def _move_a_full_slot(self) -> None:
+        """
+        Increments the distance traveled when triggered. Stores distance
+        traveled at time in _posiiton_history.
+
+        Returns:
+            None.
+        """
+        if not self._running:
+            return
+        move_time = time.time()  # seconds
+        self.position = (
+            self._position_history[self._current_history_len - 1, 2]
+            + self._revs_per_slot()
         )
         self.add_position(a_time=move_time, position=self.position)
 
     def start(self):
+        """
         self._sensor.when_line = (
             self._move_a_half_slot
         )  # sets function to be run when line is detected
-        self._sensor.when_no_line = (  # type: ignore
+        self._sensor.when_no_line = (
             self._move_a_half_slot
         )  # sets function to be run when no line is detected
+        """
+        self._sensor.when_no_line = (
+            self._move_a_full_slot
+        )  # sets function to be run when no line is detected
+
         self._running = True
         self._eh.post(
             event_type="encoder sensor",
@@ -147,9 +173,9 @@ class EncoderDigital(EncoderGeneral):
         )
 
         # Strip history of all empty rows
-        temp_history = self._position_history[~np.all(self._position_history == 0, axis=1)]
+        temp_history = self._position_history[
+            ~np.all(self._position_history == 0, axis=1)
+        ]
 
-        self._eh.post(
-            event_type="position_history", message=temp_history
-        )
+        self._eh.post(event_type="position_history", message=temp_history)
         self._sensor.close()
