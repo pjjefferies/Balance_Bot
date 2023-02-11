@@ -138,6 +138,7 @@ class EncoderDigital(EncoderGeneral):
         self.add_position(a_time=move_time, position=self.position)
 
     def start(self):
+        self.__super__.start()
         self._sensor.when_line = (
             self._move_a_half_slot
         )  # sets function to be run when line is detected

@@ -1,18 +1,14 @@
-#! /usr/bin/python3
-
 import numpy as np
-from typing import Any, Union  # Protocol
+import time
+from typing import Any, Union, Protocol
 
 from gpiozero import Motor
 
 from balance_bot.motor_simulator import MotorSim
 from balance_bot.event import EventHandler
+from balance_bot.find_mode import find_gamma_mode
+from cumulative_average import cumulative_average
 
-# from config import cfg
-
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
@@ -28,7 +24,6 @@ class MotorGeneral(Protocol):
     @property
     def value(self) -> float:
         raise NotImplementedError
-"""
 
 
 class EncoderGeneral:
@@ -53,9 +48,7 @@ class EncoderGeneral:
         *,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds - for calc. speed, accel, etc.
-        motor: Union[
-            Motor, MotorSim
-        ],  # MotorGeneral,  # Motor object to detect direction of movement
+        motor: MotorGeneral,  # Motor object to detect direction of movement
         eh: EventHandler,
     ):
         """
@@ -64,18 +57,28 @@ class EncoderGeneral:
         Raises:
             None.
         """
-        # self._sample_freq: float = sample_freq
+        self._T_COL: int = 0  # Time Column
+        self._T_SINCE_START_COL: int = 1
+        self._S_D_COL: int = 2  # Step Distance Column
+        self._S_D_MODE_COL: int = 3
+        self._S_D_MODE_AVG_COL: int = 4
+        self._DIST_COL: int = 5
+        self._SPEED_COL: int = 6
+        self._ACCEL_COL: int = 7
+        self._JERK_COL: int = 8
+        self._TOT_NUM_COLS: int = 9
+
         self._max_no_position_points: int = max_no_position_points
-        self._average_duration: float = (
-            average_duration  # time in seconds speed, accel and jerk are averaged over
-        )
-        self._motor: Union[Motor, MotorSim] = motor
+
+        # time in seconds speed, accel and jerk are averaged over
+        self._average_duration: float = average_duration
+        self._motor: MotorGeneral = motor
         self._eh: EventHandler = eh
         self._running = False
-        # self.reset_history()  # depend on child objects to reset for intial object
 
     def start(self) -> None:
-        raise NotImplementedError
+        self.reset_history()
+        self._position_history[0, self._T_COL] = time.time()
 
     def stop(self) -> None:
         raise NotImplementedError
@@ -89,26 +92,29 @@ class EncoderGeneral:
         Clear history of position, setting current position as zero.
           Args: None
           Returns: None
+          sd_mode: Step Duration Mode (most likely value of continuous distribution)
+          sd_mode_run_avg: Continuous, whole history running average
           self._position_history format, e.g. at 2 Hz. (p=t^3) after 3 seconds,
-          self_current_history_len = 7,
+          self._current_history_len = 7,
           self._max_history_len = 10
-            col_ind 0        1            2        3         4         5
-            index time  step_duration  postion  speed  acceleration  jerk
-              0     0        0            0        0         0         0
-              1     0.5      0.5          0.125    0.25      0         0
-              2     1.0      0.5          1.0      1.75      3         0
-              3     1.5      0.5          3.375    4.75      6         6
-              4     2.0      0.5          8.0      9.25      9         6
-              5     2.5      0.5         15.625   15.25     12         6
-              6     3.0      0.5         27.0     22.75     15         6
-              7     0        0            0        0         0         0
-              8     0        0            0        0         0         0
-              9     0        0            0        0         0         0
+            col_ind     0                1            2            3             4              5       6         7            8
+                      T_COL      T_SINCE_START_COL S_D_COL       S_D_MODE_COL S_D_MODE_AVG_COL POS_COL SPEED_COL ACCEL_COL    JERK_COL
+            index      time       time_since_start step_duration sd_mode      sd_mode_run_avg  postion speed     acceleration jerk
+              0   1673844977.7530        0            0            0             0             0        0         0           0
+              1   1673844978.2530      0.5            0.125        0.0625        0.03125       0        0         0           0
+              2   1673844978.7530      0.5            1.0          0.5           0.3           3        0         0           0
+              3   1673844979.2530      1.5            0.5          0.5           0.4           3.375    4.75      6           6
+              4   1673844979.7530      2.0            0.5          0.5           0.45          8.0      9.25      9           6
+              5   1673844980.2530      2.5            0.5          0.5           0.48         15.625   15.25     12           6
+              6   1673844980.7530      3.0            0.5          0.5           0.49         27.0     22.75     15           6
+              7            0           0              0            0             0             0        0         0           0
+              8            0           0              0            0             0             0        0         0           0
+              9            0           0              0            0             0             0        0         0           0
         """
 
         self._position_history: Any = np.zeros(  # type: ignore
-            shape=(self._max_no_position_points, 6), dtype=float
-        )  # (time, step duration, position, speed, acceleration, jerk)
+            shape=(self._max_no_position_points, self._TOT_NUM_COLS), dtype=float
+        )  # (time, time_since_start, step_duration, sd_mode, sd_mode_run_avg, position, speed, acceleration, jerk)
         self._current_history_len: int = 1
         self._eh.post(
             event_type="encoder sensor",
@@ -117,33 +123,104 @@ class EncoderGeneral:
 
     def add_position(self, a_time: float, position: float) -> None:
         self._current_history_len += 1
+
+        # Check if max history length exceeded. Roll if so
         if self._current_history_len > self._max_no_position_points:
             self._current_history_len = self._max_no_position_points
-            self._position_history[:, 0] = np.roll(self._position_history[:, 0], -1)  # type: ignore
-            self._position_history[:, 2] = np.roll(self._position_history[:, 2], -1)  # type: ignore
-        self._position_history[self._current_history_len - 1, 0] = a_time
-        self._position_history[self._current_history_len - 1, 2] = position
+            self._position_history = np.roll(self._position_history, -1)
+            # first position point will roll to last but be overwritten with new data
+
+            # Calculate time_since_start column since we have new baseline
+            # zero time at beginning of remaining history
+            self._position_history[0:, self._T_SINCE_START_COL] = (
+                self._position_history[0:, self._T_COL]
+                - self._position_history[0, self._T_COL]
+            )
+
+        # Add New data to the position history
+
+        # Add current time for new position point (Column T_COL)
+        self._position_history[self._current_history_len - 1, self._T_COL] = a_time
+
+        # Calculate time_since_start for new position point (Column T_SINCE_START_COL)
+        self._position_history[
+            self._current_history_len - 1, self._T_SINCE_START_COL
+        ] = (
+            self._position_history[self._current_history_len - 1, self._T_COL]
+            - self._position_history[0, self._T_COL]
+        )
+
+        # Calculate step duration for new position point (Column S_D_COL)
+        self._position_history[self._current_history_len - 1, self._S_D_COL] = (
+            self._position_history[
+                self._current_history_len - 1, self._T_SINCE_START_COL
+            ]
+            - self._position_history[
+                self._current_history_len - 2, self._T_SINCE_START_COL
+            ]
+        )
+
+        # Calculate mode of step duration up to latest history point (Column S_D_MODE_COL)
+        self._position_history[
+            self._current_history_len - 1, self._S_D_MODE_COL
+        ] = find_gamma_mode(
+            data=self._position_history[: self._current_history_len, self._S_D_COL]
+        )
+
+        # Calculate step duration mode cumulative average for new position point (Column S_D_MODE_AVG_COL)
+        self._position_history[
+            self._current_history_len - 1, self._S_D_MODE_AVG_COL
+        ] = cumulative_average(
+            prev_cumulative_average=self._position_history[
+                self._current_history_len - 2, self._S_D_MODE_AVG_COL
+            ],
+            new_value=self._position_history[
+                self._current_history_len - 1, self._S_D_MODE_COL
+            ],
+            number_of_history_points=self._current_history_len,
+        )
+
+        # Add position for new position point (Column POS_COL)
+        self._position_history[self._current_history_len - 1, self._DIST_COL] = position
+
+        # Add speed for new position point (Column SPEED_COL)
+        self._position_history[self._current_history_len - 1, self._SPEED_COL] = (
+            self._position_history[self._current_history_len - 1, self._DIST_COL]
+            - self._position_history[self._current_history_len - 2, self._DIST_COL]
+        ) / self._position_history[self._current_history_len - 1, self._S_D_COL]
+
+        # Add acceleration for new position point (Column ACCEL_COL)
+        if self._current_history_len >= 3:
+            self._position_history[self._current_history_len - 1, self._ACCEL_COL] = (
+                self._position_history[self._current_history_len - 1, self._SPEED_COL]
+                - self._position_history[self._current_history_len - 2, self._SPEED_COL]
+            ) / self._position_history[self._current_history_len - 1, self._S_D_COL]
+        else:
+            self._position_history[self._current_history_len - 1, self._ACCEL_COL] = 0
+
+        # Add jerk for new position point (Column JERK_COL)
+        if self._current_history_len >= 4:
+            self._position_history[self._current_history_len - 1, self._JERK_COL] = (
+                self._position_history[self._current_history_len - 1, self._ACCEL_COL]
+                - self._position_history[self._current_history_len - 2, self._ACCEL_COL]
+            ) / self._position_history[self._current_history_len - 1, self._S_D_COL]
+        else:
+            self._position_history[self._current_history_len - 1, self._JERK_COL] = 0
+
         self._eh.post(
             event_type="encoder sensor",
-            message=f"Adding position: time: {a_time}, pos.: {position}",
+            message=f"Added position: time: {a_time}, pos.: {position}",
         )
 
     @property
     def distance(self) -> float:
         """
         Getter for Distance Encoder has observed
-
-        Args:
-            None
-
-        Returns:
-            Distance as a float
         """
-
-        distance: float = self._position_history[self._current_history_len - 1, 2]
-
+        distance: float = self._position_history[
+            self._current_history_len - 1, self._DIST_COL
+        ]
         self._eh.post(event_type="encoder sensor", message=f"Distance: {distance:.2f}")
-
         return distance
 
     @property
@@ -151,51 +228,23 @@ class EncoderGeneral:
         """
         Getter for speed Encoder has observed, averaged by time over the
         duration specified.
-
-        Args:
-            None
-
-        Returns:
-            Average speed as a float
         """
         if self._current_history_len < 3:
             return 0
 
-        if self._position_history[0, 0] == 0:  # initial time is uninitiallized
-            self._position_history[0, 0] = (
-                2 * self._position_history[1, 0] - self._position_history[2, 0]
-            )
-
-        self._history_lines_to_use = np.argmax(  # type: ignore
-            self._position_history[:, 0] >= self._average_duration
-        )  # find the row number of the first data point with cumulative time > _average_duration
-        if self._history_lines_to_use == 0:
-            self._history_lines_to_use = self._current_history_len
-            # Don't have enough for average duration so use all we have
-
-        # Calculate Step Duration in column 1
-        self._position_history[0:1, 4] = np.zeros(1)  # type: ignore
-
-        # print(f"esg:177:self._position_history\n{self._position_history}")
-
-        self._position_history[1 : self._history_lines_to_use - 1, 1] = (
-            self._position_history[1 : self._history_lines_to_use - 1, 0]
-            - self._position_history[: self._history_lines_to_use - 2, 0]
+        # find the row number of the first data point with cumulative time > _average_duration
+        self._history_lines_to_use = self._row_with_cumulative_time_greater_than_target(
+            self._average_duration
         )
 
-        # Calculate Speed in column 3
-        self._position_history[0, 3] = 0
-        self._position_history[1 : self._history_lines_to_use - 1, 3] = (
-            self._position_history[1 : self._history_lines_to_use - 1, 2]
-            - self._position_history[0 : self._history_lines_to_use - 2, 2]
-        ) / self._position_history[1 : self._history_lines_to_use - 1, 1]
+        speeds_list: npt.ArrayLike = self._position_history[
+            self._current_history_len
+            - self._history_lines_to_use : self._current_history_len,
+            self._SPEED_COL,
+        ]
 
-        avg_speed: float = float(
-            np.average(self._position_history[1 : self._history_lines_to_use - 1, 3])
-        )
-
+        avg_speed: float = float(np.average(speeds_list))
         self._eh.post(event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}")
-
         return avg_speed
 
     @property
@@ -203,31 +252,23 @@ class EncoderGeneral:
         """
         Getter for acceleration Encoder has observed, averaged by time over
         the duration specified.
-
-        Args:
-            None
-
-        Returns:
-            Average acceleration as float
         """
         if self._current_history_len < 3:
             return 0
 
-        self.speed
-
-        # Calculate Acceleration in column 4
-        self._position_history[0:2, 4] = np.zeros(2)  # type: ignore
-
-        self._position_history[2 : self._history_lines_to_use - 1, 4] = (
-            self._position_history[2 : self._history_lines_to_use - 1, 3]
-            - self._position_history[1 : self._history_lines_to_use - 2, 3]
-        ) / self._position_history[2 : self._history_lines_to_use - 1, 1]
-
-        avg_accel: float = float(
-            np.average(self._position_history[2 : self._history_lines_to_use - 1, 4])
+        # find the row number of the first data point with cumulative time > _average_duration
+        self._history_lines_to_use = self._row_with_cumulative_time_greater_than_target(
+            self._average_duration
         )
-        self._eh.post(event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}")
 
+        accels_list: npt.ArrayLike = self._position_history[
+            self._current_history_len
+            - self._history_lines_to_use : self._current_history_len,
+            self._ACCEL_COL,
+        ]
+
+        avg_accel: float = float(np.average(accels_list))
+        self._eh.post(event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}")
         return avg_accel
 
     @property
@@ -235,30 +276,30 @@ class EncoderGeneral:
         """
         Getter for jerk Encoder has observed, averaged by time over
         the duration specifieda.
-
-        Args:
-            None
-
-        Returns:
-            Average jerk as float
         """
         if self._current_history_len < 4:
             return 0
 
-        self.accel
-
-        # Calculate Jerk in column 5
-        self._position_history[0:3, 5] = np.zeros(3)  # type: ignore
-
-        self._position_history[3 : self._history_lines_to_use - 1, 5] = (
-            self._position_history[3 : self._history_lines_to_use - 1, 4]
-            - self._position_history[2 : self._history_lines_to_use - 2, 4]
-        ) / self._position_history[3 : self._history_lines_to_use - 1, 1]
-
-        avg_jerk: float = float(
-            np.average(self._position_history[3 : self._history_lines_to_use - 1, 5])
+        # find the row number of the first data point with cumulative time > _average_duration
+        self._history_lines_to_use = self._row_with_cumulative_time_greater_than_target(
+            self._average_duration
         )
 
-        self._eh.post(event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}")
+        jerks_list: npt.ArrayLike = self._position_history[
+            self._current_history_len
+            - self._history_lines_to_use : self._current_history_len,
+            self._JERK_COL,
+        ]
 
+        avg_jerk: float = float(
+            np.average(jerks_list)
+        self._eh.post(event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}")
         return avg_jerk
+
+    def _row_with_cumulative_time_greater_than_target(self, target: float):
+        # find the row number of the first data point with cumulative time > _average_duration
+        self._history_lines_to_use = np.argmax(self._position_history[:, 0] >= target)
+
+        # If we don't have enough for average duration, use all we have
+        if self._history_lines_to_use == 0:
+            self._history_lines_to_use = self._current_history_len
