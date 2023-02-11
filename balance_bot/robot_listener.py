@@ -1,11 +1,10 @@
-#! /usr/bin/python3
-
 # Based on Observer Pattern Tutorial by ArjanCodes o YouTube
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
 import datetime as dt
 import numpy as np
 import numpy.typing as npt
+import os
 import sys
 from typing import Optional
 
@@ -31,10 +30,11 @@ def general_eh(event_type: str, message: str, level: Optional[str] = None) -> No
             file=sys.stdout,
         )
     else:
-        log_filename_path = (
-            log_folder + "/" + f"{now:%Y-%m-%d_%H_%M_%S}_" + log_filename_base
+        log_filename = (
+            f"{now:%Y-%m-%d_%H_%M_%S}_{log_filename_base}"
         )
-        # print(f"Trying to cature a general event to a file: {log_filename_path}")
+        log_filename_path = os.path.join(log_folder, log_filename)
+
         with open(log_filename_path, "a") as f:
             print(
                 log_cfg.format[log_cfg.handler[general_eh_handler].formatter].format(
@@ -94,9 +94,8 @@ def general_logging_handler(message: str) -> None:
 
     log_type, message_body = [txt.strip() for txt in message.split(":")]
 
-    if log_type not in ["ERROR", "WARNING", "INFO", "DEBUG"]:
-        log_type = "INVALID_LOG_TYPE"
-        message_body = message
+    if log_type not in ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]:
+        log_type = "INFO"
     print(
         f"Log ({log_type}):({dt.datetime.now().strftime('%Y-%m-%d|%H:%M:%S')}):{message_body}"
     )
@@ -112,8 +111,8 @@ def position_history_eh(
 ) -> None:
     now = dt.datetime.now()
     log_folder = log_cfg.handler["position_history_file"].folder
-    log_filename_base = log_cfg.handler["position_history_file"].filename
-    log_filename_path = log_folder + "/" + f"{now:%Y-%m-%d_%H_%M_%S}_" + log_filename_base
+    log_filename = f"{now:%Y-%m-%d_%H_%M_%S}_{log_cfg.handler['position_history_file'].filename}"
+    log_filename_path = os.path.join(log_folder, log_filename)
     np.savetxt(fname=log_filename_path, X=message, fmt="%.7f", delimiter=",")
 
 
