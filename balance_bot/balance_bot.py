@@ -20,7 +20,9 @@ from event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):
-    def post(self, *, event_type: str, message: str) -> None:
+    def post(
+        self, *, event_type: str, message: str | npt.ArrayLike, level: Optional[str]
+    ) -> None:
         raise NotImplementedError
 
 
