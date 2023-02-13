@@ -1,75 +1,107 @@
-#! /usr/bin/python3
 """
-TBD.
-
-Classes:
-    None
-
-Misc variables:
-    TBD
+Tester for BNO055 9-Degree of Freedom Sensor
 """
 
 import datetime as dt
+import os
+import numpy as np
+import pandas as pd
 import time
-import logging
+from typing import Protocol, Optional, Any, Callable
 
-# from config import cfg
+import board
+import busio
+import adafruit_bno055
 
-# Initialize Logging
-logger = logging.getLogger(__name__)
+
+from balance_bot.config import cfg
+from balance_bot.event import EventHandler
+
+TIME_MS: Callable[[], float] = lambda: time.time() * 1000
+TIME_S: Callable[[], float] = lambda: time.time()
+UPDATE_TIME: float = 0.1  # Update readings every 0.1 second
+LOG_UPDATE_TIME: float = 2  # Time between log post with current readings
+DATA_SAVE_TIME: float = 10  # Time between savings history
 
 
-def main():
-    import os
+class EventHandlerTemplate(Protocol):
+    def post(
+        self, *, event_type: str, message: str | Any, level: Optional[str]
+    ) -> None:
+        raise NotImplementedError
+
+
+def test_BNO055_sensor():
+
+    eh: EventHandlerTemplate = EventHandler()
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. OK to start robot.
-        logger.info("Starting Test B?NO055 Sensor")
+        eh.post(event_type="9DOF sensor", message="Starting Test BNO055 Sensor Test")
     elif os.name == "nt":
         # Running on Windows, please drive through.
-        logger.warning(
-            "Test B?NO055 Sensor not designed to run on Windows at this time"
+        eh.post(
+            event_type="9DOF sensor",
+            message="Test BNO055 Sensor not designed to run on Windows at this time",
         )
         return
     else:
-        logger.warning(
-            "Test B?NO055 Sensor - OS not identified. Please try on Raspberry Pi"
+        eh.post(
+            event_type="9DOF sensor",
+            message="Test BNO055 Sensor - OS not identified. Please try on Raspberry Pi",
         )
         return
 
-    import board
-    import busio
-    import adafruit_bno055
-
-    # Initialize i2C Connection to sensor- need check/try?
+    # Initialize i2C Connection to sensor
+    # TODO: need check/try?
     i2c = busio.I2C(board.SCL, board.SDA)
     sensor = adafruit_bno055.BNO055_I2C(i2c)
 
     # Read Sensor Mode to verify connected
-    sensor_mode = sensor.mode
+    sensor.mode
 
-    """
     # Wait for, read and save calibration information
+    start_time = TIME_S()
     while sensor.calibration_status[1] != 0x03:  # Gyro
-        logger.info('Waiting for gyro calibration')
-        time.sleep(2)
-    logger.info('Gyro calibrated')
+        eh.post(event_type="9DOF sensor", message=f"Waiting for gyro calibration")
+        time.sleep(1)
+    elapsed_time = TIME_S() - start_time
+    eh.post(
+        event_type="9DOF sensor",
+        message=f"Gyro calibrated in {elapsed_time:.1f} seconds",
+    )
 
+    start_time = TIME_S()
     while sensor.calibration_status[2] != 0x03:  # Accel
-        logger.info('Waiting for accel calibration')
-        time.sleep(2)
-    logger.info('Accelerometer calibrated')
+        eh.post(event_type="9DOF sensor", message=f"Waiting for accel calibration")
+        time.sleep(1)
+    elapsed_time = TIME_S() - start_time
+    eh.post(
+        event_type="9DOF sensor",
+        message=f"Accel calibrated in {elapsed_time:.1f} seconds",
+    )
 
-
+    start_time = TIME_S()
     while sensor.calibration_status[2] != 0x03:  # Mag
-        logger.info('Waiting for magnetrometer calibration')
-        time.sleep(2)
-    logger.info('Magnetrometer calibrated')
+        eh.post(
+            event_type="9DOF sensor", message=f"Waiting for magnetrometer calibration"
+        )
+        time.sleep(1)
+    elapsed_time = TIME_S() - start_time
+    eh.post(
+        event_type="9DOF sensor",
+        message=f"Megnetrometer calibrated in {elapsed_time:.1f} seconds",
+    )
 
+    start_time = TIME_S()
     while sensor.calibration_status[0] != 0x03:  # System
-        logger.info('Waiting for system calibration')
-        time.sleep(2)
-    logger.info('System calibrated')
+        eh.post(event_type="9DOF sensor", message=f"Waiting for system calibration")
+        time.sleep(1)
+    elapsed_time = TIME_S() - start_time
+    eh.post(
+        event_type="9DOF sensor",
+        message=f"System calibrated in {elapsed_time:.1f} seconds",
+    )
 
     # Read Calibration Data
     sensor_calibration_values = {
@@ -77,84 +109,73 @@ def main():
         "magnet_offset": sensor.offsets_magnetometer,
         "gyro_offset": sensor.offsets_gyroscope,
         "accel_radius": sensor.radius_accelerometer,
-        "magnet_radius": sensor.radius_magnetometer}
+        "magnet_radius": sensor.radius_magnetometer,
+    }
 
     # Save Calibration Data
-    with open(bbc.CALIBRATION_FILE, 'w') as fp:
+    with open(bbc.CALIBRATION_FILE, "w") as fp:
         json.dump(sensor_calibration_values, fp)
-    """
 
-    update_time_measure = 0  # Seconds
-    update_time_save = 100000  # Seconds
-
-    params_hist = pd.DataFrame()
+    params_hist: pd.DataFrame = pd.DataFrame()
+    lasttime_control_measure: float = TIME_S()
+    last_log_time = TIME_S()
+    last_data_save_time = TIME_S()
     try:
-        lasttime_control_measure = 0
-        lasttime_control_save = 0
         while True:
-            if (time.time() - lasttime_control_measure) >= update_time_measure:
+            if (TIME_S() - lasttime_control_measure) >= UPDATE_TIME:
                 # exec every UPDATE_TIME seconds
-                lasttime_control_measure = time.time()
-                params = pd.Series(dtype="float64")
-                # print('params1:', params)
+                lasttime_control_measure = TIME_S()
+                params: pd.Series[float] = pd.Series(dtype="float64")
+
                 params = params.append(
                     pd.Series(
                         data=sensor.linear_acceleration,
                         index=["y_accel", "x_accel", "z_accel"],
                     )
                 )
-                # print('params2:', params)
+
                 params = params.append(
                     pd.Series(
                         data=sensor.euler, index=["yaw(z)", "roll(x)", "pitch(y)"]
                     )
                 )
-                # params = params.append(pd.Series(data=sensor.temperature,
-                #                                  index=['temperature']))
-                # params = params.append(pd.Series(data=sensor.magnetic,
-                #                                  index=['mag_x', 'mag_y', 'mag_z']))
+
+                params = params.append(
+                    pd.Series(data=sensor.temperature, index=["temperature"])
+                )
+                params = params.append(
+                    pd.Series(data=sensor.magnetic, index=["mag_x", "mag_y", "mag_z"])
+                )
                 params = params.append(
                     pd.Series(data=sensor.gyro, index=["gyro_y", "gyro_x", "gyro_z"])
                 )
-                # params = params.append(pd.Series(data=sensor.gravity,
-                #                                  index=['gravity_x', 'gravity_y', 'gravity_z']))
+                params = params.append(
+                    pd.Series(
+                        data=sensor.gravity,
+                        index=["gravity_x", "gravity_y", "gravity_z"],
+                    )
+                )
 
                 params = params.rename(str(dt.datetime.now()))
-                # logger.debug(str(params))
-                # if params['pitch(y)'] is not None:
-                #     print(f'Euler Angles: ' +
-                #           f'Roll(x): {params["roll(x)"]:4.1f}  ' +
-                #           f'Pitch(y): {params["pitch(y)"]:4.1f}  ' +
-                #           f'Yaw(z): {params["yaw(z)"]:4.1f}')
-                #    logger.debug(str(params['yaw(z)']))
 
-                # print(f'Gyro.: ' +
-                #       f'gyro_x: {params["gyro_x"]:4.1f}  ' +
-                #       f'gyro_y: {params["gyro_y"]:4.1f}  ' +
-                #       f'gyro_z: {params["gyro_z"]:4.1f}')
-
-                if params["x_accel"] is not None:
-                    print(
-                        f"Accel: "
-                        + f'Accel_x: {params["x_accel"]:4.0f}  '
-                        + f'Accel_y: {params["y_accel"]:4.0f}  '
-                        + f'Accel_z: {params["z_accel"]:4.0f}  '
+                if (TIME_S() - last_log_time) > LOG_UPDATE_TIME:
+                    eh.post(
+                        event_type="9DOF sensor",
+                        message="\n".join(str(params).split("\n")[:-1]),
                     )
-                else:
-                    pass
-                    # print('No Accel data')
+                    last_log_time = TIME_S()
 
                 params_hist = params_hist.append(params)
 
-            if (time.time() - lasttime_control_save) >= update_time_save:
-                logger.debug("Saving CSV File")
-                lasttime_control_save = time.time()
-                sensor_history_filename = (
-                    "sensor_history-"
-                    + dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-                    + ".csv"
-                )
-                params_hist.to_csv(path_or_buf=sensor_history_filename)
+                if (TIME_S() - last_data_save_time) >= DATA_SAVE_TIME:
+                    eh.post(event_type="9DOF sensor", message="Saving CSV File")
+                    last_data_save_time = TIME_S()
+                    sensor_history_filename = (
+                        "sensor_history-"
+                        + dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+                        + ".csv"
+                    )
+                    params_hist.to_csv(path_or_buf=sensor_history_filename)
 
     except KeyboardInterrupt:
         pass
