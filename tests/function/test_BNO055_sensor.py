@@ -11,10 +11,10 @@ from typing import Protocol, Optional, Any, Callable
 
 import board
 import busio
-import adafruit_bno055
+import Adafruit_BNO055
 
 
-from balance_bot.config import cfg
+from config import cfg
 from balance_bot.event import EventHandler
 
 TIME_MS: Callable[[], float] = lambda: time.time() * 1000
