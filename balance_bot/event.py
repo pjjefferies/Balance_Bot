@@ -1,8 +1,7 @@
 # Based on Observer Pattern Tutorial by ArjanCodes on YouTube
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
-from typing import Callable, Optional
-import numpy.typing as npt
+from typing import Callable, Optional, Any
 
 
 class EventHandler:
@@ -13,7 +12,7 @@ class EventHandler:
                 Callable[
                     [
                         str,
-                        str | npt.ArrayLike,
+                        str,
                         Optional[str],
                     ],
                     None,
@@ -25,7 +24,7 @@ class EventHandler:
         self,
         *,
         event_type: str,
-        fn: Callable[[str, npt.ArrayLike | str, Optional[str]], None],
+        fn: Callable[[str, str | Any, Optional[str]], None],
     ) -> None:
         if event_type not in self._subscribers:
             self._subscribers[event_type] = []
@@ -35,11 +34,10 @@ class EventHandler:
         self,
         *,
         event_type: str,
-        message: str | npt.ArrayLike,
+        message: str | Any,
         level: Optional[str] = None,
     ) -> None:
         if event_type not in self._subscribers:
-            print(f"event_type: '{event_type}' not found")
-            return
+            raise ValueError(f"event_type: '{event_type}' not found")
         for fn in self._subscribers[event_type]:
             fn(event_type, message, level)

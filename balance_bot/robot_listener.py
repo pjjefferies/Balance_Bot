@@ -3,10 +3,9 @@
 
 import datetime as dt
 import numpy as np
-import numpy.typing as npt
 import os
 import sys
-from typing import Optional
+from typing import Optional, Any
 
 from balance_bot.config import log_cfg
 from balance_bot.event import EventHandler
@@ -30,9 +29,7 @@ def general_eh(event_type: str, message: str, level: Optional[str] = None) -> No
             file=sys.stdout,
         )
     else:
-        log_filename = (
-            f"{now:%Y-%m-%d_%H_%M_%S}_{log_filename_base}"
-        )
+        log_filename = f"{now:%Y-%m-%d_%H_%M_%S}_{log_filename_base}"
         log_filename_path = os.path.join(log_folder, log_filename)
 
         with open(log_filename_path, "a") as f:
@@ -66,7 +63,7 @@ def robot_9DOF_sensor_eh(message: str) -> None:
 
 
 def setup_robot_9DOF_sensor_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="robot 9DOF sensor", fn=general_eh)
+    eh.subscribe(event_type="9DOF sensor", fn=general_eh)
 
 
 # BlueDot Event Handler
@@ -107,13 +104,15 @@ def setup_general_logging_handler(eh: EventHandler) -> None:
 
 # Position History Event Handler
 def position_history_eh(
-    event_type: str, message: npt.ArrayLike, level: Optional[str] = None
+    event_type: str, message: Any, level: Optional[str] = None
 ) -> None:
     now = dt.datetime.now()
     log_folder = log_cfg.handler["position_history_file"].folder
-    log_filename = f"{now:%Y-%m-%d_%H_%M_%S}_{log_cfg.handler['position_history_file'].filename}"
+    log_filename = (
+        f"{now:%Y-%m-%d_%H_%M_%S}_{log_cfg.handler['position_history_file'].filename}"
+    )
     log_filename_path = os.path.join(log_folder, log_filename)
-    np.savetxt(fname=log_filename_path, X=message, fmt="%.7f", delimiter=",")
+    np.savetxt(fname=log_filename_path, X=message, fmt="%.7f", delimiter=",")  # type: ignore
 
 
 def setup_position_history_logging_handler(eh: EventHandler) -> None:
