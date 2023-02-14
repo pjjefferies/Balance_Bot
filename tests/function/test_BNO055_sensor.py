@@ -1,20 +1,21 @@
+#!/usr/bin/env python3
 """
 Tester for BNO055 9-Degree of Freedom Sensor
 """
 
 import datetime as dt
 import os
-import numpy as np
-import pandas as pd
 import time
 from typing import Protocol, Optional, Any, Callable
 
+import adafruit_bno055
 import board
 import busio
-import Adafruit_BNO055
+import numpy as np
+import pandas as pd
 
-
-from config import cfg
+from balance_bot import robot_listener
+from balance_bot.config import cfg
 from balance_bot.event import EventHandler
 
 TIME_MS: Callable[[], float] = lambda: time.time() * 1000
@@ -34,6 +35,8 @@ class EventHandlerTemplate(Protocol):
 def test_BNO055_sensor():
 
     eh: EventHandlerTemplate = EventHandler()
+
+    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. OK to start robot.
@@ -55,7 +58,7 @@ def test_BNO055_sensor():
     # Initialize i2C Connection to sensor
     # TODO: need check/try?
     i2c = busio.I2C(board.SCL, board.SDA)
-    sensor = adafruit_bno055.BNO055_I2C(i2c)
+    sensor = adafruit_bno055.BNO055_I2C(i2c=i2c)
 
     # Read Sensor Mode to verify connected
     sensor.mode
@@ -179,3 +182,7 @@ def test_BNO055_sensor():
 
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == "__main__":
+    test_BNO055_sensor()
