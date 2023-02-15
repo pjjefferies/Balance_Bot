@@ -1,23 +1,6 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 """
 Create representation of Simulated Adafruit 9-DOF Abs. Orientation IMU BNO055.
-
-Classes:
-    BNO055Sensor
-
-Methods:
-	calibrate_sensor
-	temperature
-	accel
-	magnetic
-	gyro
-	euler_angles
-	gravity_dir
-	gravity_mag
-	quarternion
-
-Misc variables:
-    x
 """
 
 import random
