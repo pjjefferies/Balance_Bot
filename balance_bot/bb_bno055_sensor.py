@@ -1,42 +1,22 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 """
 Create representation of Adafruit 9-DOF Abs. Orientation IMU BNO055.
 
 This is needed to rotate axes on BNO055 Chip to Robot Axes.
-
-Classes:
-    BNO055Sensor
-
-Methods:
-	calibrate_sensor
-	temperature
-	accel
-	magnetic
-	gyro
-	euler_angles
-	gravity_dir
-	gravity_mag
-	quarternion
-
-Misc variables:
-    x
 """
-from typing import Dict, Union  # Protocol
 
-# from abc import abstractmethod
-import os
-import math
-import time
-import yaml
+from abc import abstractmethod
 from box import Box
-from config import cfg
-from event import EventHandler
+import math
+import os
+import time
+from typing import Dict, Union, Protocol
+
 import adafruit_bno055
 import busio
 
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
+from config import cfg
+from event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):
@@ -127,7 +107,6 @@ class AbsoluteSensor(Protocol):
         self,
     ) -> Tuple[Union[float, None], Union[float, None], Union[float, None]]:
         raise NotImplementedError
-"""
 
 
 class BB_BNO055Sensor:
