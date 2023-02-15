@@ -1,27 +1,27 @@
+#!/usr/bin/env python3
 """ Balance Bot Main Routine """
 
+import asyncio
 import time
-from typing import Callable, Protocol, Optional
+from typing import Callable, Protocol, Optional, Any
 
 from abc import abstractmethod
+from gpiozero import Motor
+
 from balance_bot import robot_listener
 from balance_bot.motor_simulator import MotorSim
 from balance_bot.encoder_sensor_digital import EncoderDigital
 from balance_bot.encoder_simulator import EncoderSim
-from gpiozero import Motor
 from balance_bot.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
 from balance_bot.bb_bno055_sensor import BB_BNO055Sensor
 from balance_bot.bluedot_direction_control import BlueDotRobotController
-
-# from importlib import reload
-import asyncio
 from config import cfg
 from event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):
     def post(
-        self, *, event_type: str, message: str | npt.ArrayLike, level: Optional[str]
+        self, *, event_type: str, message: str | Any, level: Optional[str]
     ) -> None:
         raise NotImplementedError
 
@@ -287,11 +287,11 @@ def main():
 
     eh = EventHandler()
 
-    robot_listener.setup_robot_movement_handler()
-    robot_listener.setup_robot_encoder_sensor_handler()
-    robot_listener.setup_robot_9DOF_sensor_handler()
-    robot_listener.setup_general_logging_handler()
-    robot_listener.setup_bluedot_handler()
+    robot_listener.setup_robot_movement_handler(eh=eh)
+    robot_listener.setup_robot_encoder_sensor_handler(eh=eh)
+    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
+    robot_listener.setup_general_logging_handler(eh=eh)
+    robot_listener.setup_bluedot_handler(eh=eh)
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. Start robot.
