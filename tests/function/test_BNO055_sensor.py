@@ -63,6 +63,16 @@ def test_BNO055_sensor():
     # Read Sensor Mode to verify connected
     sensor.mode
 
+    # Read and Post "Pre" Calibration Data
+    sensor_calibration_values = {
+        "accel_offset": sensor.offsets_accelerometer,
+        "magnet_offset": sensor.offsets_magnetometer,
+        "gyro_offset": sensor.offsets_gyroscope,
+        "accel_radius": sensor.radius_accelerometer,
+        "magnet_radius": sensor.radius_magnetometer,
+    }
+    eh.post(event_type="9DOF sensor", message=f"{sensor_calibration_values}")
+
     # Wait for, read and save calibration information
     start_time = TIME_S()
     while sensor.calibration_status[1] != 0x03:  # Gyro
@@ -106,7 +116,7 @@ def test_BNO055_sensor():
         message=f"System calibrated in {elapsed_time:.1f} seconds",
     )
 
-    # Read Calibration Data
+    # Read and Post "Post" Calibration Data
     sensor_calibration_values = {
         "accel_offset": sensor.offsets_accelerometer,
         "magnet_offset": sensor.offsets_magnetometer,
@@ -114,6 +124,7 @@ def test_BNO055_sensor():
         "accel_radius": sensor.radius_accelerometer,
         "magnet_radius": sensor.radius_magnetometer,
     }
+    eh.post(event_type="9DOF sensor", message=f"{sensor_calibration_values}")
 
     # Save Calibration Data
     with open(bbc.CALIBRATION_FILE, "w") as fp:
