@@ -128,7 +128,7 @@ def test_BNO055_sensor():
     eh.post(event_type="9DOF sensor", message=f"{sensor_calibration_values}")
 
     # Save Calibration Data
-    with open(bbc.CALIBRATION_FILE, "w") as fp:
+    with open(cfg.path.ninedof_sensor_calibration, "w") as fp:
         json.dump(sensor_calibration_values, fp)
 
     params_hist: pd.DataFrame = pd.DataFrame()
