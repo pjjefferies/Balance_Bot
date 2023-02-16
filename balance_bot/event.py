@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Based on Observer Pattern Tutorial by ArjanCodes on YouTube
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 

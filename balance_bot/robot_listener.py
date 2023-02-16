@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Based on Observer Pattern Tutorial by ArjanCodes o YouTube
 # https://www.youtube.com/watch?v=oNalXg67XEE&t=0s
 
@@ -12,40 +14,49 @@ from balance_bot.event import EventHandler
 
 eh: EventHandler
 
-# General Event Handler
-def general_eh(event_type: str, message: str, level: Optional[str] = None) -> None:
-    # general_eh_handler = "console"
+# General Log File Event Handler
+def general_logfile_eh(
+    event_type: str, message: str, level: Optional[str] = None
+) -> None:
     general_eh_handler = "log_file"
 
     now = dt.datetime.now()
     level_text = ": " + level if level is not None else ""
     log_folder = log_cfg.handler[general_eh_handler].folder
     log_filename_base = log_cfg.handler[general_eh_handler].filename
-    if log_filename_base == "sys.stdout":
-        print(
-            log_cfg.format.simple.format(
-                now=now, event_type=event_type, level_text=level_text, message=message
-            ),
-            file=sys.stdout,
-        )
-    else:
-        log_filename = f"{now:%Y-%m-%d_%H_%M_%S}_{log_filename_base}"
-        log_filename_path = os.path.join(log_folder, log_filename)
+    log_filename = f"{now:%Y-%m-%d_%H_%M_%S}_{log_filename_base}"
+    log_filename_path = os.path.join(log_folder, log_filename)
 
-        with open(log_filename_path, "a") as f:
-            print(
-                log_cfg.format[log_cfg.handler[general_eh_handler].formatter].format(
-                    now=now,
-                    event_type=event_type,
-                    level_text=level_text,
-                    message=message,
-                ),
-                file=f,
-            )
+    with open(log_filename_path, "a") as f:
+        print(
+            log_cfg.format[log_cfg.handler[general_eh_handler].formatter].format(
+                now=now,
+                event_type=event_type,
+                level_text=level_text,
+                message=message,
+            ),
+            file=f,
+        )
+
+
+# General Stdout Event Handler
+def general_stdout_eh(
+    event_type: str, message: str, level: Optional[str] = None
+) -> None:
+    now = dt.datetime.now()
+    level_text = ": " + level if level is not None else ""
+    # log_folder = log_cfg.handler[general_eh_handler].folder
+    # log_filename_base = log_cfg.handler[general_eh_handler].filename
+    print(
+        log_cfg.format.simple.format(
+            now=now, event_type=event_type, level_text=level_text, message=message
+        ),
+        file=sys.stdout,
+    )
 
 
 def setup_robot_movement_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="robot moved", fn=general_eh)
+    eh.subscribe(event_type="robot moved", fn=general_logfile_eh)
 
 
 # Robot Encoder Sensor Event Handler
@@ -54,7 +65,7 @@ def robot_encoder_sensor_eh(message: str) -> None:
 
 
 def setup_robot_encoder_sensor_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="encoder sensor", fn=general_eh)
+    eh.subscribe(event_type="encoder sensor", fn=general_logfile_eh)
 
 
 # Robot 9DOF Sensor Event Handler
@@ -62,8 +73,12 @@ def robot_9DOF_sensor_eh(message: str) -> None:
     print(f"9DOF Sensor: {message}")
 
 
-def setup_robot_9DOF_sensor_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="9DOF sensor", fn=general_eh)
+def setup_robot_9DOF_sensor_handler_logfile(eh: EventHandler) -> None:
+    eh.subscribe(event_type="9DOF sensor", fn=general_logfile_eh)
+
+
+def setup_robot_9DOF_sensor_handler_stdout(eh: EventHandler) -> None:
+    eh.subscribe(event_type="9DOF sensor", fn=general_stdout_eh)
 
 
 # BlueDot Event Handler
@@ -72,7 +87,7 @@ def bluedot_eh(message: str) -> None:
 
 
 def setup_bluedot_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="bluedot", fn=general_eh)
+    eh.subscribe(event_type="bluedot", fn=general_logfile_eh)
 
 
 # Power Event Handler
@@ -81,7 +96,7 @@ def power_eh(message: str) -> None:
 
 
 def setup_power_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="power", fn=general_eh)
+    eh.subscribe(event_type="power", fn=general_logfile_eh)
 
 
 # General Logging Event Handlers
@@ -99,7 +114,7 @@ def general_logging_handler(message: str) -> None:
 
 
 def setup_general_logging_handler(eh: EventHandler) -> None:
-    eh.subscribe(event_type="log", fn=general_eh)
+    eh.subscribe(event_type="log", fn=general_logfile_eh)
 
 
 # Position History Event Handler

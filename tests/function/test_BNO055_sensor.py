@@ -36,7 +36,8 @@ def test_BNO055_sensor():
 
     eh: EventHandlerTemplate = EventHandler()
 
-    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
+    robot_listener.setup_robot_9DOF_sensor_handler_logfile(eh=eh)
+    robot_listener.setup_robot_9DOF_sensor_handler_stdout(eh=eh)
 
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. OK to start robot.
