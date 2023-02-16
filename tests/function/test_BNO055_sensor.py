@@ -129,7 +129,9 @@ def test_BNO055_sensor():
 
     # Save Calibration Data
     with open(cfg.path.ninedof_sensor_calibration, "w") as fp:
-        yaml.dump(data=sensor_calibration_values, stream=fp)
+        yaml.dump(data=sensor_calibration_values,
+                  stream=fp,
+                  default_flow_style=False)
 
     params_hist: pd.DataFrame = pd.DataFrame()
     lasttime_control_measure: float = TIME_S()
