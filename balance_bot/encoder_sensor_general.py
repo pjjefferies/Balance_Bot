@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+"""Encoder Sensor Base Module for Actual Sensor and Simulated Sensor"""
+
 import numpy as np
 import time
 from typing import Any, Union, Protocol

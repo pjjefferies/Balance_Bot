@@ -1,11 +1,10 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
 import time
-from typing import Callable, Tuple, List  # , Protocol - V3.10
+from typing import Callable, Optional, Protocol
 
 from gpiozero import Motor
 
-# from config import cfg
 from .motor_battery_relay import MotorBatteryRelay
 from .bluedot_direction_control import BlueDotRobotController
 from .config import cfg
@@ -13,16 +12,13 @@ from .event import EventHandler
 from .encoder_sensor_digital import EncoderDigital
 from . import robot_listener
 
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
-class MotorGeneral:  # (Protocol): - V3.10
+class MotorGeneral(Protocol):
     def __init__(
         self,
-        forward: Union[int, None] = None,
-        backward: Union[int, None] = None,
-        enable: Union[int, None] = None,
+        forward: Optional[int] = None,
+        backward: Optional[int] = None,
+        enable: Optional[int] = None,
         pwm: bool = True,
         pin_factory: None = None,
     ):
@@ -37,7 +33,7 @@ class MotorGeneral:  # (Protocol): - V3.10
         raise NotImplementedError
 
 
-class EncoderGeneral:  # (Protocol): - V3.10
+class EncoderGeneral(Protocol):
     def __init__(
         self,
         *,
@@ -57,7 +53,7 @@ class EncoderGeneral:  # (Protocol): - V3.10
         raise NotImplementedError
 
 
-class BBAbsoluteSensorGeneral:  # (Protocol): - V3.10
+class BBAbsoluteSensorGeneral(Protocol):
     def __init__(self) -> None:
         raise NotImplementedError
 
@@ -71,34 +67,33 @@ class BBAbsoluteSensorGeneral:  # (Protocol): - V3.10
 
     @property
     @abstractmethod
-    def accel(self) -> Dict[str, float]:
+    def accel(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def magnetic_bb(self) -> Dict[str, float]:
+    def magnetic_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gyro_bb(self) -> Dict[str, float]:
+    def gyro_bb(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def euler_angles(self) -> Dict[str, float]:
+    def euler_angles(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def gravity_dir(self) -> Dict[str, float]:
+    def gravity_dir(self) -> dict[str, float]:
         raise NotImplementedError
 
     @property
     @abstractmethod
     def gravity_mag(self) -> float:
         raise NotImplementedError
-"""
 
 
 TIME_MS: Callable[[], int] = lambda: int(time.time() * 1000)
@@ -206,7 +201,7 @@ class SimpleRobot:
             _ = self._enc_wheel_right.jerk
             time.sleep(interval / 5)
 
-    def drive_program(self, steps: List[Tuple[int, int, int]]) -> None:
+    def drive_program(self, steps: list[tuple[int, int, int]]) -> None:
         """
         a step is a tuple of:
             (duration (sec.),
@@ -245,7 +240,7 @@ def main():
 
     robot_listener.setup_robot_movement_handler()
     robot_listener.setup_robot_encoder_sensor_handler()
-    robot_listener.setup_robot_9DOF_sensor_handler()
+    robot_listener.setup_robot_9DOF_sensor_handler_logfile()
     robot_listener.setup_general_logging_handler()
     robot_listener.setup_bluedot_handler()
     robot_listener.setup_power_handler()

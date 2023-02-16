@@ -8,8 +8,8 @@ Loads BNO055 Sensor configuration if available
 """
 
 from box import Box
-from typing import Dict
 import os
+from typing import Dict
 import yaml
 
 from balance_bot.event import EventHandler
@@ -44,7 +44,9 @@ else:
     )
 
 # Import Simulation Configuration if available
-with open(r"/home/pi/Balance_Bot/configs/balance_bot_simulator_config.yml", "r") as ymlfile:
+with open(
+    r"/home/pi/Balance_Bot/configs/balance_bot_simulator_config.yml", "r"
+) as ymlfile:
     full_sim_cfg: Dict[str, Dict[str, str]] = yaml.safe_load(ymlfile)
 
 cfg_sim: Box = Box(

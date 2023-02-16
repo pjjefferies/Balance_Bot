@@ -1,13 +1,15 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
 """
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
+Motor simulator for robot testing on system without motor
+"""
+
 
 class EventHandlerTemplate:
     def post(self, *, event_type: str, message: str) -> None:
         raise NotImplementedError
-"""
+
+
 from balance_bot.event import EventHandler
 
 

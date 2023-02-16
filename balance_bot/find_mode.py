@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
 
 import numpy as np
@@ -6,7 +6,6 @@ import numpy.typing as npt
 from scipy import stats
 from scipy.optimize import minimize
 import timeit
-from typing import Tuple
 import matplotlib.pyplot as plt
 
 """
@@ -19,7 +18,7 @@ def gamma_mode(data: npt.ArrayLike) -> float:
 
 
 def find_gamma_mode(data: npt.ArrayLike, initial_guess: float = 0.05):
-    def gamma_density(data: float, *params: Tuple[float, float, float]):
+    def gamma_density(data: float, *params: tuple[float, float, float]):
         return -stats.gamma.pdf(data, *params)[0]
 
     a: float  # shape

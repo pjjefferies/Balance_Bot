@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Calulate Cumulative Average of series based on previous running
 average, new value and number of history points

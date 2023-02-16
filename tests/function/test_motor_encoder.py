@@ -1,10 +1,9 @@
-#! /usr/bin/python3
-
+#!/usr/bin/env python3
 
 import csv
 import sys
 import time
-from typing import Dict, List, Union, Callable
+from typing import Callable
 
 from balance_bot import robot_listener
 from balance_bot.encoder_sensor_digital import EncoderDigital
@@ -15,7 +14,7 @@ from balance_bot.rpi_motor import RPI_Motor
 TIME_S: Callable[[], int] = lambda: int(time.time())
 
 
-def main(argv: List[str]):
+def main(argv: list[str]):
     eh = EventHandler()
     robot_listener.setup_robot_movement_handler(eh=eh)
     robot_listener.setup_robot_encoder_sensor_handler(eh=eh)
@@ -47,7 +46,7 @@ def main(argv: List[str]):
         )
         return
 
-    tests: List[Dict[str, Union[int, float]]] = []
+    tests: list[dict[str, int | float]] = []
     # [(Motor Fwd. Pin, Motor Rwd. Pin, Encoder Pin, Velocity, Duration (seconds))]
 
     for filename in argv:

@@ -1,19 +1,16 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
+"""Bluedot Phone App Interface"""
 
-from typing import Tuple  # Protocol
+from typing import Tuple, Protocol
+
 import bluedot
+
 from event import EventHandler
 
-# from config import cfg
-
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
         raise NotImplementedError
-"""
 
 
 class BlueDotRobotController:

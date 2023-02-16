@@ -1,19 +1,17 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
+"""Encoder Simulator"""
 
-import time
 import asyncio
+import time
 from typing import Union  # Protocol
+
+from gpiozero import Motor
+
 from config import cfg_sim
 from encoder_sensor_general import EncoderGeneral
-from gpiozero import Motor
-from motor_simulator import MotorSim
 from event import EventHandler
+from motor_simulator import MotorSim
 
-# from config import cfg
-
-"""
-Not needed until Python V3.10 can be implemented on Raspberry Pi. As of Dec. 2022, dbus package does
-not work with 32-bit Linux (e.g. Raspberry Pi).
 
 class EventHandlerTemplate(Protocol):
     def post(self, *, event_type: str, message: str) -> None:
@@ -27,7 +25,6 @@ class MotorGeneral(Protocol):
     @property
     def value(self) -> float:
         raise NotImplementedError
-"""
 
 
 class EncoderSim(EncoderGeneral):

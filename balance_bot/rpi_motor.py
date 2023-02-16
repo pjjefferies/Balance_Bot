@@ -1,12 +1,10 @@
-#! /usr/bin/python
-
-from typing import Tuple, Union
+#!/usr/bin/env python3
 
 from gpiozero import Motor
 
 from balance_bot.event import EventHandler
 
-RPI_GPIO_PINS: Tuple[Union[int, str]] = tuple(range(2, 28)) + tuple(
+RPI_GPIO_PINS: tuple[int | str] = tuple(range(2, 28)) + tuple(
     ["GPIO" + str(a_no) for a_no in range(2, 28)]
 )
 
@@ -17,7 +15,12 @@ class RPI_Motor:
     """
 
     def __init__(
-        self, *, forward: Union[int, str], backward: Union[int, str], pwm: bool=True, eh: EventHandler
+        self,
+        *,
+        forward: int | str,
+        backward: int | str,
+        pwm: bool = True,
+        eh: EventHandler,
     ):
         if forward not in RPI_GPIO_PINS or backward not in RPI_GPIO_PINS:
             raise ValueError(
