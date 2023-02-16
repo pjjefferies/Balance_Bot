@@ -7,11 +7,11 @@ import datetime as dt
 import os
 import time
 from typing import Protocol, Optional, Any, Callable
+import yaml
 
 import adafruit_bno055
 import board
 import busio
-import numpy as np
 import pandas as pd
 
 from balance_bot import robot_listener
@@ -129,7 +129,7 @@ def test_BNO055_sensor():
 
     # Save Calibration Data
     with open(cfg.path.ninedof_sensor_calibration, "w") as fp:
-        json.dump(sensor_calibration_values, fp)
+        yaml.dump(data=sensor_calibration_values, stream=fp)
 
     params_hist: pd.DataFrame = pd.DataFrame()
     lasttime_control_measure: float = TIME_S()
