@@ -129,9 +129,7 @@ def test_BNO055_sensor():
 
     # Save Calibration Data
     with open(cfg.path.ninedof_sensor_calibration, "w") as fp:
-        yaml.dump(data=sensor_calibration_values,
-                  stream=fp,
-                  default_flow_style=False)
+        yaml.dump(data=sensor_calibration_values, stream=fp, default_flow_style=False)
 
     params_hist: pd.DataFrame = pd.DataFrame()
     lasttime_control_measure: float = TIME_S()
@@ -142,38 +140,36 @@ def test_BNO055_sensor():
             if (TIME_S() - lasttime_control_measure) >= UPDATE_TIME:
                 # exec every UPDATE_TIME seconds
                 lasttime_control_measure = TIME_S()
-                params: pd.Series[float] = pd.Series(dtype="float64")
-
-                params = params.append(
-                    pd.Series(
-                        data=sensor.linear_acceleration,
-                        index=["y_accel", "x_accel", "z_accel"],
-                    )
+                params: pd.Series[float] = pd.Series(
+                    name=str(dt.datetime.now()), dtype="float64"
                 )
 
-                params = params.append(
-                    pd.Series(
-                        data=sensor.euler, index=["yaw(z)", "roll(x)", "pitch(y)"]
-                    )
+                params = pd.concat(
+                    [
+                        params,
+                        pd.Series(
+                            data=sensor.linear_acceleration,
+                            index=["y_accel", "x_accel", "z_accel"],
+                        ),
+                        pd.Series(
+                            data=sensor.euler, index=["yaw(z)", "roll(x)", "pitch(y)"]
+                        ),
+                        pd.Series(
+                            data=sensor.euler, index=["yaw(z)", "roll(x)", "pitch(y)"]
+                        ),
+                        pd.Series(data=sensor.temperature, index=["temperature"]),
+                        pd.Series(
+                            data=sensor.magnetic, index=["mag_x", "mag_y", "mag_z"]
+                        ),
+                        pd.Series(
+                            data=sensor.gyro, index=["gyro_y", "gyro_x", "gyro_z"]
+                        ),
+                        pd.Series(
+                            data=sensor.gravity,
+                            index=["gravity_x", "gravity_y", "gravity_z"],
+                        ),
+                    ]
                 )
-
-                params = params.append(
-                    pd.Series(data=sensor.temperature, index=["temperature"])
-                )
-                params = params.append(
-                    pd.Series(data=sensor.magnetic, index=["mag_x", "mag_y", "mag_z"])
-                )
-                params = params.append(
-                    pd.Series(data=sensor.gyro, index=["gyro_y", "gyro_x", "gyro_z"])
-                )
-                params = params.append(
-                    pd.Series(
-                        data=sensor.gravity,
-                        index=["gravity_x", "gravity_y", "gravity_z"],
-                    )
-                )
-
-                params = params.rename(str(dt.datetime.now()))
 
                 if (TIME_S() - last_log_time) > LOG_UPDATE_TIME:
                     eh.post(
@@ -182,7 +178,7 @@ def test_BNO055_sensor():
                     )
                     last_log_time = TIME_S()
 
-                params_hist = params_hist.append(params)
+                params_hist = pd.concat(params_hist, params.to_frame().T)
 
                 if (TIME_S() - last_data_save_time) >= DATA_SAVE_TIME:
                     eh.post(event_type="9DOF sensor", message="Saving CSV File")
