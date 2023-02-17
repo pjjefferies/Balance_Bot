@@ -178,7 +178,7 @@ def test_BNO055_sensor():
                     )
                     last_log_time = TIME_S()
 
-                params_hist = pd.concat(params_hist, params.to_frame().T)
+                params_hist = pd.concat(params_hist, params.to_frame().T, ignore_index=True)
 
                 if (TIME_S() - last_data_save_time) >= DATA_SAVE_TIME:
                     eh.post(event_type="9DOF sensor", message="Saving CSV File")
