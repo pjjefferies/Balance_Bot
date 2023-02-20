@@ -8,7 +8,6 @@ This is needed to rotate axes on BNO055 Chip to Robot Axes.
 from abc import abstractmethod
 from box import Box
 import math
-import os
 import time
 from typing import Optional, Protocol
 
@@ -155,7 +154,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         """
 
         # Wait for and read calibration information
-        while self._sensor.calibration_status[2] != 0x03:  # Accel
+        while self.calibration_status[2] != 0x03:  # Accel
             self._eh.post(
                 event_type="robot 9DOF sensor",
                 message="Waiting for accel calibration. Rotate robot slowly to 6 stable positions for a few seconds.",
@@ -165,7 +164,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             event_type="robot 9DOF sensor", message="Accelerometer calibrated"
         )
 
-        while self._sensor.calibration_status[1] != 0x03:  # Gyro
+        while self.calibration_status[1] != 0x03:  # Gyro
             self._eh.post(
                 event_type="robot 9DOF sensor",
                 message="Waiting for gyro calibration. Place robot in a stable position.",
@@ -173,7 +172,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             time.sleep(1)
         self._eh.post(event_type="robot 9DOF sensor", message="Gyro calibrated")
 
-        while self._sensor.calibration_status[3] != 0x03:  # Mag
+        while self.calibration_status[3] != 0x03:  # Mag
             self._eh.post(
                 event_type="robot 9DOF sensor",
                 message="Waiting for magnetrometer calibration. Rotate robot in random directions.",
@@ -183,7 +182,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             event_type="robot 9DOF sensor", message="Magnetrometer calibrated"
         )
 
-        while self._sensor.calibration_status[0] != 0x03:  # System
+        while self.calibration_status[0] != 0x03:  # System
             self._eh.post(
                 event_type="robot 9DOF sensor", message="Waiting for system calibration"
             )
@@ -191,23 +190,23 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         self._eh.post(event_type="robot 9DOF sensor", message="System calibrated")
 
     def read_calibration_data_from_sensor(self) -> Box:
-        if self._sensor.calibration_status[0] != 0x03:
+        if self.calibration_status[0] != 0x03:
             raise ValueError("Sensor not calibrated, calibration values not available")
 
         acc_offset_x: int
         acc_offset_y: int
         acc_offset_z: int
-        acc_offset_x, acc_offset_y, acc_offset_z = self._sensor.offsets_accelerometer
+        acc_offset_x, acc_offset_y, acc_offset_z = self.offsets_accelerometer
         mag_offset_x: int
         mag_offset_y: int
         mag_offset_z: int
-        mag_offset_x, mag_offset_y, mag_offset_z = self._sensor.offsets_magnetometer
+        mag_offset_x, mag_offset_y, mag_offset_z = self.offsets_magnetometer
         gyr_offset_x: int
         gyr_offset_y: int
         gyr_offset_z: int
-        gyr_offset_x, gyr_offset_y, gyr_offset_z = self._sensor.offsets_gyroscope
-        acc_radius: int | tuple[int, int, int] = self._sensor.radius_accelerometer
-        mag_radius: int | tuple[int, int, int] = self._sensor.radius_magnetometer
+        gyr_offset_x, gyr_offset_y, gyr_offset_z = self.offsets_gyroscope
+        acc_radius: int | tuple[int, int, int] = self.radius_accelerometer
+        mag_radius: int | tuple[int, int, int] = self.radius_magnetometer
 
         self._sensor_calibration_data: Box = Box(
             {
@@ -241,23 +240,23 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
                 message="ERROR: Could not save calibration data. Data invalid",
             )
             raise ValueError("Could not save calibration data")
-        self._sensor.offsets_accelerometer = (
+        self.offsets_accelerometer = (
             sensor_calibration_data.accel.offset.x,
             sensor_calibration_data.accel.offset.y,
             sensor_calibration_data.accel.offset.z,
         )
-        self._sensor.offsets_magnetometer = (
+        self.offsets_magnetometer = (
             sensor_calibration_data.magnet.offset.x,
             sensor_calibration_data.magnet.offset.y,
             sensor_calibration_data.magnet.offset.z,
         )
-        self._sensor.offsets_gyroscope = (
+        self.offsets_gyroscope = (
             sensor_calibration_data.gyro.offset.x,
             sensor_calibration_data.gyro.offset.y,
             sensor_calibration_data.gyro.offset.z,
         )
-        self._sensor.radius_accelerometer = sensor_calibration_data.accel.radius
-        self._sensor.radius_magnetometer = sensor_calibration_data.magnet.radius
+        self.radius_accelerometer = sensor_calibration_data.accel.radius
+        self.radius_magnetometer = sensor_calibration_data.magnet.radius
 
     def read_calibration_data_from_file(self) -> Optional[Box]:
         """Loads calibration data from configuration file, saves it in object and returns it"""
@@ -312,13 +311,13 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         except (ValueError, AttributeError, BoxError):
             return False
 
-    def temperature(self, units: str = "degrees celsius") -> int:
+    def bb_temperature(self, units: str = "degrees celsius") -> int:
         """Getter for temperature readings"""
         temperature: int
         if units in ("degrees Fahrenheit", "degrees F", "deg F", "deg. F", "°F"):
-            temperature = int(self._sensor.temperature * 9 / 5 + 32)
+            temperature = int(self.temperature * 9 / 5 + 32)
         else:
-            temperature = self._sensor.temperature
+            temperature = self.temperature
 
         self._eh.post(
             event_type="robot 9DOF sensor",
@@ -331,7 +330,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         accel_x: Optional[float]
         accel_y: Optional[float]
         accel_z: Optional[float]
-        accel_y, accel_x, accel_z = self._sensor.linear_acceleration
+        accel_y, accel_x, accel_z = self.linear_acceleration
         if accel_x is None or accel_y is None or accel_z is None:
             raise ValueError("Accel not available, check mode")
         self._eh.post(
@@ -341,11 +340,11 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         return Box({"x": accel_x, "y": accel_y, "z": accel_z})
 
     @property
-    def magnetic(self) -> Box:
+    def bb_magnetic(self) -> Box:
         mag_x: Optional[float]
         mag_y: Optional[float]
         mag_z: Optional[float]
-        mag_x, mag_y, mag_z = self._sensor.magnetic  # ORDER NOT VERIFIED
+        mag_x, mag_y, mag_z = self.magnetic  # ORDER NOT VERIFIED
         if mag_x is None or mag_y is None or mag_z is None:
             raise ValueError("Magnetic reading not available, check mode")
         self._eh.post(
@@ -355,11 +354,11 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         return Box({"x": mag_x, "y": mag_y, "z": mag_z})
 
     @property
-    def gyro(self) -> Box:
+    def bb_gyro(self) -> Box:
         gyro_x: Optional[float]
         gyro_y: Optional[float]
         gyro_z: Optional[float]
-        gyro_y, gyro_x, gyro_z = self._sensor.gyro  # Ordered for BB Axes ?
+        gyro_y, gyro_x, gyro_z = self.gyro  # Ordered for BB Axes ?
         if gyro_x is None or gyro_y is None or gyro_z is None:
             raise ValueError("Gyro not available, check mode")
         self._eh.post(
@@ -374,7 +373,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         yaw_z: Optional[float]
         roll_x: Optional[float]
         pitch_y: Optional[float]
-        yaw_z, roll_x, pitch_y = self._sensor.euler
+        yaw_z, roll_x, pitch_y = self.euler
         if yaw_z is None or roll_x is None or pitch_y is None:
             raise ValueError("Euler angles not available, check mode")
         self._eh.post(
@@ -394,7 +393,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         x_grav: Optional[float]
         y_grav: Optional[float]
         z_grav: Optional[float]
-        x_grav, y_grav, z_grav = self._sensor.gravity
+        x_grav, y_grav, z_grav = self.gravity
         if x_grav is None or y_grav is None or z_grav is None:
             raise ValueError("Gravity not available, check mode")
         xy_grav_angle: float = math.atan2(y_grav, x_grav)
@@ -411,7 +410,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         x_grav: Optional[float]
         y_grav: Optional[float]
         z_grav: Optional[float]
-        x_grav, y_grav, z_grav = self._sensor.gravity  # ORDER NOT VERIFIED
+        x_grav, y_grav, z_grav = self.gravity  # ORDER NOT VERIFIED
         x_grav = x_grav if x_grav is not None else 0
         y_grav = y_grav if y_grav is not None else 0
         z_grav = z_grav if z_grav is not None else 0
@@ -432,7 +431,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         """
         quaternion: tuple[
             Optional[float], Optional[float], Optional[float], Optional[float]
-        ] = self._sensor.quaternion  # ORDER NOT VERIFIED
+        ] = self.quaternion  # ORDER NOT VERIFIED
         if None in quaternion:
             raise ValueError("Quaternion is not available")
         return quaternion
