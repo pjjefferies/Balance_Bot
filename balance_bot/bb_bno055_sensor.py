@@ -111,7 +111,7 @@ class AbsoluteSensor(Protocol):
         raise NotImplementedError
 
 
-class BB_BNO055Sensor_I2C:
+class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
     """
     A class to represent the Adafruit BNO055 Sensor mounted in Balance Bot
     """
@@ -132,7 +132,8 @@ class BB_BNO055Sensor_I2C:
         self, *, i2c: busio.I2C, eh: EventHandler
     ) -> None:  # sensor: AbsoluteSensor, V3.10
 
-        self._sensor: bno055.BNO055_I2C = bno05.BNO055_I2C(i2c)
+        # self._sensor: bno055.BNO055_I2C = bno055.BNO055_I2C(i2c)
+        super().__init__(i2c=i2c)
         self._sensor_calibration_data: Box = Box(
             {
                 "accel": {
