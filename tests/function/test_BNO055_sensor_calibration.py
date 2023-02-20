@@ -44,7 +44,7 @@ def test_BNO055_sensor_calibrate():
     # Initialize i2C Connection to sensor
     # TODO: need check/try?
     i2c = busio.I2C(board.SCL, board.SDA)
-    sensor = bno055.BB_BNO055Sensor_I2C(i2c=i2c, eh=eh))
+    sensor = bno055.BB_BNO055Sensor_I2C(i2c=i2c, eh=eh)
 
     # Read Sensor Mode to verify connected
     sensor.mode
