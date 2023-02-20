@@ -190,8 +190,8 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         self._eh.post(event_type="robot 9DOF sensor", message="System calibrated")
 
     def read_calibration_data_from_sensor(self) -> Box:
-        if self.calibration_status[0] != 0x03:
-            raise ValueError("Sensor not calibrated, calibration values not available")
+        # if self.calibration_status[0] != 0x03:
+        #     raise ValueError("Sensor not calibrated, calibration values not available")
 
         acc_offset_x: int
         acc_offset_y: int
