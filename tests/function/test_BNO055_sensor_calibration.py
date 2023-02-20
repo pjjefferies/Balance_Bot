@@ -9,12 +9,13 @@ import time
 from typing import Protocol, Optional, Any, Callable
 import yaml
 
-import adafruit_bno055 as bno055
+# import adafruit_bno055 as bno055
 import board
 from box import Box
 import busio
 import pandas as pd
 
+from balance_bot import bb_bno055_sensor as bno055
 from balance_bot import robot_listener
 from balance_bot.config import cfg
 from balance_bot.event import EventHandler
