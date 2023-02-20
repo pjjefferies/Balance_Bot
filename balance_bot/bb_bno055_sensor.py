@@ -111,7 +111,7 @@ class AbsoluteSensor(Protocol):
         raise NotImplementedError
 
 
-class BB_BNO055Sensor:
+class BB_BNO055Sensor_I2C:
     """
     A class to represent the Adafruit BNO055 Sensor mounted in Balance Bot
     """
