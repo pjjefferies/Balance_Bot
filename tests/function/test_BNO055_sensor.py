@@ -96,7 +96,7 @@ def test_BNO055_sensor():
     )
 
     start_time = TIME_S()
-    while sensor.calibration_status[2] != 0x03:  # Mag
+    while sensor.calibration_status[3] != 0x03:  # Mag
         eh.post(
             event_type="9DOF sensor", message=f"Waiting for magnetrometer calibration"
         )
@@ -174,7 +174,7 @@ def test_BNO055_sensor():
                 if (TIME_S() - last_log_time) > LOG_UPDATE_TIME:
                     eh.post(
                         event_type="9DOF sensor",
-                        message="\n".join(str(params).split("\n")[:-1]),
+                        message="\n".join(str(params).split("\n")),  # Removed [:-1] inside last paran. Why was it there?
                     )
                     last_log_time = TIME_S()
 
