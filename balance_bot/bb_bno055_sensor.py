@@ -156,38 +156,38 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         # Wait for and read calibration information
         while self.calibration_status[2] != 0x03:  # Accel
             self._eh.post(
-                event_type="robot 9DOF sensor",
+                event_type="9DOF sensor",
                 message="Waiting for accel calibration. Rotate robot slowly to 6 stable positions for a few seconds.",
             )
             time.sleep(1)
         self._eh.post(
-            event_type="robot 9DOF sensor", message="Accelerometer calibrated"
+            event_type="9DOF sensor", message="Accelerometer calibrated"
         )
 
         while self.calibration_status[1] != 0x03:  # Gyro
             self._eh.post(
-                event_type="robot 9DOF sensor",
+                event_type="9DOF sensor",
                 message="Waiting for gyro calibration. Place robot in a stable position.",
             )
             time.sleep(1)
-        self._eh.post(event_type="robot 9DOF sensor", message="Gyro calibrated")
+        self._eh.post(event_type="9DOF sensor", message="Gyro calibrated")
 
         while self.calibration_status[3] != 0x03:  # Mag
             self._eh.post(
-                event_type="robot 9DOF sensor",
+                event_type="9DOF sensor",
                 message="Waiting for magnetrometer calibration. Rotate robot in random directions.",
             )
             time.sleep(2)
         self._eh.post(
-            event_type="robot 9DOF sensor", message="Magnetrometer calibrated"
+            event_type="9DOF sensor", message="Magnetrometer calibrated"
         )
 
         while self.calibration_status[0] != 0x03:  # System
             self._eh.post(
-                event_type="robot 9DOF sensor", message="Waiting for system calibration"
+                event_type="9DOF sensor", message="Waiting for system calibration"
             )
             time.sleep(2)
-        self._eh.post(event_type="robot 9DOF sensor", message="System calibrated")
+        self._eh.post(event_type="9DOF sensor", message="System calibrated")
 
     def read_calibration_data_from_sensor(self) -> Box:
         # if self.calibration_status[0] != 0x03:
@@ -224,7 +224,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             }
         )
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Calibration Values:\n{self._sensor_calibration_data}",
         )
         return self._sensor_calibration_data
@@ -270,7 +270,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             raise ValueError(e)
 
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Calibration values read from {cfg.path.calibration}:\n{self._sensor_calibration_data}",
         )
 
@@ -288,7 +288,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         sensor_calibration_data.to_yaml(filename=cfg.path.calibration)
 
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Calibration data saved to {cfg.path.calibration}:\n{sensor_calibration_data}",
         )
 
@@ -320,7 +320,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             temperature = self.temperature
 
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Temperature: {temperature} {units}",
         )
         return temperature
@@ -334,7 +334,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if accel_x is None or accel_y is None or accel_z is None:
             raise ValueError("Accel not available, check mode")
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Accel: x: {accel_x}, y: {accel_y}, z: {accel_z}",
         )
         return Box({"x": accel_x, "y": accel_y, "z": accel_z})
@@ -348,7 +348,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if mag_x is None or mag_y is None or mag_z is None:
             raise ValueError("Magnetic reading not available, check mode")
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Magnetic Field: x: {mag_x}, y: {mag_y}, z: {mag_z}",
         )
         return Box({"x": mag_x, "y": mag_y, "z": mag_z})
@@ -362,7 +362,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if gyro_x is None or gyro_y is None or gyro_z is None:
             raise ValueError("Gyro not available, check mode")
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Gyro: x: {gyro_x}, y: {gyro_y}, z: {gyro_z}",
         )
         return Box({"x": gyro_x, "y": gyro_y, "z": gyro_z})
@@ -377,7 +377,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if yaw_z is None or roll_x is None or pitch_y is None:
             raise ValueError("Euler angles not available, check mode")
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"roll: x: {roll_x}, pitch y: {pitch_y}, yaw z: {yaw_z}",
         )
         return Box({"x": roll_x, "y": pitch_y, "z": yaw_z})
@@ -399,7 +399,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         xy_grav_angle: float = math.atan2(y_grav, x_grav)
         xz_grav_angle: float = math.atan2(z_grav, x_grav)
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Gravity Dir: xy_angle: {xy_grav_angle}, xz_angle: {xz_grav_angle}",
         )
         return Box({"xy": xy_grav_angle, "xz": xz_grav_angle})  # ORDER NOT VERIVIED
@@ -416,7 +416,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         z_grav = z_grav if z_grav is not None else 0
         grav_mag: float = math.sqrt(sum([x_grav**2, y_grav**2, z_grav**2]))
         self._eh.post(
-            event_type="robot 9DOF sensor",
+            event_type="9DOF sensor",
             message=f"Gravity Magnitude: {grav_mag}",
         )
         return grav_mag
