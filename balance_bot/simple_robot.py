@@ -7,7 +7,7 @@ from gpiozero import Motor
 
 from .motor_battery_relay import MotorBatteryRelay
 from .bluedot_direction_control import BlueDotRobotController
-from .config import cfg
+from .config_main import cfg
 from .event import EventHandler
 from .encoder_sensor_digital import EncoderDigital
 from . import robot_listener

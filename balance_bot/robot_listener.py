@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Optional, Any
 
-from balance_bot.config import log_cfg
+from balance_bot.config_main import log_cfg
 from balance_bot.event import EventHandler
 
 eh: EventHandler

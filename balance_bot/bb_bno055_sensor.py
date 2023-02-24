@@ -16,7 +16,7 @@ from box import Box
 from box.exceptions import BoxError
 import busio
 
-from balance_bot.config import cfg
+from balance_bot.config_main import cfg
 from balance_bot.event import EventHandler
 
 

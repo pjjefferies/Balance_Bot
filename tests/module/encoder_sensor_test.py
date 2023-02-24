@@ -8,7 +8,7 @@ Test representation of distance tracking, digital encoder.
 
 import encoder_sensor
 
-from balance_bot.config import cfg
+from balance_bot.config_main import cfg
 
 ABS_SENSOR = RotationEncoder(
     signal_pin=cfg.wheel.encoder.right, history_len=cfg.duration.sensor_history
