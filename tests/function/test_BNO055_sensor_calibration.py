@@ -3,28 +3,15 @@
 Tester for BNO055 9-Degree of Freedom Sensor Calibration, Saving and Restoring
 """
 
-import datetime as dt
-import os
-import time
-from typing import Protocol, Optional, Any, Callable
-import yaml
+from typing import Protocol, Optional, Any
 
-# import adafruit_bno055 as bno055
 import board
 from box import Box
 import busio
-import pandas as pd
 
 from balance_bot import bb_bno055_sensor as bno055
 from balance_bot import robot_listener
-from balance_bot.config import cfg
 from balance_bot.event import EventHandler
-
-TIME_MS: Callable[[], float] = lambda: time.time() * 1000
-TIME_S: Callable[[], float] = lambda: time.time()
-# UPDATE_TIME: float = 0.1  # Update readings every 0.1 second
-# LOG_UPDATE_TIME: float = 2  # Time between log post with current readings
-# DATA_SAVE_TIME: float = 10  # Time between savings history
 
 
 class EventHandlerTemplate(Protocol):
