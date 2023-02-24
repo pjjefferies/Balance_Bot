@@ -59,6 +59,10 @@ def setup_robot_movement_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="robot moved", fn=general_logfile_eh)
 
 
+def setup_robot_movement_handler(eh: EventHandler) -> None:
+    eh.subscribe(event_type="robot moved", fn=general_stdout_eh)
+
+
 # Robot Encoder Sensor Event Handler
 def robot_encoder_sensor_eh(message: str) -> None:
     print(f"Encoder Sensor: {message}")
@@ -97,6 +101,10 @@ def power_eh(message: str) -> None:
 
 def setup_power_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="power", fn=general_logfile_eh)
+
+
+def setup_power_handler(eh: EventHandler) -> None:
+    eh.subscribe(event_type="power", fn=general_stdout_eh)
 
 
 # General Logging Event Handlers
