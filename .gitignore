@@ -121,13 +121,14 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Excel temp files
+~$*.xlsx
+
 # Pyre type checker
 .pyre/
-~$Balance Bot Lifting Calculations.xlsx
-~$Cone Proportions Calculations.xlsx
-~$BOM, Balance Bot 001.xlsx
+
 *.stats
-Electronics/~$Balance Bot Electrical Connection.xlsx
+
 typings/gpiozero/__init__.pyi
 typings/gpiozero/boards.pyi
 typings/gpiozero/compat.pyi
