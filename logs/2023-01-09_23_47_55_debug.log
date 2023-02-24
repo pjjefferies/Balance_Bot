@@ -1,0 +1,18 @@
+2023-01-09 23:47:55:log:INFO:Starting Test No.: 5
+2023-01-09 23:47:55:power:Motor Battery Relay Created on pin: 14
+2023-01-09 23:47:55:power:Motor Battery Relay on pin 14 turned: on
+2023-01-09 23:47:55:robot moved:RPI_Motor created with pins 27 and 22
+2023-01-09 23:47:55:encoder sensor:Created Digital Sensor on pin 21
+2023-01-09 23:47:55:encoder sensor:Started Digital Sensor 21
+2023-01-09 23:47:55:encoder sensor:Encoder Sensor history reset
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:encoder sensor:Adding position: time: 1673326075.195609, pos.: 0.05
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:encoder sensor:Adding position: time: 1673326075.288846, pos.: 0.1
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:encoder sensor:Adding position: time: 1673326075.3205304, pos.: 0.15000000000000002
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:encoder sensor:Adding position: time: 1673326075.9422956, pos.: 0.2
+2023-01-09 23:47:55:robot moved:RPI_Motor, on Pins 27 and 22, moving at velocity: 0.5
+2023-01-09 23:47:55:encoder sensor:Adding position: time: 1673326075.9742622, pos.: 0.25

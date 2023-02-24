@@ -1,0 +1,40 @@
+2023-01-09 23:47:11:log:INFO: Starting Test Pi Motor
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 2, motor_power_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 2, motor_pin_fwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 2, motor_pin_rwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 2, encoder_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 4, motor_power_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 4, motor_pin_fwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 4, motor_pin_rwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 4, encoder_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 6, motor_power_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 6, motor_pin_fwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv, line 6, motor_pin_rwd is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:WARNING:In csv file, 'tests/function/progtest_left50-2x20s_right50-2x20s.csv', line 6, encoder_pin is invalid GPIO number, 0.
+2023-01-09 23:47:11:log:Found 7 tests
+2023-01-09 23:47:11:log:INFO:Starting Test No.: 1
+2023-01-09 23:47:11:power:Motor Battery Relay Created on pin: 14
+2023-01-09 23:47:11:power:Motor Battery Relay on pin 14 turned: on
+2023-01-09 23:47:11:robot moved:RPI_Motor created with pins 4 and 17
+2023-01-09 23:47:11:encoder sensor:Created Digital Sensor on pin 26
+2023-01-09 23:47:11:encoder sensor:Started Digital Sensor 26
+2023-01-09 23:47:11:encoder sensor:Encoder Sensor history reset
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.0547884, pos.: 0.05
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.0958982, pos.: 0.1
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.1268144, pos.: 0.15000000000000002
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.27883, pos.: 0.2
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.4207485, pos.: 0.25
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.5627003, pos.: 0.3
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.644023, pos.: 0.35
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.8161688, pos.: 0.39999999999999997
+2023-01-09 23:47:11:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:11:encoder sensor:Adding position: time: 1673326031.8975317, pos.: 0.44999999999999996

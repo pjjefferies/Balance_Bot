@@ -1,0 +1,2 @@
+2023-02-16 14:24:05:9DOF sensor:System calibrated in 1.0 seconds
+2023-02-16 14:24:05:9DOF sensor:{'accel_offset': (-13, 60, -11), 'magnet_offset': (643, -208, -194), 'gyro_offset': (2, -4, 0), 'accel_radius': 1000, 'magnet_radius': 740}

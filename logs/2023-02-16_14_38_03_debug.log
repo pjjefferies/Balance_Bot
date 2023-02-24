@@ -1,0 +1,16 @@
+2023-02-16 14:38:03:9DOF sensor:y_accel         -0.040000
+x_accel         -0.010000
+z_accel         -0.130000
+yaw(z)         333.875000
+roll(x)          1.375000
+pitch(y)       -68.375000
+temperature   -104.000000
+mag_x            4.750000
+mag_y          -53.375000
+mag_z          -35.687500
+gyro_y           0.002182
+gyro_x           0.000000
+gyro_z          -0.002182
+gravity_x        0.240000
+gravity_y        9.110000
+gravity_z        3.600000

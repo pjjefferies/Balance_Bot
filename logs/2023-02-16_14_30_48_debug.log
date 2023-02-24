@@ -1,0 +1,4 @@
+2023-02-16 14:30:48:9DOF sensor:Accel calibrated in 42.2 seconds
+2023-02-16 14:30:48:9DOF sensor:Megnetrometer calibrated in 0.0 seconds
+2023-02-16 14:30:48:9DOF sensor:System calibrated in 0.0 seconds
+2023-02-16 14:30:48:9DOF sensor:{'accel_offset': (-33, 41, -27), 'magnet_offset': (630, -143, -80), 'gyro_offset': (-2, -3, 1), 'accel_radius': 1000, 'magnet_radius': 926}
