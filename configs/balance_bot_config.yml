@@ -47,7 +47,7 @@ base:
 
     duration:
         control_update: 10  # milliseconds
-        params_update: 60  # seconds
+        params_update: 30  # seconds
         max_time_step: 60  # seconds
         sensor_history: 600  # seconds
         encoder_sensor_update: 1  # seconds
