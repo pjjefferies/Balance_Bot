@@ -1,0 +1,14 @@
+2023-01-09 23:47:31:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.5
+2023-01-09 23:47:31:encoder sensor:Adding position: time: 1673326051.0246956, pos.: 6.749999999999984
+2023-01-09 23:47:31:robot moved:RPI_Motor, on Pins 4 and 17, moving at velocity: 0.0
+2023-01-09 23:47:31:robot moved:RPI_Motor, on Pins 4 and 17, destroyed
+2023-01-09 23:47:31:power:Motor Battery Relay on pin 14 turned: off
+2023-01-09 23:47:31:power:Motor Battery Relay on pin 14 destroyed
+2023-01-09 23:47:31:encoder sensor:Stopped Digital Sensor on pin 26
+2023-01-09 23:47:31:encoder sensor:Distance: 6.75
+2023-01-09 23:47:31:encoder sensor:Speed: 0.44
+2023-01-09 23:47:31:encoder sensor:Accel: 1.43
+2023-01-09 23:47:31:encoder sensor:Jerk: 47.04
+2023-01-09 23:47:31:encoder sensor:Digital Sensor Destroyed on pin 26
+2023-01-09 23:47:31:log:INFO:Starting Test No.: 2
+2023-01-09 23:47:31:log:INFO:Wait step for 2.0 seconds
