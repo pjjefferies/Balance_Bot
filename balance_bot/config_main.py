@@ -11,7 +11,6 @@ import yaml
 
 env = "dev"
 
-
 def load_config() -> Box:
     with open(r"/home/pi/Balance_Bot/configs/balance_bot_config.yml", "r") as ymlfile:
         full_cfg: dict[str, Any] = yaml.safe_load(ymlfile)
@@ -21,3 +20,5 @@ def load_config() -> Box:
     )
 
     return cfg
+
+cfg:Box = load_config()

@@ -261,8 +261,11 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
     def read_calibration_data_from_file(self) -> Optional[Box]:
         """Loads calibration data from configuration file, saves it in object and returns it"""
         try:
-            self._sensor_calibration_data = Box.from_yaml(filename=cfg.path.calibration)
+            self._sensor_calibration_data = Box.from_yaml(
+                filename=cfg.path.ninedof_sensor_calibration
+            )
             if not self._validate_calibration_data(self._sensor_calibration_data):
+                print(f"Cal. Data:{self._sensor_calibration_data}")
                 raise ValueError("Calibration data from file is invalid")
         except BoxError as e:
             raise ValueError(e)
@@ -285,11 +288,13 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if not self._validate_calibration_data(sensor_calibration_data):
             raise ValueError("Could not save calibration data")
 
-        sensor_calibration_data.to_yaml(filename=cfg.path.calibration)
+        sensor_calibration_data.to_yaml(
+            filename=cfg.path.ninedof_sensor_calibration
+        )
 
         self._eh.post(
             event_type="9DOF sensor",
-            message=f"Calibration data saved to {cfg.path.calibration}:\n{sensor_calibration_data}",
+            message=f"Calibration data saved to {cfg.path.ninedof_sensor_calibration}:\n{sensor_calibration_data}",
         )
 
     @classmethod

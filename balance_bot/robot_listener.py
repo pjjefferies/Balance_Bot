@@ -9,10 +9,8 @@ import os
 import sys
 from typing import Optional, Any
 
-from balance_bot.config_main import log_cfg
+from balance_bot.config_logging import log_cfg
 from balance_bot.event import EventHandler
-
-eh: EventHandler
 
 # General Log File Event Handler
 def general_logfile_eh(
@@ -57,9 +55,6 @@ def general_stdout_eh(
 
 def setup_robot_movement_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="robot moved", fn=general_logfile_eh)
-
-
-def setup_robot_movement_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="robot moved", fn=general_stdout_eh)
 
 
@@ -77,11 +72,8 @@ def robot_9DOF_sensor_eh(message: str) -> None:
     print(f"9DOF Sensor: {message}")
 
 
-def setup_robot_9DOF_sensor_handler_logfile(eh: EventHandler) -> None:
+def setup_robot_9DOF_sensor_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="9DOF sensor", fn=general_logfile_eh)
-
-
-def setup_robot_9DOF_sensor_handler_stdout(eh: EventHandler) -> None:
     eh.subscribe(event_type="9DOF sensor", fn=general_stdout_eh)
 
 
@@ -101,9 +93,6 @@ def power_eh(message: str) -> None:
 
 def setup_power_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="power", fn=general_logfile_eh)
-
-
-def setup_power_handler(eh: EventHandler) -> None:
     eh.subscribe(event_type="power", fn=general_stdout_eh)
 
 

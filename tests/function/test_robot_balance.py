@@ -92,7 +92,7 @@ def test_robot_balance():
     eh = EventHandler()
 
     robot_listener.setup_robot_movement_handler(eh=eh)
-    robot_listener.setup_robot_9DOF_sensor_handler_logfile(eh=eh)
+    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
     robot_listener.setup_general_logging_handler(eh=eh)
     robot_listener.setup_power_handler(eh=eh)
 

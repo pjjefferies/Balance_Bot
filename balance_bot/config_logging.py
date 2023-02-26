@@ -12,9 +12,6 @@ import os
 import yaml
 
 from balance_bot.config_main import cfg
-from balance_bot.event import EventHandler
-
-eh = EventHandler()
 
 env = "dev"
 
