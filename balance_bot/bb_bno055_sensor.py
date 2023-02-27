@@ -258,7 +258,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         self.radius_accelerometer = sensor_calibration_data.accel.radius
         self.radius_magnetometer = sensor_calibration_data.magnet.radius
 
-    def read_calibration_data_from_file(self) -> Optional[Box]:
+    def read_calibration_data_from_file(self) -> Box:
         """Loads calibration data from configuration file, saves it in object and returns it"""
         try:
             self._sensor_calibration_data = Box.from_yaml(
