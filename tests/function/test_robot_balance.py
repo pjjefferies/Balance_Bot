@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import abstractmethod
+import asyncio
 import time
 from typing import Awaitable, Callable, Optional, Protocol
 
