@@ -123,7 +123,9 @@ def test_robot_balance():
     sensor.mode
 
     # Calibrate Sensor
-    sensor.calibrate_sensor()
+    # sensor.calibrate_sensor()
+    # Read saved sensor calibration values
+    sensor.read_calibration_data_from_file()
 
     # Start Balance Loop
     eh.post(event_type="log", message="about to start Balance Loop")
