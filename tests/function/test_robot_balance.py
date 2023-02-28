@@ -125,7 +125,10 @@ def test_robot_balance():
     # Calibrate Sensor
     # sensor.calibrate_sensor()
     # Read saved sensor calibration values
-    sensor.read_calibration_data_from_file()
+    sensor_calibration_data = sensor.read_calibration_data_from_file()
+    sensor.write_calibration_data_to_sensor(
+        sensor_calibration_data=sensor_calibration_data
+    )
 
     async def primary_balance_loop() -> None:
         cfg: Box = load_config()
