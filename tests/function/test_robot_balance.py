@@ -127,20 +127,6 @@ def test_robot_balance():
     # Read saved sensor calibration values
     sensor.read_calibration_data_from_file()
 
-    # Start Balance Loop
-    eh.post(event_type="log", message="about to start Balance Loop")
-    main_control_loop: Callable[[int], Awaitable[None]] = asyncio.get_event_loop()
-    tasks = [main_control_loop.create_task(primary_balance_loop())]
-    main_control_loop.run_until_complete(asyncio.wait(tasks))
-
-    main_control_loop.close()
-    motor_wheel_left.value = 0
-    motor_wheel_right.value = 0
-    motor_wheel_left.close()
-    motor_wheel_right.close()
-    motor_power_relay.off()
-    motor_power_relay.close()
-
     async def primary_balance_loop() -> None:
         cfg: Box = load_config()
         motor_power_relay.on()
@@ -196,6 +182,20 @@ def test_robot_balance():
                 lasttime_params_updated = TIME_S()
                 eh.post(event_type="log", message="Updating parameters?")
                 cfg = load_config()
+
+    # Start Balance Loop
+    eh.post(event_type="log", message="about to start Balance Loop")
+    main_control_loop: Callable[[int], Awaitable[None]] = asyncio.get_event_loop()
+    tasks = [main_control_loop.create_task(primary_balance_loop())]
+    main_control_loop.run_until_complete(asyncio.wait(tasks))
+
+    main_control_loop.close()
+    motor_wheel_left.value = 0
+    motor_wheel_right.value = 0
+    motor_wheel_left.close()
+    motor_wheel_right.close()
+    motor_power_relay.off()
+    motor_power_relay.close()
 
 
 if __name__ == "__main__":
