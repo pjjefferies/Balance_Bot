@@ -144,11 +144,17 @@ def test_robot_balance():
 
         # Set initial integral sum for PID control to zero
         integral_term: float = 0
-        lasttime_control = 0
-        lasttime_params_updated = TIME_S()
+        derivative_term: float
+        proportional_term: float
+        lasttime_control: int = 0
+        lasttime_params_updated: int = TIME_S()
         roll: float
         pitch: float
         yaw: float
+        fore_aft_error: float
+        motor_output: float
+        motor_left_output: float
+        motor_right_output: float
         while True:
             if (TIME_MS() - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
