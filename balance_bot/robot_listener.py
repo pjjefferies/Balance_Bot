@@ -20,7 +20,7 @@ def general_logfile_eh(
     dt_string: Optional[str] = None,
 ) -> None:
     general_eh_handler = "log_file"
-    now: str = f"{dt.datetime.now():%Y-%m-%d_%H_%M_%S}"
+    now: dt.datetime = dt.datetime.now()
     if dt_string is None:
         dt_string = now
     level_text = ": " + level if level is not None else ""
@@ -46,11 +46,12 @@ def general_stdout_eh(
     event_type: str,
     message: str,
     level: Optional[str] = None,
+    dt_string: Optional[str] = None,
 ) -> None:
     level_text = ": " + level if level is not None else ""
     print(
         log_cfg.format.simple.format(
-            now=f"{dt.datetime.now():%Y-%m-%d_%H_%M_%S}",
+            now=dt.datetime.now(),
             event_type=event_type,
             level_text=level_text,
             message=message,
