@@ -172,11 +172,12 @@ def test_robot_balance():
                 motor_output = proportional_term + integral_term + derivative_term
 
                 motor_left_output = motor_output
-                motor_left_output = max(motor_left_output, cfg.wheel.left.motor.min)
-                motor_left_output = min(motor_left_output, cfg.wheel.left.motor.max)
+                print(f"trb:175:motor_left_output: {motor_left_output}, cfg.wheel.left.motor.min_value: {cfg.wheel.left.motor.min_value}")
+                motor_left_output = max(motor_left_output, cfg.wheel.left.motor.min_value)
+                motor_left_output = min(motor_left_output, cfg.wheel.left.motor.max_value)
                 motor_right_output = motor_output
-                motor_right_output = max(motor_right_output, cfg.wheel.right.motor.min)
-                motor_right_output = min(motor_right_output, cfg.wheel.right.motor.max)
+                motor_right_output = max(motor_right_output, cfg.wheel.right.motor.min_value)
+                motor_right_output = min(motor_right_output, cfg.wheel.right.motor.max_value)
 
                 motor_wheel_left.value = motor_left_output
                 motor_wheel_right.value = motor_right_output
