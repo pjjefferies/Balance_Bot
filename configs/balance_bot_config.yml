@@ -46,16 +46,16 @@ base:
         restore_calibration_available: False
 
     duration:
-        control_update: 10  # milliseconds
+        control_update: 50  # milliseconds
         params_update: 30  # seconds
         max_time_step: 60  # seconds
         sensor_history: 600  # seconds
         encoder_sensor_update: 1  # seconds
 
     pid_param:
-        k_proportional: 100  # Proportional Constant
-        k_integral: 2        # Helf catch-up
-        k_derivative: 0      # Damping Adjustment. Should be negative
+        k_proportional: -0.5   # Proportional Constant
+        k_integral: 0        # Help catch-up
+        k_derivative: 0     # Damping Adjustment. Should be negative
 
 dev:
     motor_encoder_test_sequence: 'motor_encoder_test_sequence.csv'

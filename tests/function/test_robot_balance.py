@@ -85,7 +85,7 @@ TIME_MS: Callable[[], int] = lambda: int(time.time() * 1000)
 TIME_S: Callable[[], int] = lambda: int(time.time())
 
 
-def test_robot_balance():
+def test_robot_balance() -> None:
     """
     Basic Robot Balance Test
     """
@@ -131,14 +131,13 @@ def test_robot_balance():
     # Start Balance Loop
     eh.post(event_type="log", message="about to start Balance Loop")
 
-    cfg: Box = load_config()
     motor_power_relay.on()
     eh.post(event_type="log", message="Main loop started")
     # Get Initial Values for PID Filter Initialization
     temp_euler: dict[str, float] = sensor.euler_angles
-    roll_last: float = temp_euler["x"]
+    # roll_last: float = temp_euler["x"]
     pitch_last: float = temp_euler["y"]
-    yaw_last: float = temp_euler["z"]
+    # yaw_last: float = temp_euler["z"]
 
     # Set initial instructions to stand still
     pitch_setpoint_angle: float = 0
@@ -149,11 +148,11 @@ def test_robot_balance():
     integral_term: float = 0
     derivative_term: float
     proportional_term: float
-    lasttime_control: int = 0
+    lasttime_control: int = TIME_MS()
     lasttime_params_updated: int = TIME_S()
-    roll: float
+    # roll: float
     pitch: float
-    yaw: float
+    # yaw: float
     fore_aft_error: float
     motor_output: float
     motor_left_output: float
@@ -164,9 +163,9 @@ def test_robot_balance():
                 # exec every CONTROL_UPDATE_INTERVAL msec.
                 lasttime_control = TIME_S()
                 temp_euler = sensor.euler_angles
-                roll = temp_euler["x"]
+                # roll = temp_euler["x"]
                 pitch = temp_euler["y"]
-                yaw = temp_euler["z"]
+                # yaw = temp_euler["z"]
                 fore_aft_error = pitch_setpoint_angle - pitch
                 integral_term += cfg.pid_param.k_integral * fore_aft_error
                 # self._integral_term = max(self._integral_term, bbc.MOTOR_MIN)
@@ -176,9 +175,9 @@ def test_robot_balance():
                 motor_output = proportional_term + integral_term + derivative_term
 
                 motor_left_output = motor_output
-                print(
-                    f"trb:175:motor_left_output: {motor_left_output}, cfg.wheel.left.motor.min_value: {cfg.wheel.left.motor.min_value}"
-                )
+                # print(
+                #     f"trb:175:motor_left_output: {motor_left_output}, cfg.wheel.left.motor.min_value: {cfg.wheel.left.motor.min_value}"
+                # )
                 motor_left_output = max(
                     motor_left_output, cfg.wheel.left.motor.min_value
                 )
@@ -196,7 +195,8 @@ def test_robot_balance():
                 motor_wheel_left.value = motor_left_output
                 motor_wheel_right.value = motor_right_output
 
-                roll_last, pitch_last, yaw_last = (roll, pitch, yaw)
+                # roll_last, pitch_last, yaw_last = (roll, pitch, yaw)
+                pitch_last = pitch
                 eh.post(event_type="log", message="Main loop ended")
             if (TIME_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.

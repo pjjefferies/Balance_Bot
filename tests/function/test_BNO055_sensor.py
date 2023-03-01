@@ -94,9 +94,9 @@ def test_bno055_sensor():
     while True:
         try:
             temp_euler: dict[str, float] = sensor.euler_angles
-            eh.post(event_type="9DOF sensor", message=f"Euler Angles:\n{temp_euler}")
+            # eh.post(event_type="9DOF sensor", message=f"Euler Angles:\n{temp_euler}")
             time.sleep(1)
-        except KeyboardInterrupt():
+        except KeyboardInterrupt:
             break
 
 

@@ -368,7 +368,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             raise ValueError("Gyro not available, check mode")
         self._eh.post(
             event_type="9DOF sensor",
-            message=f"Gyro: x: {gyro_x}, y: {gyro_y}, z: {gyro_z}",
+            message=f"Gyro: x: {gyro_x:.2f}, y: {gyro_y:.2f}, z: {gyro_z:.2f}",
         )
         return Box({"x": gyro_x, "y": gyro_y, "z": gyro_z})
 
@@ -380,10 +380,12 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         pitch_y: Optional[float]
         yaw_z, roll_x, pitch_y = self.euler
         if yaw_z is None or roll_x is None or pitch_y is None:
-            raise ValueError("Euler angles not available, check mode")
+            # raise ValueError("Euler angles not available, check mode")
+            print("Euler angles not available, please try again")
+            return Box({"x": 0, "y": 0, "z": 0})
         self._eh.post(
             event_type="9DOF sensor",
-            message=f"roll: x: {roll_x}, pitch y: {pitch_y}, yaw z: {yaw_z}",
+            message=f"roll: x: {roll_x:.2f}, pitch y: {pitch_y:.2f}, yaw z: {yaw_z:.2f}",
         )
         return Box({"x": roll_x, "y": pitch_y, "z": yaw_z})
 
