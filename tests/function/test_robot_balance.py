@@ -122,43 +122,44 @@ def test_robot_balance():
     # Read Sensor Mode to verify connected
     sensor.mode
 
-    # Calibrate Sensor
-    # sensor.calibrate_sensor()
     # Read saved sensor calibration values
     sensor_calibration_data = sensor.read_calibration_data_from_file()
     sensor.write_calibration_data_to_sensor(
         sensor_calibration_data=sensor_calibration_data
     )
 
-    async def primary_balance_loop() -> None:
-        cfg: Box = load_config()
-        motor_power_relay.on()
-        eh.post(event_type="log", message="Main loop started")
-        # Get Initial Values for PID Filter Initialization
-        temp_euler: dict[str, float] = sensor.euler_angles
-        roll_last: float = temp_euler["x"]
-        pitch_last: float = temp_euler["y"]
-        yaw_last: float = temp_euler["z"]
+    # Start Balance Loop
+    eh.post(event_type="log", message="about to start Balance Loop")
 
-        # Set initial instructions to stand still
-        pitch_setpoint_angle: float = 0
-        # yaw_setpoint_angle: float = 0
-        # previous_fore_aft_motor_input: float = 0
+    cfg: Box = load_config()
+    motor_power_relay.on()
+    eh.post(event_type="log", message="Main loop started")
+    # Get Initial Values for PID Filter Initialization
+    temp_euler: dict[str, float] = sensor.euler_angles
+    roll_last: float = temp_euler["x"]
+    pitch_last: float = temp_euler["y"]
+    yaw_last: float = temp_euler["z"]
 
-        # Set initial integral sum for PID control to zero
-        integral_term: float = 0
-        derivative_term: float
-        proportional_term: float
-        lasttime_control: int = 0
-        lasttime_params_updated: int = TIME_S()
-        roll: float
-        pitch: float
-        yaw: float
-        fore_aft_error: float
-        motor_output: float
-        motor_left_output: float
-        motor_right_output: float
-        while True:
+    # Set initial instructions to stand still
+    pitch_setpoint_angle: float = 0
+    # yaw_setpoint_angle: float = 0
+    # previous_fore_aft_motor_input: float = 0
+
+    # Set initial integral sum for PID control to zero
+    integral_term: float = 0
+    derivative_term: float
+    proportional_term: float
+    lasttime_control: int = 0
+    lasttime_params_updated: int = TIME_S()
+    roll: float
+    pitch: float
+    yaw: float
+    fore_aft_error: float
+    motor_output: float
+    motor_left_output: float
+    motor_right_output: float
+    while True:
+        try:
             if (TIME_MS() - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
                 lasttime_control = TIME_S()
@@ -175,12 +176,22 @@ def test_robot_balance():
                 motor_output = proportional_term + integral_term + derivative_term
 
                 motor_left_output = motor_output
-                print(f"trb:175:motor_left_output: {motor_left_output}, cfg.wheel.left.motor.min_value: {cfg.wheel.left.motor.min_value}")
-                motor_left_output = max(motor_left_output, cfg.wheel.left.motor.min_value)
-                motor_left_output = min(motor_left_output, cfg.wheel.left.motor.max_value)
+                print(
+                    f"trb:175:motor_left_output: {motor_left_output}, cfg.wheel.left.motor.min_value: {cfg.wheel.left.motor.min_value}"
+                )
+                motor_left_output = max(
+                    motor_left_output, cfg.wheel.left.motor.min_value
+                )
+                motor_left_output = min(
+                    motor_left_output, cfg.wheel.left.motor.max_value
+                )
                 motor_right_output = motor_output
-                motor_right_output = max(motor_right_output, cfg.wheel.right.motor.min_value)
-                motor_right_output = min(motor_right_output, cfg.wheel.right.motor.max_value)
+                motor_right_output = max(
+                    motor_right_output, cfg.wheel.right.motor.min_value
+                )
+                motor_right_output = min(
+                    motor_right_output, cfg.wheel.right.motor.max_value
+                )
 
                 motor_wheel_left.value = motor_left_output
                 motor_wheel_right.value = motor_right_output
@@ -192,14 +203,9 @@ def test_robot_balance():
                 lasttime_params_updated = TIME_S()
                 eh.post(event_type="log", message="Updating parameters?")
                 cfg = load_config()
+        except KeyboardInterrupt:
+            break
 
-    # Start Balance Loop
-    eh.post(event_type="log", message="about to start Balance Loop")
-    main_control_loop: Callable[[int], Awaitable[None]] = asyncio.get_event_loop()
-    tasks = [main_control_loop.create_task(primary_balance_loop())]
-    main_control_loop.run_until_complete(asyncio.wait(tasks))
-
-    main_control_loop.close()
     motor_wheel_left.value = 0
     motor_wheel_right.value = 0
     motor_wheel_left.close()
