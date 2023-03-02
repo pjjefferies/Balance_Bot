@@ -134,9 +134,9 @@ def test_robot_balance() -> None:
     motor_power_relay.on()
     eh.post(event_type="log", message="Main loop started")
     # Get Initial Values for PID Filter Initialization
-    temp_euler: dict[str, float] = sensor.euler_angles
+    temp_euler: Box = Box(sensor.euler_angles)
     # roll_last: float = temp_euler["x"]
-    pitch_last: float = temp_euler["y"]
+    pitch_last: float = temp_euler.y
     # yaw_last: float = temp_euler["z"]
 
     # Set initial instructions to stand still
@@ -157,14 +157,23 @@ def test_robot_balance() -> None:
     motor_output: float
     motor_left_output: float
     motor_right_output: float
+    temp_temp_euler: Box
+    good_euler_angles: int = 0
+    bad_euler_angles: int = 0
     while True:
         try:
             if (TIME_MS() - lasttime_control) >= cfg.duration.control_update:
                 # exec every CONTROL_UPDATE_INTERVAL msec.
                 lasttime_control = TIME_S()
-                temp_euler = sensor.euler_angles
+                temp_temp_euler = temp_euler
+                try:
+                    temp_euler = sensor.euler_angles
+                    good_euler_angles += 1
+                except OSError:
+                    temp_euler = temp_temp_euler
+                    bad_euler_angles += 1
                 # roll = temp_euler["x"]
-                pitch = temp_euler["y"]
+                pitch = temp_euler.y
                 # yaw = temp_euler["z"]
                 fore_aft_error = pitch_setpoint_angle - pitch
                 integral_term += cfg.pid_param.k_integral * fore_aft_error
@@ -201,8 +210,12 @@ def test_robot_balance() -> None:
             if (TIME_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
                 lasttime_params_updated = TIME_S()
-                eh.post(event_type="log", message="Updating parameters?")
+                eh.post(event_type="log", message="Updating parameters")
                 cfg = load_config()
+                eh.post(
+                    event_type="9DOF sensor",
+                    message=f"Good Eulers: {good_euler_angles:8d}, Bad Eulers: {bad_euler_angles:8d}",
+                )
         except KeyboardInterrupt:
             break
 
