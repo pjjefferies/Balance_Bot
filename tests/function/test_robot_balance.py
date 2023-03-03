@@ -141,7 +141,7 @@ def test_robot_balance() -> None:
 
     # Set initial instructions to stand still
     pitch_setpoint_angle: float = 0
-    # yaw_setpoint_angle: float = 0
+    ## yaw_setpoint_angle: float = 0
     # previous_fore_aft_motor_input: float = 0
 
     # Set initial integral sum for PID control to zero
