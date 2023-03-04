@@ -175,8 +175,13 @@ def test_robot_balance() -> None:
                 # roll = temp_euler["x"]
                 pitch = temp_euler.y
                 # yaw = temp_euler["z"]
-                fore_aft_error = pitch_setpoint_angle - pitch
-                integral_term += cfg.pid_param.k_integral * fore_aft_error
+                fore_aft_error = pitch - pitch_setpoint_angle
+                if integral_term == 0 or fore_aft_error / integral_term > 1:
+                    integral_term = cfg.pid_param.k_integral * fore_aft_error
+                elif fore_aft_error / integral_term < 1:
+                    integral_term = cfg.pid_param.k_integral * fore_aft_error
+                else:
+                    integral_term = 0
                 # self._integral_term = max(self._integral_term, bbc.MOTOR_MIN)
                 # self._integral_term = min(self._integral_term, bbc.MOTOR_MAX)
                 derivative_term = cfg.pid_param.k_derivative * (pitch - pitch_last)
