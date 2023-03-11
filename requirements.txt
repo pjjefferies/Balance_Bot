@@ -1,5 +1,5 @@
 Adafruit-Blinka==8.15.0
-adafruit-circuitpython-bno055==5.4.8
+adafruit-circuitpython-bno055==5.4.9
 # adafruit-circuitpython-busdevice==5.2.3
 # adafruit-circuitpython-register==1.9.15
 # adafruit-circuitpython-requests==1.12.12
