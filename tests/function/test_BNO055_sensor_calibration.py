@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Tester for BNO055 9-Degree of Freedom Sensor Calibration, Saving and Restoring
-"""
+""" Tester for BNO055 9-Degree of Freedom Sensor Calibration, Saving and Restoring """
 
 from typing import Protocol, Optional, Any
 
@@ -25,8 +23,7 @@ def test_BNO055_sensor_calibrate():
 
     eh: EventHandlerTemplate = EventHandler()
 
-    robot_listener.setup_robot_9DOF_sensor_handler_logfile(eh=eh)
-    robot_listener.setup_robot_9DOF_sensor_handler_stdout(eh=eh)
+    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
 
     # Initialize i2C Connection to sensor
     # TODO: need check/try?
