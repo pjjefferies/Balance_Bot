@@ -20,9 +20,10 @@ def general_logfile_eh(
     dt_string: Optional[str] = None,
 ) -> None:
     general_eh_handler = "log_file"
-    now: dt.datetime = dt.datetime.now()
     if dt_string is None:
-        dt_string = now
+        now: dt.datetime = dt.datetime.now()
+    else:
+        now = dt.datetime.strptime(dt_string, "%Y-%m-%d_%H_%M_%S")
     level_text = ": " + level if level is not None else ""
     log_folder = log_cfg.handler[general_eh_handler].folder
     log_filename_base = log_cfg.handler[general_eh_handler].filename
