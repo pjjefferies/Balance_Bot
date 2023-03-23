@@ -2,15 +2,13 @@
 """Encoder Sensor Base Module for Actual Sensor and Simulated Sensor"""
 
 import numpy as np
+import numpy.typing as npt
 import time
-from typing import Any, Union, Protocol
+from typing import Any, Protocol
 
-from gpiozero import Motor
-
-from balance_bot.motor_simulator import MotorSim
-from balance_bot.event import EventHandler
-from balance_bot.find_mode import find_gamma_mode
-from cumulative_average import cumulative_average
+from src.event import EventHandler
+from src.find_mode import find_gamma_mode
+from src.cumulative_average import cumulative_average
 
 
 class EventHandlerTemplate(Protocol):
@@ -215,6 +213,16 @@ class EncoderGeneral:
             message=f"Added position: time: {a_time}, pos.: {position}",
         )
 
+    def _row_with_cumulative_time_greater_than_target(self, target: float) -> int:
+        # find the row number of the first data point with cumulative time > _average_duration
+        history_lines_to_use = int(np.argmax(self._position_history[:, 0] >= target))
+
+        # If we don't have enough for average duration, use all we have
+        if history_lines_to_use == 0:
+            history_lines_to_use = self._current_history_len
+
+        return history_lines_to_use
+
     @property
     def distance(self) -> float:
         """
@@ -246,7 +254,7 @@ class EncoderGeneral:
             self._SPEED_COL,
         ]
 
-        avg_speed: float = float(np.average(speeds_list))
+        avg_speed: float = float(np.average(speeds_list))  # type: ignore
         self._eh.post(event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}")
         return avg_speed
 
@@ -270,7 +278,7 @@ class EncoderGeneral:
             self._ACCEL_COL,
         ]
 
-        avg_accel: float = float(np.average(accels_list))
+        avg_accel: float = float(np.average(accels_list))  # type: ignore
         self._eh.post(event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}")
         return avg_accel
 
@@ -294,15 +302,7 @@ class EncoderGeneral:
             self._JERK_COL,
         ]
 
-        avg_jerk: float = float(
-            np.average(jerks_list)
+        avg_jerk: float = float(np.average(jerks_list))  # type: ignore
         self._eh.post(event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}")
+
         return avg_jerk
-
-    def _row_with_cumulative_time_greater_than_target(self, target: float):
-        # find the row number of the first data point with cumulative time > _average_duration
-        self._history_lines_to_use = np.argmax(self._position_history[:, 0] >= target)
-
-        # If we don't have enough for average duration, use all we have
-        if self._history_lines_to_use == 0:
-            self._history_lines_to_use = self._current_history_len

@@ -11,7 +11,7 @@ from box import Box
 import os
 import yaml
 
-from balance_bot.config_main import cfg
+from src.config_main import cfg
 
 env = "dev"
 

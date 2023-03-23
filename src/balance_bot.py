@@ -8,13 +8,13 @@ from typing import Callable, Protocol, Optional, Any
 from abc import abstractmethod
 from gpiozero import Motor
 
-from balance_bot import robot_listener
-from balance_bot.motor_simulator import MotorSim
-from balance_bot.encoder_sensor_digital import EncoderDigital
-from balance_bot.encoder_simulator import EncoderSim
-from balance_bot.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
-from balance_bot.bb_bno055_sensor import BB_BNO055Sensor
-from balance_bot.bluedot_direction_control import BlueDotRobotController
+from src import robot_listener
+from src.motor_simulator import MotorSim
+from src.encoder_sensor_digital import EncoderDigital
+from tests.encoder_simulator import EncoderSim
+from src.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
+from src.bb_bno055_sensor import BB_BNO055Sensor
+from src.bluedot_direction_control import BlueDotRobotController
 from config import cfg
 from event import EventHandler
 

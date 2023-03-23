@@ -7,9 +7,9 @@ import numpy as np
 from gpiozero import LineSensor
 from gpiozero import Motor
 
-from balance_bot.encoder_sensor_general import EncoderGeneral
-from balance_bot.motor_simulator import MotorSim
-from balance_bot.event import EventHandler
+from src.encoder_sensor_general import EncoderGeneral
+from src.motor_simulator import MotorSim
+from src.event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):

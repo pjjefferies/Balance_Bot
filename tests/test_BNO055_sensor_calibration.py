@@ -7,9 +7,9 @@ import board
 from box import Box
 import busio
 
-from balance_bot import bb_bno055_sensor as bno055
-from balance_bot import robot_listener
-from balance_bot.event import EventHandler
+from src import bb_bno055_sensor as bno055
+from src import robot_listener
+from src.event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):

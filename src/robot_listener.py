@@ -9,8 +9,8 @@ import os
 import sys
 from typing import Optional, Any
 
-from balance_bot.config_logging import log_cfg
-from balance_bot.event import EventHandler
+from src.config_logging import log_cfg
+from src.event import EventHandler
 
 # General Log File Event Handler
 def general_logfile_eh(

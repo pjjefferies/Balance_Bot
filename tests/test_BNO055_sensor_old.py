@@ -14,9 +14,9 @@ import board
 import busio
 import pandas as pd
 
-from balance_bot import robot_listener
-from balance_bot.config_main import cfg
-from balance_bot.event import EventHandler
+from src import robot_listener
+from src.config_main import cfg
+from src.event import EventHandler
 
 TIME_MS: Callable[[], float] = lambda: time.time() * 1000
 TIME_S: Callable[[], float] = lambda: time.time()

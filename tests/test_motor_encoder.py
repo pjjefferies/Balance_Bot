@@ -5,11 +5,11 @@ import sys
 import time
 from typing import Callable
 
-from balance_bot import robot_listener
-from balance_bot.encoder_sensor_digital import EncoderDigital
-from balance_bot.event import EventHandler
-from balance_bot.motor_battery_relay import MotorBatteryRelay
-from balance_bot.rpi_motor import RPI_Motor
+from src import robot_listener
+from src.encoder_sensor_digital import EncoderDigital
+from src.event import EventHandler
+from src.motor_battery_relay import MotorBatteryRelay
+from src.rpi_motor import RPI_Motor
 
 TIME_S: Callable[[], int] = lambda: int(time.time())
 

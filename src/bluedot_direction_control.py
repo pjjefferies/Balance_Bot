@@ -29,6 +29,7 @@ class BlueDotRobotController:
         eh.post(event_type="bluedot", message="Connection established.")
         self._running: bool = True
 
+    @property
     def bd_drive(self) -> Tuple[float, float]:
         """
         BlueDot wrapper to send y (fwd/rwd), x (right/left) when bluedot is touched

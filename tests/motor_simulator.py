@@ -10,7 +10,7 @@ class EventHandlerTemplate:
         raise NotImplementedError
 
 
-from balance_bot.event import EventHandler
+from src.event import EventHandler
 
 
 class MotorSim:

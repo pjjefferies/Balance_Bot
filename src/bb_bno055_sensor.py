@@ -16,8 +16,8 @@ from box import Box
 from box.exceptions import BoxError
 import busio
 
-from balance_bot.config_main import cfg
-from balance_bot.event import EventHandler
+from src.config_main import cfg
+from src.event import EventHandler
 
 
 class EventHandlerTemplate(Protocol):
@@ -429,16 +429,11 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         return grav_mag
 
     @property
-    def quaternion(self) -> tuple[float, float, float, float]:
-        """
-        Getter for quaternion giving orientation
-
-        Returns:
-            4-tuple quaternion
-        """
+    def bb_quaternion(self) -> tuple[float, float, float, float]:
+        """ Getter for quaternion giving orientation """
         quaternion: tuple[
             Optional[float], Optional[float], Optional[float], Optional[float]
-        ] = self.quaternion  # ORDER NOT VERIFIED
+        ] = self.quaternion
         if None in quaternion:
             raise ValueError("Quaternion is not available")
-        return quaternion
+        return quaternion  # type: ignore

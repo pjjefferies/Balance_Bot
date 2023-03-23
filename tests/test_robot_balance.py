@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 
 from abc import abstractmethod
-import asyncio
 import time
-from typing import Awaitable, Callable, Optional, Protocol
+from typing import Callable, Optional, Protocol
 
 import board
 from box import Box
 import busio
 
 
-from balance_bot import bb_bno055_sensor as bno055
-from balance_bot.config_main import load_config
-from balance_bot.event import EventHandler
-from balance_bot.motor_battery_relay import MotorBatteryRelay
-from balance_bot.rpi_motor import RPI_Motor
-from balance_bot import robot_listener
+from src import bb_bno055_sensor as bno055
+from src.config_main import load_config
+from src.event import EventHandler
+from src.motor_battery_relay import MotorBatteryRelay
+from src.rpi_motor import RPI_Motor
+from src import robot_listener
 
 
 class MotorGeneral(Protocol):
@@ -222,6 +221,7 @@ def test_robot_balance() -> None:
                     message=f"Good Eulers: {good_euler_angles:8d}, Bad Eulers: {bad_euler_angles:8d}",
                 )
         except KeyboardInterrupt:
+            print("Stopping at your request.")
             break
 
     motor_wheel_left.value = 0
