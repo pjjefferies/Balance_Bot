@@ -16,7 +16,7 @@ from box import Box
 from box.exceptions import BoxError
 import busio
 
-from src.config_main import cfg
+from src.config.config_main import cfg
 from src.event import EventHandler
 
 

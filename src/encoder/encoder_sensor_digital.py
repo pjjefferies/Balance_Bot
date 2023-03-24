@@ -7,7 +7,7 @@ import numpy as np
 from gpiozero import LineSensor
 from gpiozero import Motor
 
-from src.encoder_sensor_general import EncoderGeneral
+from src.encoder.encoder_sensor_general import EncoderGeneral
 from src.motor_simulator import MotorSim
 from src.event import EventHandler
 

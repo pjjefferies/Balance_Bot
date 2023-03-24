@@ -7,7 +7,7 @@ import board
 from box import Box
 import busio
 
-from src import bb_bno055_sensor as bno055
+from src.sensor import bb_bno055_sensor as bno055
 from src import robot_listener
 from src.event import EventHandler
 

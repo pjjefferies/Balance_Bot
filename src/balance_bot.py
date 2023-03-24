@@ -10,11 +10,11 @@ from gpiozero import Motor
 
 from src import robot_listener
 from src.motor_simulator import MotorSim
-from src.encoder_sensor_digital import EncoderDigital
+from src.encoder.encoder_sensor_digital import EncoderDigital
 from tests.encoder_simulator import EncoderSim
 from src.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
-from src.bb_bno055_sensor import BB_BNO055Sensor
-from src.bluedot_direction_control import BlueDotRobotController
+from src.sensor.bb_bno055_sensor import BB_BNO055Sensor
+from src.bluedot.bluedot_direction_control import BlueDotRobotController
 from config import cfg
 from event import EventHandler
 

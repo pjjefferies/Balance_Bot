@@ -15,7 +15,7 @@ import busio
 import pandas as pd
 
 from src import robot_listener
-from src.config_main import cfg
+from src.config.config_main import cfg
 from src.event import EventHandler
 
 TIME_MS: Callable[[], float] = lambda: time.time() * 1000

@@ -9,11 +9,11 @@ from box import Box
 import busio
 
 
-from src import bb_bno055_sensor as bno055
-from src.config_main import load_config
+from src.sensor import bb_bno055_sensor as bno055
+from src.config.config_main import load_config
 from src.event import EventHandler
-from src.motor_battery_relay import MotorBatteryRelay
-from src.rpi_motor import RPI_Motor
+from src.motor.motor_battery_relay import MotorBatteryRelay
+from src.motor.rpi_motor import RPI_Motor
 from src import robot_listener
 
 

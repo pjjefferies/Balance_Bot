@@ -2,7 +2,7 @@
 
 from gpiozero import OutputDevice
 
-from .event import EventHandler
+from ..event import EventHandler
 
 AVAIL_GPIO_PINS: tuple[int | str] = tuple(range(2, 28)) + tuple(
     ["GPIO" + str(a_no) for a_no in range(2, 28)]

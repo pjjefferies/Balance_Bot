@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Optional, Any
 
-from src.config_logging import log_cfg
+from src.config.config_logging import log_cfg
 from src.event import EventHandler
 
 # General Log File Event Handler

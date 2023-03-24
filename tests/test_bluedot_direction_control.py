@@ -3,7 +3,7 @@
 import time
 from typing import Tuple
 
-from src.bluedot_direction_control import BlueDotRobotController
+from src.bluedot.bluedot_direction_control import BlueDotRobotController
 
 prev_position = [101, 101]  # start with impossible position for comp.
 
