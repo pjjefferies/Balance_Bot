@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 
-from abc import abstractmethod
 import time
+from abc import abstractmethod
 from typing import Callable, Optional, Protocol
 
 import board
-from box import Box
 import busio
+from box import Box
 
-
-from src.sensor import bb_bno055_sensor as bno055
 from src.config.config_main import load_config
-from src.event import EventHandler
 from src.motor.motor_battery_relay import MotorBatteryRelay
 from src.motor.rpi_motor import RPI_Motor
-from src import robot_listener
+from src.robot_logging.logging_setup import bb_logger as logger
+from src.sensor import bb_bno055_sensor as bno055
 
 
 class MotorGeneral(Protocol):
@@ -85,38 +83,32 @@ TIME_S: Callable[[], int] = lambda: int(time.time())
 
 
 def test_robot_balance() -> None:
-    """
-    Basic Robot Balance Test
-    """
+    """Basic Robot Balance Test"""
     cfg: Box = load_config()
-    eh = EventHandler()
-
-    robot_listener.setup_robot_movement_handler(eh=eh)
-    robot_listener.setup_robot_9DOF_sensor_handler(eh=eh)
-    robot_listener.setup_general_logging_handler(eh=eh)
-    robot_listener.setup_power_handler(eh=eh)
 
     # set-up Wheel Motor Power Relay
-    motor_power_relay = MotorBatteryRelay(gpio_pin_no=cfg.wheel.power, eh=eh)
+    motor_power_relay = MotorBatteryRelay(gpio_pin_no=cfg.wheel.power, logger=logger)
 
     # Set-up Wheel Motor Control Pins
     motor_wheel_left: RPI_Motor = RPI_Motor(
         forward=cfg.wheel.left.motor.fwd,
         backward=cfg.wheel.left.motor.rwd,
         pwm=True,
-        eh=eh,
+        logger=logger,
     )
     motor_wheel_right: RPI_Motor = RPI_Motor(
         forward=cfg.wheel.right.motor.fwd,
         backward=cfg.wheel.right.motor.rwd,
         pwm=True,
-        eh=eh,
+        logger=logger,
     )
 
     # Initialize i2C Connection to sensor
     # TODO: need check/try?
     i2c = busio.I2C(board.SCL, board.SDA)
-    sensor: bno055.BB_BNO055Sensor_I2C = bno055.BB_BNO055Sensor_I2C(i2c=i2c, eh=eh)
+    sensor: bno055.BB_BNO055Sensor_I2C = bno055.BB_BNO055Sensor_I2C(
+        i2c=i2c, logger=logger
+    )
 
     # Read Sensor Mode to verify connected
     sensor.mode
@@ -128,10 +120,10 @@ def test_robot_balance() -> None:
     )
 
     # Start Balance Loop
-    eh.post(event_type="log", message="about to start Balance Loop")
+    logger.info(msg="about to start Balance Loop")
 
     motor_power_relay.on()
-    eh.post(event_type="log", message="Main loop started")
+    logger.info(msg="Main loop started")
     # Get Initial Values for PID Filter Initialization
     temp_euler: Box = Box(sensor.euler_angles)
     # roll_last: float = temp_euler["x"]
@@ -210,15 +202,14 @@ def test_robot_balance() -> None:
 
                 # roll_last, pitch_last, yaw_last = (roll, pitch, yaw)
                 pitch_last = pitch
-                eh.post(event_type="log", message="Main loop ended")
+                logger.info(msg="Main loop ended")
             if (TIME_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
                 lasttime_params_updated = TIME_S()
-                eh.post(event_type="log", message="Updating parameters")
+                logger.info(msg="Updating parameters")
                 cfg = load_config()
-                eh.post(
-                    event_type="9DOF sensor",
-                    message=f"Good Eulers: {good_euler_angles:8d}, Bad Eulers: {bad_euler_angles:8d}",
+                logger.info(
+                    msg=f"9DOF sensor: Good Eulers: {good_euler_angles:8d}, Bad Eulers: {bad_euler_angles:8d}"
                 )
         except KeyboardInterrupt:
             print("Stopping at your request.")

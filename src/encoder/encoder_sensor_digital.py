@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 
-import time
-from typing import Callable, Protocol, Any, Union
-import numpy as np
 
+import time
+from logging import Logger
+from typing import Any, Callable, Protocol
+
+import numpy as np
 from gpiozero import LineSensor
-from gpiozero import Motor
 
 from src.encoder.encoder_sensor_general import EncoderGeneral
-from src.motor_simulator import MotorSim
-from src.event import EventHandler
-
-
-class EventHandlerTemplate(Protocol):
-    def post(self, *, event_type: str, message: str) -> None:
-        raise NotImplementedError
+from src.save_position_history import save_position_history
 
 
 class MotorGeneral(Protocol):
     def __init__(
         self,
+        *,
+        forward: int | str,
+        backward: int | str,
+        logger: Logger,
     ):
         raise NotImplementedError
 
@@ -48,35 +47,22 @@ class EncoderDigital(EncoderGeneral):
     def __init__(
         self,
         *,
-        signal_pin: Union[int, str],
+        signal_pin: int | str,  # RaspberriPi Logical Pin connected to Sensor output Pin
         slots_per_rev: int = 20,
         max_no_position_points: int = 10_000,
-        average_duration: float = 1,  # seconds
-        motor: Union[Motor, MotorSim],
-        eh: EventHandler,
+        average_duration: float = 1,  # seconds, duration to take averages over
+        motor: MotorGeneral,
+        logger: Logger,
     ):
         """
         Constructs all the necessary attributes for the Rotation_Encoder
         object using LineSensor class from gpiozero.
-
-        Args:
-            signal_pin: RaspberriPi Logical Pin connected to Sensor output Pin
-            sample_freq: Frequency to sample Sensor (Hz)
-            slots_per_rev: Number of slots per revolutoin
-            history_len: Length of distance history to maintain in seconds
-            average_duration: Length to average speed, accel, jerk over
-
-        Returns:
-            None, other than object itself
-
-        Raises:
-            None.
         """
         super().__init__(
             max_no_position_points=max_no_position_points,
             average_duration=average_duration,
             motor=motor,
-            eh=eh,
+            logger=logger,
         )
 
         self._sensor: LineSensor = LineSensor(
@@ -98,18 +84,12 @@ class EncoderDigital(EncoderGeneral):
         self._position_history: Any
 
         self._signal_pin = signal_pin
-        self._eh.post(
-            event_type="encoder sensor",
-            message=f"Created Digital Sensor on pin {signal_pin}",
-        )
+        self._logger.info(f"encoder sensor: Created Digital Sensor on pin {signal_pin}")
 
     def _move_a_half_slot(self) -> None:
         """
         Increments the distance traveled when triggered. Stores distance
         traveled at time in _posiiton_history.
-
-        Returns:
-            None.
         """
         if not self._running:
             return
@@ -124,9 +104,6 @@ class EncoderDigital(EncoderGeneral):
         """
         Increments the distance traveled when triggered. Stores distance
         traveled at time in _posiiton_history.
-
-        Returns:
-            None.
         """
         if not self._running:
             return
@@ -138,45 +115,34 @@ class EncoderDigital(EncoderGeneral):
         self.add_position(a_time=move_time, position=self.position)
 
     def start(self):
-        self.__super__.start()
+        super().start()
         self._sensor.when_line = (
             self._move_a_half_slot
         )  # sets function to be run when line is detected
         self._sensor.when_no_line = (
             self._move_a_half_slot
         )  # sets function to be run when no line is detected
-        """
-        self._sensor.when_no_line = (
-            self._move_a_full_slot
-        )  # sets function to be run when no line is detected
-        """
 
         self._running = True
-        self._eh.post(
-            event_type="encoder sensor",
-            message=f"Started Digital Sensor {self._signal_pin}",
-        )
+        self._logger.info(f"encoder sensor: Started Digital Sensor {self._signal_pin}")
         self.reset_history()
 
     def stop(self):
         self._sensor.when_line = None
         self._sensor.when_no_line = None
         self._running = False
-        self._eh.post(
-            event_type="encoder sensor",
-            message=f"Stopped Digital Sensor on pin {self._signal_pin}",
+        self._logger.info(
+            f"encoder sensor: Stopped Digital Sensor on pin {self._signal_pin}"
         )
 
     def close(self):  # releases pins from use by encoder sensor
-        self._eh.post(
-            event_type="encoder sensor",
-            message=f"Digital Sensor Destroyed on pin {self._signal_pin}",
+        self._logger.info(
+            f"encoder sensor: Digital Sensor Destroyed on pin {self._signal_pin}"
         )
 
         # Strip history of all empty rows
         temp_history = self._position_history[
             ~np.all(self._position_history == 0, axis=1)
         ]
-
-        self._eh.post(event_type="position_history", message=temp_history)
+        save_position_history(pos_history=temp_history)
         self._sensor.close()

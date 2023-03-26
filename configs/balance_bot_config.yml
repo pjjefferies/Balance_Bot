@@ -49,7 +49,7 @@ base:
         control_update: 50  # milliseconds
         params_update: 1  # seconds
         max_time_step: 60  # seconds
-        sensor_history: 600  # seconds
+        sensor_history: 5_000  # data points
         encoder_sensor_update: 1  # seconds
 
     pid_param:

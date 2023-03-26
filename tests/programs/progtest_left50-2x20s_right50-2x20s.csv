@@ -1,5 +1,10 @@
-# motor_power_pin (GPIO#, int), motor_pin_fwd (GPIO#, int), motor_pin_rwd (GPIO#, int),
-# encoder_pin (GPIO#, int), velocity (-1, 1), duration (float, seconds)
+# 1: motor_power_pin (GPIO#, int),
+# 2: motor_pin_fwd (GPIO#, int),
+# 3: motor_pin_rwd (GPIO#, int),
+# 4: encoder_pin (GPIO#, int),
+# 5: velocity (-1, 1),
+# 6: duration (float, seconds)
+#
 14, 4, 17, 26, 0.5, 20
 0, 0, 0, 0, 0, 2
 14, 4, 17, 26, -0.5, 20

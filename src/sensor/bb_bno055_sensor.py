@@ -5,24 +5,18 @@ Create representation of Adafruit 9-DOF Abs. Orientation IMU BNO055.
 This is needed to rotate axes on BNO055 Chip to Robot Axes.
 """
 
-from abc import abstractmethod
-from box import Box
 import math
 import time
+from abc import abstractmethod
+from logging import Logger
 from typing import Optional, Protocol
 
 import adafruit_bno055 as bno055
+import busio
 from box import Box
 from box.exceptions import BoxError
-import busio
 
 from src.config.config_main import cfg
-from src.event import EventHandler
-
-
-class EventHandlerTemplate(Protocol):
-    def post(self, *, event_type: str, message: str) -> None:
-        raise NotImplementedError
 
 
 class AbsoluteSensor(Protocol):
@@ -127,11 +121,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         "gyro.offset",
     )
 
-    def __init__(
-        self, *, i2c: busio.I2C, eh: EventHandler
-    ) -> None:  # sensor: AbsoluteSensor, V3.10
-
-        # self._sensor: bno055.BNO055_I2C = bno055.BNO055_I2C(i2c)
+    def __init__(self, *, i2c: busio.I2C, logger: Logger) -> None:
         super().__init__(i2c=i2c)
         self._sensor_calibration_data: Box = Box(
             {
@@ -146,7 +136,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
                 "gyro": {"offset": {"x": 0, "y": 0, "z": 0}},
             }
         )
-        self._eh = eh
+        self._logger = logger
 
     def calibrate_sensor(self) -> None:
         """
@@ -155,39 +145,30 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
 
         # Wait for and read calibration information
         while self.calibration_status[2] != 0x03:  # Accel
-            self._eh.post(
-                event_type="9DOF sensor",
-                message="Waiting for accel calibration. Rotate robot slowly to 6 stable positions for a few seconds.",
+            self._logger.info(
+                msg="9DOF sensor: Waiting for accel calibration. Rotate robot slowly to 6 stable positions for a few seconds.",
             )
             time.sleep(1)
-        self._eh.post(
-            event_type="9DOF sensor", message="Accelerometer calibrated"
-        )
+        self._logger.info(msg="9DOF sensor: Accelerometer calibrated")
 
         while self.calibration_status[1] != 0x03:  # Gyro
-            self._eh.post(
-                event_type="9DOF sensor",
-                message="Waiting for gyro calibration. Place robot in a stable position.",
+            self._logger.info(
+                msg="9DOF sensor: Waiting for gyro calibration. Place robot in a stable position.",
             )
             time.sleep(1)
-        self._eh.post(event_type="9DOF sensor", message="Gyro calibrated")
+        self._logger.info(msg="9DOF sensor: Gyro calibrated")
 
         while self.calibration_status[3] != 0x03:  # Mag
-            self._eh.post(
-                event_type="9DOF sensor",
-                message="Waiting for magnetrometer calibration. Rotate robot in random directions.",
+            self._logger.info(
+                msg="9DOF sensor: Waiting for magnetrometer calibration. Rotate robot in random directions.",
             )
             time.sleep(2)
-        self._eh.post(
-            event_type="9DOF sensor", message="Magnetrometer calibrated"
-        )
+        self._logger.info(msg="9DOF sensor: Magnetrometer calibrated")
 
         while self.calibration_status[0] != 0x03:  # System
-            self._eh.post(
-                event_type="9DOF sensor", message="Waiting for system calibration"
-            )
+            self._logger.info(msg="9DOF sensor: Waiting for system calibration")
             time.sleep(2)
-        self._eh.post(event_type="9DOF sensor", message="System calibrated")
+        self._logger.info(msg="9DOF sensor: System calibrated")
 
     def read_calibration_data_from_sensor(self) -> Box:
         # if self.calibration_status[0] != 0x03:
@@ -223,9 +204,8 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
                 },
             }
         )
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Calibration Values:\n{self._sensor_calibration_data}",
+        self._logger.info(
+            msg=f"9DOF sensor: Calibration Values:\n{self._sensor_calibration_data}",
         )
         return self._sensor_calibration_data
 
@@ -235,11 +215,10 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if sensor_calibration_data is None:
             sensor_calibration_data = self._sensor_calibration_data
         if not self._validate_calibration_data(sensor_calibration_data):
-            self._eh.post(
-                event_type="log",
-                message="ERROR: Could not save calibration data. Data invalid",
+            self._logger.error(
+                msg="9DOF sensor: Could not save calibration data. Data invalid"
             )
-            raise ValueError("Could not save calibration data")
+            raise ValueError("9DOF sensor: Could not save calibration data")
         self.offsets_accelerometer = (
             sensor_calibration_data.accel.offset.x,
             sensor_calibration_data.accel.offset.y,
@@ -265,18 +244,17 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
                 filename=cfg.path.ninedof_sensor_calibration
             )
             if not self._validate_calibration_data(self._sensor_calibration_data):
-                print(f"Cal. Data:{self._sensor_calibration_data}")
-                raise ValueError("Calibration data from file is invalid")
+                self._logger.error(
+                    msg=f"9DOF sensor: Cal. Data:{self._sensor_calibration_data}"
+                )
+                raise ValueError("9DOF sensor: Calibration data from file is invalid")
         except BoxError as e:
             raise ValueError(e)
         except ValueError as e:
             raise ValueError(e)
-
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Calibration values read from {cfg.path.calibration}:\n{self._sensor_calibration_data}",
+        self._logger.info(
+            msg=f"9DOF sensor: Calibration values read from {cfg.path.calibration}: {self._sensor_calibration_data}"
         )
-
         return self._sensor_calibration_data
 
     def write_calibration_data_to_file(
@@ -286,15 +264,11 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if sensor_calibration_data is None:
             sensor_calibration_data = self._sensor_calibration_data
         if not self._validate_calibration_data(sensor_calibration_data):
-            raise ValueError("Could not save calibration data")
-
-        sensor_calibration_data.to_yaml(
-            filename=cfg.path.ninedof_sensor_calibration
-        )
-
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Calibration data saved to {cfg.path.ninedof_sensor_calibration}:\n{sensor_calibration_data}",
+            self._logger.error(msg="9DOF sensor: Could not save calibration data")
+            raise ValueError("9DOF sensor: Could not save calibration data")
+        sensor_calibration_data.to_yaml(filename=cfg.path.ninedof_sensor_calibration)
+        self._logger.info(
+            msg=f"9DOF sensor: Calibration data saved to {cfg.path.ninedof_sensor_calibration}: {sensor_calibration_data}"
         )
 
     @classmethod
@@ -323,11 +297,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             temperature = int(self.temperature * 9 / 5 + 32)
         else:
             temperature = self.temperature
-
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Temperature: {temperature} {units}",
-        )
+        self._logger.info(msg=f"9DOF sensor: Temperature: {temperature} {units}")
         return temperature
 
     @property
@@ -337,10 +307,10 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         accel_z: Optional[float]
         accel_y, accel_x, accel_z = self.linear_acceleration
         if accel_x is None or accel_y is None or accel_z is None:
-            raise ValueError("Accel not available, check mode")
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Accel: x: {accel_x}, y: {accel_y}, z: {accel_z}",
+            self._logger.error(msg="9DOF sensor: Accel not available, check mode")
+            raise ValueError("9DOF sensor: Accel not available, check mode")
+        self._logger.info(
+            msg=f"9DOF sensor: Accel: x: {accel_x}, y: {accel_y}, z: {accel_z}"
         )
         return Box({"x": accel_x, "y": accel_y, "z": accel_z})
 
@@ -351,10 +321,12 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         mag_z: Optional[float]
         mag_x, mag_y, mag_z = self.magnetic  # ORDER NOT VERIFIED
         if mag_x is None or mag_y is None or mag_z is None:
-            raise ValueError("Magnetic reading not available, check mode")
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Magnetic Field: x: {mag_x}, y: {mag_y}, z: {mag_z}",
+            self._logger.error(
+                msg="9DOF sensor: Magnetic reading not available, check moe"
+            )
+            raise ValueError("9DOF sensor: Magnetic reading not available, check mode")
+        self._logger.info(
+            msg=f"9DOF sensor: Magnetic Field: x: {mag_x}, y: {mag_y}, z: {mag_z}"
         )
         return Box({"x": mag_x, "y": mag_y, "z": mag_z})
 
@@ -365,10 +337,10 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         gyro_z: Optional[float]
         gyro_y, gyro_x, gyro_z = self.gyro  # Ordered for BB Axes ?
         if gyro_x is None or gyro_y is None or gyro_z is None:
+            self._logger.error(msg="9DOF sensor: Gyro not available, check mode")
             raise ValueError("Gyro not available, check mode")
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Gyro: x: {gyro_x:.2f}, y: {gyro_y:.2f}, z: {gyro_z:.2f}",
+        self._logger.info(
+            msg=f"9DOF sensor: Gyro: x: {gyro_x:.2f}, y: {gyro_y:.2f}, z: {gyro_z:.2f}"
         )
         return Box({"x": gyro_x, "y": gyro_y, "z": gyro_z})
 
@@ -380,12 +352,13 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         pitch_y: Optional[float]
         yaw_z, roll_x, pitch_y = self.euler
         if yaw_z is None or roll_x is None or pitch_y is None:
-            # raise ValueError("Euler angles not available, check mode")
-            print("Euler angles not available, please try again")
-            return Box({"x": 0, "y": 0, "z": 0})
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"roll: x: {roll_x:.2f}, pitch y: {pitch_y:.2f}, yaw z: {yaw_z:.2f}",
+            self._logger.error(
+                msg="9DOF sensor: Euler angles not available, please try again"
+            )
+            raise ValueError("9DOF sensor: Euler angles not available, check mode")
+            # return Box({"x": 0, "y": 0, "z": 0})
+        self._logger.info(
+            msg=f"9DOF sensor: roll: x: {roll_x:.2f}, pitch y: {pitch_y:.2f}, yaw z: {yaw_z:.2f}"
         )
         return Box({"x": roll_x, "y": pitch_y, "z": yaw_z})
 
@@ -402,12 +375,12 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         z_grav: Optional[float]
         x_grav, y_grav, z_grav = self.gravity
         if x_grav is None or y_grav is None or z_grav is None:
-            raise ValueError("Gravity not available, check mode")
+            self._logger.error(msg="9DOF sensor: Gravity not available, check mode")
+            raise ValueError("9DOF sensor: Gravity not available, check mode")
         xy_grav_angle: float = math.atan2(y_grav, x_grav)
         xz_grav_angle: float = math.atan2(z_grav, x_grav)
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Gravity Dir: xy_angle: {xy_grav_angle}, xz_angle: {xz_grav_angle}",
+        self._logger.info(
+            msg=f"9DOF sensor: Gravity Dir: xy_angle: {xy_grav_angle}, xz_angle: {xz_grav_angle}"
         )
         return Box({"xy": xy_grav_angle, "xz": xz_grav_angle})  # ORDER NOT VERIVIED
 
@@ -422,18 +395,17 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         y_grav = y_grav if y_grav is not None else 0
         z_grav = z_grav if z_grav is not None else 0
         grav_mag: float = math.sqrt(sum([x_grav**2, y_grav**2, z_grav**2]))
-        self._eh.post(
-            event_type="9DOF sensor",
-            message=f"Gravity Magnitude: {grav_mag}",
-        )
+        self._logger.info(msg=f"9DOF sensor: Gravity Magnitude: {grav_mag}")
         return grav_mag
 
     @property
     def bb_quaternion(self) -> tuple[float, float, float, float]:
-        """ Getter for quaternion giving orientation """
+        """Getter for quaternion giving orientation"""
         quaternion: tuple[
             Optional[float], Optional[float], Optional[float], Optional[float]
         ] = self.quaternion
         if None in quaternion:
-            raise ValueError("Quaternion is not available")
-        return quaternion  # type: ignore
+            self._logger.error(msg="9DOF sensor: Quaternion is not available")
+            raise ValueError("9DOF sensor: Quaternion is not available")
+        self._logger.info(msg=f"9DOF sensor: Quaternion: {quaternion}")
+        return quaternion

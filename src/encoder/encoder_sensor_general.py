@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Encoder Sensor Base Module for Actual Sensor and Simulated Sensor"""
 
-import numpy as np
-import numpy.typing as npt
 import time
+from logging import Logger
 from typing import Any, Protocol
 
-from src.event import EventHandler
-from src.find_mode import find_gamma_mode
-from src.cumulative_average import cumulative_average
+import numpy as np
+import numpy.typing as npt
+
+from src.robot_math.cumulative_average import cumulative_average
+from src.robot_math.find_mode import find_gamma_mode
 
 
 class EventHandlerTemplate(Protocol):
@@ -19,6 +20,10 @@ class EventHandlerTemplate(Protocol):
 class MotorGeneral(Protocol):
     def __init__(
         self,
+        *,
+        forward: int | str,
+        backward: int | str,
+        logger: Logger,
     ):
         raise NotImplementedError
 
@@ -47,17 +52,14 @@ class EncoderGeneral:
     def __init__(
         self,
         *,
+        forward: int = 0,
+        rearward: int = 0,
         max_no_position_points: int = 10_000,
         average_duration: float = 1,  # seconds - for calc. speed, accel, etc.
         motor: MotorGeneral,  # Motor object to detect direction of movement
-        eh: EventHandler,
+        logger: Logger,
     ):
-        """
-        Constructs all the necessary attributes for the EncoderGeneral
-
-        Raises:
-            None.
-        """
+        """Constructs all the necessary attributes for the EncoderGeneral"""
         self._T_COL: int = 0  # Time Column
         self._T_SINCE_START_COL: int = 1
         self._S_D_COL: int = 2  # Step Distance Column
@@ -74,7 +76,7 @@ class EncoderGeneral:
         # time in seconds speed, accel and jerk are averaged over
         self._average_duration: float = average_duration
         self._motor: MotorGeneral = motor
-        self._eh: EventHandler = eh
+        self._logger: Logger = logger
         self._running = False
 
     def start(self) -> None:
@@ -117,10 +119,7 @@ class EncoderGeneral:
             shape=(self._max_no_position_points, self._TOT_NUM_COLS), dtype=float
         )  # (time, time_since_start, step_duration, sd_mode, sd_mode_run_avg, position, speed, acceleration, jerk)
         self._current_history_len: int = 1
-        self._eh.post(
-            event_type="encoder sensor",
-            message="Encoder Sensor history reset",
-        )
+        self._logger.info(msg=f"encoder sensor: Encoder Sensor history reset")
 
     def add_position(self, a_time: float, position: float) -> None:
         self._current_history_len += 1
@@ -208,9 +207,8 @@ class EncoderGeneral:
         else:
             self._position_history[self._current_history_len - 1, self._JERK_COL] = 0
 
-        self._eh.post(
-            event_type="encoder sensor",
-            message=f"Added position: time: {a_time}, pos.: {position}",
+        self._logger.info(
+            msg=f"encoder sensor: Added position: time: {a_time}, pos.: {position}"
         )
 
     def _row_with_cumulative_time_greater_than_target(self, target: float) -> int:
@@ -231,7 +229,7 @@ class EncoderGeneral:
         distance: float = self._position_history[
             self._current_history_len - 1, self._DIST_COL
         ]
-        self._eh.post(event_type="encoder sensor", message=f"Distance: {distance:.2f}")
+        self._logger.debug(msg=f"encoder sensor: Distance: {distance:.2f}")
         return distance
 
     @property
@@ -255,7 +253,7 @@ class EncoderGeneral:
         ]
 
         avg_speed: float = float(np.average(speeds_list))  # type: ignore
-        self._eh.post(event_type="encoder sensor", message=f"Speed: {avg_speed:.2f}")
+        self._logger.debug(msg=f"encoder sensor: Speed: {avg_speed:.2f}")
         return avg_speed
 
     @property
@@ -279,7 +277,7 @@ class EncoderGeneral:
         ]
 
         avg_accel: float = float(np.average(accels_list))  # type: ignore
-        self._eh.post(event_type="encoder sensor", message=f"Accel: {avg_accel:.2f}")
+        self._logger.debug(f"encoder sensor: Accel: {avg_accel:.2f}")
         return avg_accel
 
     @property
@@ -303,6 +301,6 @@ class EncoderGeneral:
         ]
 
         avg_jerk: float = float(np.average(jerks_list))  # type: ignore
-        self._eh.post(event_type="encoder sensor", message=f"Jerk: {avg_jerk:.2f}")
+        self._logger.debug(msg=f"encoder sensor: Jerk: {avg_jerk:.2f}")
 
         return avg_jerk
