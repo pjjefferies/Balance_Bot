@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import time
-from typing import Tuple
 
 from src.bluedot.bluedot_direction_control import BlueDotRobotController
 
