@@ -1,0 +1,15 @@
+astroid=3.3.11
+black=25.1.0
+# click  # used by black
+# colorama  # used by black
+# dill=0.4.0  # used by pylint
+# isort=6.0.1  # used by pylint
+# mccabe=0.7.0  # used by pylint
+mypy=1.17.1
+# mypy_extensions  # used by black, isort, mypy
+# packaging=25.0  # used by setuptools, black
+# pathspec=0.12.1  # used by black, mypy
+# pip=25.2
+# platformdirs=4.3.8  # used by black, etc.
+pylint=3.3.8
+# pyttsx3==2.90
