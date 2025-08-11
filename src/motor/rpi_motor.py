@@ -1,12 +1,37 @@
 #!/usr/bin/env python3
 
 from logging import Logger
+from typing import Optional, Protocol
 
-from gpiozero import Motor
+from gpiozero import Motor  # type: ignore
 
-RPI_GPIO_PINS: tuple[int | str] = tuple(range(2, 28)) + tuple(
-    ["GPIO" + str(a_no) for a_no in range(2, 28)]
-)
+
+class MotorTemplate(Protocol):
+    def __init__(
+        self,
+        forward: int | str,
+        backward: int | str,
+        enable: Optional[int | str],
+        pwm: bool,
+        pin_factory: Optional[None],
+    ) -> None:
+        ...
+
+    def close(self):
+        ...
+
+    @property
+    def value(self) -> float:
+        ...
+
+    @value.setter
+    def value(self, value: float):
+        ...
+
+
+AVAIL_GPIO_PINS: list[int | str] = list(range(2, 28)) + [
+    "GPIO" + str(a_no) for a_no in range(2, 28)
+]
 
 
 class RPI_Motor:
@@ -20,11 +45,11 @@ class RPI_Motor:
         pwm: bool = True,
         logger: Logger,
     ):
-        if forward not in RPI_GPIO_PINS or backward not in RPI_GPIO_PINS:
+        if forward not in AVAIL_GPIO_PINS or backward not in AVAIL_GPIO_PINS:
             raise ValueError(
-                f"forward and rearward must be one of the following: {RPI_GPIO_PINS}"
+                f"forward and rearward must be one of the following: {AVAIL_GPIO_PINS}"
             )
-        self._motor: Motor = Motor(forward=forward, backward=backward, pwm=pwm)
+        self._motor: MotorTemplate = Motor(forward=forward, backward=backward, pwm=pwm)
         self._motor.value = 0
         self._forward_pin = forward
         self._backward_pin = backward

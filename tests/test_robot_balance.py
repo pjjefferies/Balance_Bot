@@ -4,8 +4,8 @@ import time
 from abc import abstractmethod
 from typing import Callable, Optional, Protocol
 
-import board
-import busio
+import board  # type: ignore
+import busio  # type: ignore
 from box import Box
 
 from src.config.config_main import load_config
@@ -24,58 +24,58 @@ class MotorGeneral(Protocol):
         pwm: bool = True,
         pin_factory: None = None,
     ):
-        raise NotImplementedError
+        ...
 
     @property
     def value(self) -> float:
-        raise NotImplementedError
+        ...
 
     @value.setter
     def value(self, value: float) -> None:
-        raise NotImplementedError
+        ...
 
 
 class BBAbsoluteSensorGeneral(Protocol):
     def __init__(self) -> None:
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def calibrate_sensor(self) -> None:
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     def temperature(self, units: str) -> float:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def accel(self) -> dict[str, float]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def magnetic_bb(self) -> dict[str, float]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def gyro_bb(self) -> dict[str, float]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def euler_angles(self) -> dict[str, float]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def gravity_dir(self) -> dict[str, float]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def gravity_mag(self) -> float:
-        raise NotImplementedError
+        ...
 
 
 TIME_MS: Callable[[], int] = lambda: int(time.time() * 1000)
@@ -105,7 +105,7 @@ def test_robot_balance() -> None:
 
     # Initialize i2C Connection to sensor
     # TODO: need check/try?
-    i2c = busio.I2C(board.SCL, board.SDA)
+    i2c = busio.I2C(scl=board.SCL, sda=board.SDA, frequency=1_000)  # type:ignore
     sensor: bno055.BB_BNO055Sensor_I2C = bno055.BB_BNO055Sensor_I2C(
         i2c=i2c, logger=logger
     )
@@ -212,7 +212,7 @@ def test_robot_balance() -> None:
                     msg=f"9DOF sensor: Good Eulers: {good_euler_angles:8d}, Bad Eulers: {bad_euler_angles:8d}"
                 )
         except KeyboardInterrupt:
-            print("Stopping at your request.")
+            print("Falling and stopping at your request.")
             break
 
     motor_wheel_left.value = 0

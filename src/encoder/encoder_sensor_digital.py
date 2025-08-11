@@ -6,7 +6,7 @@ from logging import Logger
 from typing import Any, Callable, Protocol
 
 import numpy as np
-from gpiozero import LineSensor
+from gpiozero import LineSensor  # type: ignore
 
 from src.encoder.encoder_sensor_general import EncoderGeneral
 from src.save_position_history import save_position_history
@@ -20,11 +20,11 @@ class MotorGeneral(Protocol):
         backward: int | str,
         logger: Logger,
     ):
-        raise NotImplementedError
+        ...
 
     @property
     def value(self) -> float:
-        raise NotImplementedError
+        ...
 
 
 class EncoderDigital(EncoderGeneral):
@@ -54,10 +54,6 @@ class EncoderDigital(EncoderGeneral):
         motor: MotorGeneral,
         logger: Logger,
     ):
-        """
-        Constructs all the necessary attributes for the Rotation_Encoder
-        object using LineSensor class from gpiozero.
-        """
         super().__init__(
             max_no_position_points=max_no_position_points,
             average_duration=average_duration,

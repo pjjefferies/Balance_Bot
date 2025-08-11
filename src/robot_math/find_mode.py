@@ -3,29 +3,19 @@
 
 import numpy as np
 import numpy.typing as npt
-from scipy import stats
-from scipy.optimize import minimize
-import timeit
-import matplotlib.pyplot as plt
-
-"""
-def gamma_mode(data: npt.ArrayLike) -> float:
-    # fit the parameters of norm distribution
-    params: Tuple[float, float, float] = stats.gamma.fit(data=data)
-
-    return minimize(gamma_density, 0).x
-"""
+from scipy import stats  # type:ignore
+from scipy.optimize import minimize  # type: ignore
 
 
-def find_gamma_mode(data: npt.ArrayLike, initial_guess: float = 0.05):
-    def gamma_density(data: float, *params: tuple[float, float, float]):
-        return -stats.gamma.pdf(data, *params)[0]
+def find_gamma_mode(data: npt.ArrayLike, initial_guess: float = 0.05) -> float:
+    def gamma_density(data: float, *params: tuple[float, float, float]) -> float:
+        return -stats.gamma.pdf(data, *params)[0]  # type: ignore
 
     a: float  # shape
     loc: float  # location
     scale: float  # scale (theta)
     try:
-        a, loc, scale = stats.gamma.fit(data=data, method="MM")
+        a, loc, scale = stats.gamma.fit(data=data, method="MM")  # type: ignore
     except stats.FitError as e:
         print(f"Fit Error: {e}")
         return 0
@@ -52,19 +42,18 @@ def find_gamma_mode(data: npt.ArrayLike, initial_guess: float = 0.05):
     ax.legend(loc="best", frameon=False)
     plt.show()
     """
-    return minimize(
-        fun=gamma_density, x0=initial_guess, args=(a, loc, scale), method="Powell"
-    ).x[
-        0
-    ]  # COBYLA - correct result, success=True, time=0.025 s - see initial commit of file for other method results
+    return minimize(  # type: ignore
+        fun=gamma_density, x0=initial_guess, args=(a, loc, scale), method="Powell"  # type: ignore
+    ).x[0]
+    # COBYLA - correct result, success=True, time=0.025 s - see initial commit of file for other method results
     # TNC
     # Powell
 
 
-def main():
+def main() -> None:
     import os
 
-    datafileprefix: str = "2023-01-02_23_4"
+    # datafileprefix: str = "2023-01-02_23_4"
     dataoutfilepostfix: str = "_mode_summary_Powell"
     current_dir: str = os.getcwd()
     log_dir: str = os.path.join(current_dir, "logs")
@@ -97,19 +86,19 @@ def main():
         time_step_data: npt.ArrayLike = all_data[:, 1]
         # print(time_step_data[:15])
 
-        result_data: npt.ArrayLike = np.zeros((len(time_step_data), 2))
+        no_data_points = len(time_step_data)  # type: ignore
+        result_data: npt.ArrayLike = np.zeros((no_data_points, 2))
 
         no_data: int
         mode: float
-        no_data_points = len(time_step_data)
 
         for no_data in range(no_data_points):
             if no_data % 10 == 0:
                 print(f"    Evaluating point {no_data} of {no_data_points}")
-            temp_data = time_step_data[: no_data + 1]
-            mode = find_gamma_mode(data=temp_data, initial_guess=np.average(temp_data))
-            result_data[no_data, 0] = no_data
-            result_data[no_data, 1] = mode
+            temp_data = time_step_data[: no_data + 1]  # type: ignore
+            mode = find_gamma_mode(data=temp_data, initial_guess=np.average(temp_data))  # type: ignore
+            result_data[no_data, 0] = no_data  # type: ignore
+            result_data[no_data, 1] = mode  # type: ignore
 
             # print(f"no_data: {no_data}, mode: {mode}")
 

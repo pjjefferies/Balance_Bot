@@ -11,8 +11,8 @@ from abc import abstractmethod
 from logging import Logger
 from typing import Optional, Protocol
 
-import adafruit_bno055 as bno055
-import busio
+import adafruit_bno055 as bno055  # type:ignore
+import busio  # type: ignore
 from box import Box
 from box.exceptions import BoxError
 
@@ -21,93 +21,91 @@ from src.config.config_main import cfg
 
 class AbsoluteSensor(Protocol):
     def __init__(self) -> None:
-        raise NotImplementedError
+        ...
 
     @property
     def calibration_status(self) -> tuple[int, int, int, int]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def accel_range(self) -> int:
-        raise NotImplementedError
+        ...
 
     @accel_range.setter
     @abstractmethod
     def accel_range(self, rng: int) -> None:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def offsets_accelerometer(self) -> tuple[int, int, int]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def offsets_magnetometer(self) -> tuple[int, int, int]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def offsets_gyroscope(self) -> tuple[int, int, int]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def radius_accelerometer(self) -> int:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def radius_magnetometer(self) -> int:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def temperature(self) -> int:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def linear_acceleration(
         self,
     ) -> tuple[Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def magnetic(self) -> tuple[Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def gyro(self) -> tuple[Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def euler(self) -> tuple[Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def quaternion(
         self,
     ) -> tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
     @property
     @abstractmethod
     def gravity(
         self,
     ) -> tuple[Optional[float], Optional[float], Optional[float]]:
-        raise NotImplementedError
+        ...
 
 
 class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
-    """
-    A class to represent the Adafruit BNO055 Sensor mounted in Balance Bot
-    """
+    """A class to represent the Adafruit BNO055 Sensor mounted in Balance Bot"""
 
     _calibration_items = (
         "accel",
@@ -122,7 +120,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
     )
 
     def __init__(self, *, i2c: busio.I2C, logger: Logger) -> None:
-        super().__init__(i2c=i2c)
+        super().__init__(i2c=i2c)  # type:ignore
         self._sensor_calibration_data: Box = Box(
             {
                 "accel": {
@@ -240,7 +238,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
     def read_calibration_data_from_file(self) -> Box:
         """Loads calibration data from configuration file, saves it in object and returns it"""
         try:
-            self._sensor_calibration_data = Box.from_yaml(
+            self._sensor_calibration_data = Box.from_yaml(  # type: ignore
                 filename=cfg.path.ninedof_sensor_calibration
             )
             if not self._validate_calibration_data(self._sensor_calibration_data):
@@ -266,7 +264,7 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
         if not self._validate_calibration_data(sensor_calibration_data):
             self._logger.error(msg="9DOF sensor: Could not save calibration data")
             raise ValueError("9DOF sensor: Could not save calibration data")
-        sensor_calibration_data.to_yaml(filename=cfg.path.ninedof_sensor_calibration)
+        sensor_calibration_data.to_yaml(filename=cfg.path.ninedof_sensor_calibration)  # type: ignore
         self._logger.info(
             msg=f"9DOF sensor: Calibration data saved to {cfg.path.ninedof_sensor_calibration}: {sensor_calibration_data}"
         )
@@ -408,4 +406,4 @@ class BB_BNO055Sensor_I2C(bno055.BNO055_I2C):
             self._logger.error(msg="9DOF sensor: Quaternion is not available")
             raise ValueError("9DOF sensor: Quaternion is not available")
         self._logger.info(msg=f"9DOF sensor: Quaternion: {quaternion}")
-        return quaternion
+        return quaternion  # type: ignore

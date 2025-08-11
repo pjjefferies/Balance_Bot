@@ -3,7 +3,7 @@
 
 import logging
 
-from config.config_logging import log_cfg
+from configs.balance_bot_logging_config import log_cfg
 
 bb_logger_format = log_cfg.format.simple
 # bb_log_format = logging.Formatter("{asctime} {levelname:>8} {pathname[-20]:>20} {lineno:3}:{msg}", datefmt="%Y-%m-%d %H:%M:%S")

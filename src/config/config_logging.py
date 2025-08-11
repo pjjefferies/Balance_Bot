@@ -7,13 +7,12 @@ Loads logging YMAL config file and configues logger.
 Loads BNO055 Sensor configuration if available
 """
 
-from box import Box
 import os
+
+from box import Box
 import yaml
 
 from src.config.config_main import cfg
-
-env = "dev"
 
 # Set-up and import logging config
 os.makedirs(cfg.path.logs, exist_ok=True)
