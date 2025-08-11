@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Create representation of Adafruit 9-DOF Abs. Orientation IMU BNO055.
 

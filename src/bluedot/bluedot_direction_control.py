@@ -1,15 +1,9 @@
-#!/usr/bin/env python3
 """Bluedot Phone App Interface"""
 
 from logging import Logger
 from typing import Protocol
 
 import bluedot  # type:ignore
-
-
-class EventHandlerTemplate(Protocol):
-    def post(self, *, event_type: str, message: str) -> None:
-        ...
 
 
 class BlueDotRobotController:

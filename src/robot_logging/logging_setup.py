@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Logging Set-up for For Balance Bot General Reference"""
 
 import logging

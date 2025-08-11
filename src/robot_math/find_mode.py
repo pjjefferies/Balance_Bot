@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 import numpy as np
 import numpy.typing as npt
 from scipy import stats  # type:ignore

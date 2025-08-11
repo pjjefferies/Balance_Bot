@@ -5,12 +5,9 @@ from typing import Callable, Optional, Protocol
 
 from gpiozero import Motor
 
-from .motor.motor_battery_relay import MotorBatteryRelay
-from .bluedot.bluedot_direction_control import BlueDotRobotController
-from .config.config_main import cfg
-from .event import EventHandler
-from .encoder.encoder_sensor_digital import EncoderDigital
-from . import robot_listener
+from bluedot.bluedot_direction_control import BlueDotRobotController
+from config.config_main import cfg
+from motor.motor_battery_relay import MotorBatteryRelay
 
 
 class MotorGeneral(Protocol):
@@ -30,26 +27,6 @@ class MotorGeneral(Protocol):
 
     @value.setter
     def value(self, value: float) -> None:
-        raise NotImplementedError
-
-
-class EncoderGeneral(Protocol):
-    def __init__(
-        self,
-        *,
-        max_no_position_points: int,
-        average_duration: int,
-        motor: MotorGeneral,
-        eh: EventHandler,
-    ):
-        raise NotImplementedError
-
-    @property
-    def distance(self) -> float:
-        raise NotImplementedError
-
-    @property
-    def jerk(self) -> float:
         raise NotImplementedError
 
 
@@ -114,16 +91,11 @@ class SimpleRobot:
         # motor_arm_left: MotorGeneral | None,
         # motor_arm_right: MotorGeneral | None,
         # arm_motor_relay: MotorBatteryRelay,
-        enc_wheel_left: EncoderDigital,
-        enc_wheel_right: EncoderDigital,
-        # enc_arm_left: EncoderGeneral | None,
-        # enc_arm_right: EncoderGeneral | None,
         # sensor9DOF: BBAbsoluteSensorGeneral,
         # start_prog: tuple[tuple[float, float, float]] | None = None,
         # repeat_prog: tuple[tuple[float, float, float]] | None = None,
         # manual_control_time: int = 0,  # Duration of manual control in seconds
         bluedot_control: BlueDotRobotController,
-        eh: EventHandler,
     ):
         """
         Initialize Simple Robot using values in balance_bot_config
@@ -142,10 +114,7 @@ class SimpleRobot:
         self._motor_wheel_left = motor_wheel_left
         self._motor_wheel_right = motor_wheel_right
         self._motor_wheel_relay = motor_wheel_relay
-        self._enc_wheel_left = enc_wheel_left
-        self._enc_wheel_right = enc_wheel_right
         self._bluedot_control = bluedot_control
-        self._eh = eh
 
         # self._bd_ctl = bluedot_direction_control.bd_drive
 
@@ -177,10 +146,10 @@ class SimpleRobot:
                 direction = (
                     self._bluedot_control.bd_drive()
                 )  # [y, x] eached scaled [-1, 1]
-                self._eh.post(
-                    event_type="robot moved",
-                    message=f"Direction: x: {direction[0]:.2f}, y: {direction[1]:.2f}",
-                )
+                # self._eh.post(
+                #     event_type="robot moved",
+                #     message=f"Direction: x: {direction[0]:.2f}, y: {direction[1]:.2f}",
+                # )
                 if direction == (0, 0):
                     self._motor_wheel_left.value = 0
                     self._motor_wheel_right.value = 0
@@ -193,13 +162,13 @@ class SimpleRobot:
                     self._motor_wheel_right.value = max(
                         min(fwd_vel - right_turn, 1), -1
                     )
-            self._eh.post(event_type="robot encoder sensor", message="Left Wheel:")
-            _ = self._enc_wheel_left.distance  # trigger posting of distance
-            _ = self._enc_wheel_left.jerk
-            self._eh.post(event_type="robot encoder sensor", message="Right Wheel:")
-            _ = self._enc_wheel_right.distance  # trigger posting of distance
-            _ = self._enc_wheel_right.jerk
-            time.sleep(interval / 5)
+            # self._eh.post(event_type="robot encoder sensor", message="Left Wheel:")
+            # _ = self._enc_wheel_left.distance  # trigger posting of distance
+            # _ = self._enc_wheel_left.jerk
+            # self._eh.post(event_type="robot encoder sensor", message="Right Wheel:")
+            # _ = self._enc_wheel_right.distance  # trigger posting of distance
+            # _ = self._enc_wheel_right.jerk
+            # time.sleep(interval / 5)
 
     def drive_program(self, steps: list[tuple[int, int, int]]) -> None:
         """
@@ -236,20 +205,12 @@ class SimpleRobot:
 
 
 def main():
-    eh = EventHandler()
-
-    robot_listener.setup_robot_movement_handler()
-    robot_listener.setup_robot_encoder_sensor_handler()
-    robot_listener.setup_robot_9DOF_sensor_handler_logfile()
-    robot_listener.setup_general_logging_handler()
-    robot_listener.setup_bluedot_handler()
-    robot_listener.setup_power_handler()
 
     # print(f"cfg.wheel.left.motor.fwd: {cfg.wheel.left.motor.fwd}")
     # print(f"cfg.wheel.left.motor.rwd: {cfg.wheel.left.motor.rwd}")
 
     # set-up Wheel Motor Power Relay
-    motor_wheel_relay = MotorBatteryRelay(cfg.wheel.power, eh=eh)
+    motor_wheel_relay = MotorBatteryRelay(cfg.wheel.power)
 
     # Set-up Wheel Motor Control Pins
     motor_wheel_left: Motor = Motor(  # MotorGeneral = Motor(  - V3.10
@@ -280,30 +241,13 @@ def main():
     )
     """
 
-    # Set-up Motor Encoders
-    enc_wheel_left: EncoderDigital = EncoderDigital(
-        signal_pin=cfg.wheel.left.encoder, motor=motor_wheel_left, eh=eh
-    )
-    enc_wheel_right: EncoderDigital = EncoderDigital(
-        signal_pin=cfg.wheel.right.encoder, motor=motor_wheel_left, eh=eh
-    )
-    # enc_arm_left: EncoderGeneral = EncoderDigital(
-    #     signal_pin=cfg.arm.left.encoder
-    # )
-    # enc_arm_right: EncoderGeneral = EncoderDigital(
-    #     signal_pin=cfg.arm.right.encoder
-    # )
-
-    bd_ctl = BlueDotRobotController(eh=eh)
+    bd_ctl = BlueDotRobotController()
 
     robot = SimpleRobot(
         motor_wheel_left=motor_wheel_left,
         motor_wheel_right=motor_wheel_right,
         motor_wheel_relay=motor_wheel_relay,
-        enc_wheel_left=enc_wheel_left,
-        enc_wheel_right=enc_wheel_right,
         bluedot_control=bd_ctl,
-        eh=eh,
     )
 
     # robot.drive_two_wheel_robot_by_bd(duration=10)

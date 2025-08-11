@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from logging import Logger
 from typing import Optional, Protocol
 

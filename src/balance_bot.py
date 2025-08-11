@@ -1,29 +1,18 @@
-#!/usr/bin/env python3
 """ Balance Bot Main Routine """
 
 import asyncio
 import time
-from typing import Callable, Protocol, Optional, Any
-
 from abc import abstractmethod
+from typing import Any, Callable, Optional, Protocol
+
 from gpiozero import Motor
 
-from src import robot_listener
-from src.motor_simulator import MotorSim
-from src.encoder.encoder_sensor_digital import EncoderDigital
-from tests.encoder_simulator import EncoderSim
-from src.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
-from src.sensor.bb_bno055_sensor import BB_BNO055Sensor
-from src.bluedot.bluedot_direction_control import BlueDotRobotController
 from config import cfg
-from event import EventHandler
-
-
-class EventHandlerTemplate(Protocol):
-    def post(
-        self, *, event_type: str, message: str | Any, level: Optional[str]
-    ) -> None:
-        raise NotImplementedError
+# from src import robot_listener
+from src.bb_9dof_sensor_simulator import BB9DOFSensorSimulator
+from src.bluedot.bluedot_direction_control import BlueDotRobotController
+from src.motor_simulator import MotorSim
+from src.sensor.bb_bno055_sensor import BB_BNO055Sensor
 
 
 class MotorGeneral(Protocol):
@@ -38,18 +27,6 @@ class MotorGeneral(Protocol):
 
     @value.setter
     def value(self, value: float) -> None:
-        raise NotImplementedError
-
-
-class EncoderGeneral(Protocol):
-    def __init__(
-        self,
-        *,
-        max_no_position_points: int,
-        average_duration: int,
-        motor: MotorGeneral,
-        eh: EventHandler,
-    ):
         raise NotImplementedError
 
 
@@ -97,7 +74,7 @@ class BBAbsoluteSensorGeneral(Protocol):
 
 
 class DirectionController(Protocol):
-    def __init__(self, eh: EventHandlerTemplate) -> None:
+    def __init__(self) -> None:
         raise NotImplementedError
 
     def bd_drive(self) -> tuple[float, float]:
@@ -124,16 +101,11 @@ class BalanceBot:
         motor_wheel_right: Motor | MotorSim,
         motor_arm_left: Optional[Motor | MotorSim] = None,
         motor_arm_right: Optional[Motor | MotorSim] = None,
-        enc_wheel_left: EncoderDigital | EncoderSim,
-        enc_wheel_right: EncoderDigital | EncoderSim,
-        enc_arm_left: Optional[EncoderDigital | EncoderSim],
-        enc_arm_right: Optional[EncoderDigital | EncoderSim],
         sensor9DOF: BB_BNO055Sensor | BB9DOFSensorSimulator,
         start_prog: Optional[tuple[tuple[float, float, float]]] = None,
         repeat_prog: Optional[tuple[tuple[float, float, float]]] = None,
         manual_control_time: int = 0,  # Duration of manual control in seconds
         bluedot_control: Optional[BlueDotRobotController] = None,
-        eh: EventHandler,
     ):
         """
         Create Balance Bat Robot Object, initiating all start-up functions
@@ -149,19 +121,12 @@ class BalanceBot:
             Result: True if successful, False if not
         """
 
-        # Set-up Evenet Handler
-        self._eh = eh
-
         # Set-up Motor Control Pins
         self._motor_wheel_left: Motor | MotorSim = motor_wheel_left
         self._motor_wheel_right: Motor | MotorSim = motor_wheel_right
         self._motor_arm_left: Optional[Motor | MotorSim] = motor_arm_left
         self._motor_arm_right: Optional[Motor | MotorSim] = motor_arm_right
         # Set-up Motor_General Encoders
-        self._enc_wheel_left: Optional[EncoderDigital | EncoderSim] = enc_wheel_left
-        self._enc_wheel_right: Optional[EncoderDigital | EncoderSim] = enc_wheel_right
-        self._enc_arm_left: Optional[EncoderDigital | EncoderSim] = enc_arm_left
-        self._enc_arm_right: Optional[EncoderDigital | EncoderSim] = enc_arm_right
         # Initialize i2C Connection to sensor- need check/try?
         self._sensor: BB9DOFSensorSimulator | BB_BNO055Sensor = sensor9DOF
         # Initialize BlueDot Controller if using
@@ -185,18 +150,18 @@ class BalanceBot:
         self._integral_term: float = 0
 
         # Start Balance Loop
-        self._eh.post(event_type="log", message="about to start Balance Loop")
+        # self._eh.post(event_type="log", message="about to start Balance Loop")
         main_control_loop = asyncio.get_event_loop()
         tasks = [main_control_loop.create_task(self._primary_balance_loop())]
         main_control_loop.run_until_complete(asyncio.wait(tasks))
 
         # Start start_prog if we have one
-        self._eh.post(event_type="log", message="Starting Single Run Programs if any")
+        # self._eh.post(event_type="log", message="Starting Single Run Programs if any")
         if start_prog is not None:
             self._run_repeat_program(a_prog=start_prog)
 
         # Start repeat_prog if we have one
-        self._eh.post(event_type="log", message="Starting Multiple Run Programs if any")
+        # self._eh.post(event_type="log", message="Starting Multiple Run Programs if any")
         if repeat_prog is not None:
             while True:
                 self._run_repeat_program(a_prog=repeat_prog)
@@ -217,10 +182,10 @@ class BalanceBot:
     def _run_repeat_program(self, a_prog: tuple[tuple[float, float, float]]):
         for a_command in a_prog:
             if not isinstance(a_command, list) or len(a_command) != 3:
-                self._eh.post(
-                    event_type="log",
-                    message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
-                )
+                # self._eh.post(
+                #     event_type="log",
+                #     message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
+                # )
                 continue
             duration, fwd_rwd, right_left = a_command
             if (
@@ -228,17 +193,17 @@ class BalanceBot:
                 or (fwd_rwd < -1 or fwd_rwd > 1)
                 or (right_left < -1 or right_left > 1)
             ):
-                self._eh.post(
-                    event_type="log",
-                    message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
-                )
+                # self._eh.post(
+                #     event_type="log",
+                #     message=f"WARNING: Invalid repeat_prog step, skipping ({a_command})",
+                # )
                 continue
             self.pitch_setpoint_angle = fwd_rwd
             self.yaw_setpoint_angle = right_left
             time.sleep(duration)
 
     async def _primary_balance_loop(self) -> None:
-        self._eh.post(event_type="log", message="Main loop started")
+        # self._eh.post(event_type="log", message="Main loop started")
         lasttime_control = 0
         lasttime_params_updated = TIME_S()
         while True:
@@ -274,34 +239,25 @@ class BalanceBot:
                     self._pitch,
                     self._yaw,
                 )
-                self._eh.post(event_type="log", message="Main loop ended")
+                # self._eh.post(event_type="log", message="Main loop ended")
             if (TIME_S() - lasttime_params_updated) >= cfg.duration.params_update:
                 # exec every PARAMS_UPDATE_INTERVAL msec.
                 lasttime_params_updated = TIME_S()
-                self._eh.post(event_type="log", message="Updating parameters?")
+                # self._eh.post(event_type="log", message="Updating parameters?")
                 # reload(bbc)
 
 
 def main():
     import os
 
-    eh = EventHandler()
-
-    robot_listener.setup_robot_movement_handler(eh=eh)
-    robot_listener.setup_robot_encoder_sensor_handler(eh=eh)
-    robot_listener.setup_robot_9DOF_sensor_handler_logfile(eh=eh)
-    robot_listener.setup_general_logging_handler(eh=eh)
-    robot_listener.setup_bluedot_handler(eh=eh)
-
     if os.name == "posix" and os.uname()[1] == "raspberrypi":
         # We're running on Raspberry Pi. Start robot.
         logger.info("Starting Balance Bot Robt")
-        from gpiozero import Motor
+        import bluedot_direction_control
         import board
         import busio
         from bb_bno055_sensor import BB_BNO055Sensor
-        from encoder_sensor_digital import EncoderDigital
-        import bluedot_direction_control
+        from gpiozero import Motor
 
         motor_wheel_left: Motor_General = Motor(
             forward=cfg.wheel.left.motor.fwd,
@@ -320,55 +276,37 @@ def main():
         #     forward=cfg.arm.right.fwd, backward=cfg.arm.right.rwd, pwm=True
         # )
 
-        enc_wheel_left: EncoderGeneral = EncoderDigital(
-            signal_pin=cfg.wheel.left.encoder
-        )
-        enc_wheel_right: EncoderGeneral = EncoderDigital(
-            signal_pin=cfg.wheel.right.encoder
-        )
-        # enc_arm_left: EncoderGeneral = RotationEncoder(signal_pin=cfg.arm.left.encoder)
-        # enc_arm_right: EncoderGeneral = RotationEncoder(
-        #     signal_pin=cfg.arm.right.encoder
-        # )
-
         i2c: busio.I2C = busio.I2C(board.SCL, board.SCA)
-        sensor9DOF: BB_BNO055Sensor = BB_BNO055Sensor(i2c, eh=eh)
+        sensor9DOF: BB_BNO055Sensor = BB_BNO055Sensor(i2c)
 
         try:
             bluedot_control: DirectionController | None = (
-                bluedot_direction_control.BlueDotRobotController(eh=eh, timeout=60)
+                bluedot_direction_control.BlueDotRobotController(timeout=60)
             )
         except ConnectionError as e:
-            eh.post(evnet_type="bluedot", message=f"No BlueDot Controller: {e}")
+            # eh.post(evnet_type="bluedot", message=f"No BlueDot Controller: {e}")
             bluedot_control: BlueDotRobotController | None = None
 
     elif os.name == "nt":
         # Running on Windows, start robot simulator.
-        eh.post(event_type="log", message="INFO: Stating Robot Simulator")
-        from motor_simulator import MotorSim
-        from encoder_simulator import EncoderSim
+        # eh.post(event_type="log", message="INFO: Stating Robot Simulator")
         from bb_9dof_sensor_simulator import BB9DOFSensorSimulator
+        from motor_simulator import MotorSim
 
-        motor_wheel_left: MotorSim = MotorSim(eh=eh)
-        motor_wheel_right: MotorSim = MotorSim(eh=eh)
+        motor_wheel_left: MotorSim = MotorSim()
+        motor_wheel_right: MotorSim = MotorSim()
         # motor_arm_left: Motor_General = MotorSim()
         # motor_arm_right: Motor_General = MotorSim()
 
-        enc_wheel_left: EncoderSim = EncoderSim(motor=motor_wheel_left, eh=eh)
-        enc_wheel_left.start()
-        enc_wheel_right: EncoderSim = EncoderSim(motor=motor_wheel_right, eh=eh)
-        enc_wheel_right.start()
-        # enc_arm_left: Encoder_General = EncoderSim()
-        # enc_arm_right: Encoder_General = EncoderSim()
-
-        sensor9DOF: BB9DOFSensorSimulator = BB9DOFSensorSimulator(eh=eh)
+        sensor9DOF: BB9DOFSensorSimulator = BB9DOFSensorSimulator()
 
         bluedot_control: Optional[BlueDotRobotController] = None
 
     else:
-        post_event(
-            "log", "ERROR: Balance Bot - OS not identified. Please try on Raspberry Pi"
-        )
+        # post_event(
+        #     "log", "ERROR: Balance Bot - OS not identified. Please try on Raspberry Pi"
+        # )
+        passs
 
     start_prog = [30, 0, 0]  # stand still for 30 seconds
 
@@ -377,10 +315,6 @@ def main():
         motor_wheel_right=motor_wheel_right,
         # motor_arm_left=motor_arm_left,
         # motor_arm_right=motor_arm_right,
-        enc_wheel_left=enc_wheel_left,
-        enc_wheel_right=enc_wheel_right,
-        # enc_arm_left=enc_arm_left,
-        # enc_arm_right=enc_arm_right,
         sensor9DOF=sensor9DOF,
         start_prog=start_prog,
         repeat_prog=None,

@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
 """
-Balance Bot Package config.py module.
-
-Loads General Program configuration as cfg, boxed.
 Loads logging YMAL config file and configues logger.
-Loads BNO055 Sensor configuration if available
 """
 
 import os
 
-from box import Box
 import yaml
+from box import Box
 
 from src.config.config_main import cfg
 
