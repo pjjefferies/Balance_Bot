@@ -8,4 +8,5 @@
     "python.linting.enabled": true,
     "python.analysis.typeCheckingMode": "strict",
     "python.formatting.provider": "black",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
 }
